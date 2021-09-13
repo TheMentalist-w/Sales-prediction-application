@@ -18,13 +18,18 @@
     </div>
 
     <v-spacer></v-spacer>
-
+    <v-btn
+      href="/accounts"
+      text
+      rounded
+    >
+      <span class="mr-2">Accounts</span>
+    </v-btn>
     <v-btn
       @click="$vuetify.theme.dark = !$vuetify.theme.dark"
       text
       rounded
     >
-      <span class="mr-2">Dark Mode</span>
       <v-icon>mdi-brightness-6</v-icon>
     </v-btn>
   </v-app-bar>
