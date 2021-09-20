@@ -3,6 +3,7 @@
     style="width: 70%"
     :headers="headers"
     :items="employees"
+    :search="search"
     class="elevation-1 mx-auto mt-16"
     loading-text="Loading... Please wait"
   >
@@ -10,6 +11,13 @@
       <v-toolbar
         flat
       >
+        <v-text-field
+          v-model="search"
+          append-icon="mdi-magnify"
+          label="Search"
+          single-line
+          hide-details
+        ></v-text-field>
         <v-spacer></v-spacer>
         <v-dialog
           v-model="dialog"
@@ -61,9 +69,30 @@
                   >
                     <v-text-field
                       v-model="editedItem.password"
-                      type="email"
-                      label="Email"
+                      type="password"
+                      label="Password"
                     ></v-text-field>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    md="6"
+                  >
+                    <v-text-field
+                      v-model="editedItem.confirmPassword"
+                      type="password"
+                      :rules="[rules.password]"
+                      label="Confirm password"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    md="6"
+                  >
+                    <v-select
+                      :items="type"
+                      v-model="editedItem.type"
+                      label="Type"
+                    ></v-select>
                   </v-col>
                 </v-row>
               </v-container>
@@ -127,38 +156,43 @@ export default {
   data() {
     return {
       dialog: false,
+      search: "",
       dialogDelete: false,
       headers: [
         {
           text: 'Email',
           align: 'start',
-          sortable: false,
           value: 'email',
           width: '45%',
         },
         { text: 'Employee', value: 'employee', width: '45%', },
         { text: 'Actions', value: 'actions', sortable: false, align: 'end',  width: '10%' },
       ],
+      type: ['Normal', 'Admin'],
       employees: [
         {
           employee: 'Weronika M**k',
           email: 'weronikamk@02.pl',
           password: 'asd',
+          type: 'Admin',
         },
         {
           employee: 'Weronika R**i',
           email: 'weronikari@02.pl',
           password: 'asd1',
+          type: 'Normal',
         },
         {
           employee: 'Szymon S**a',
           email: 'szymonsa@02.pl',
           password: 'asd',
+          type: 'Admin',
         },
         {
           employee: 'Jakub G**i',
           email: 'jakubgi@02.pl',
           password: 'asd',
+          type: 'Normal',
         },
       ],
       editedIndex: -1,
@@ -166,11 +200,19 @@ export default {
         employee: '',
         email: '',
         password: '',
+        confirmPassword: '',
+        type: '',
       },
       defaultItem: {
         employee: '',
         email: '',
         password: '',
+        type: '',
+      },
+      rules: {
+        password: value => {
+          return this.editedItem.password === this.editedItem.confirmPassword
+        }
       },
     }
   },
@@ -192,6 +234,7 @@ export default {
     editItem (item) {
       this.editedIndex = this.employees.indexOf(item)
       this.editedItem = Object.assign({}, item)
+      this.editedItem.confirmPassword = item.password
       this.dialog = true
     },
 
