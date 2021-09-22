@@ -2,7 +2,6 @@ from django.shortcuts import render
 from django.http import HttpResponse,HttpResponseNotFound,JsonResponse
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from rest_framework.decorators import api_view
-#from django.views.decorators.csrf import csrf_exempt
 
 def index(request):
     return HttpResponse("Hello, world. You're at the Pitbull main page")
@@ -18,12 +17,20 @@ def HandleUsersView(request):
         username = request.POST.get('username','')
         password = request.POST.get('password','')
         get_user_model().objects.create_user(username = username, password = password)
-        return HttpResponse("User created!")
+        return HttpResponse("User account created!")
     
     elif request.method == 'DELETE':    #delete desired user
         user = get_user_model().objects.get(username = request.POST['username'])
         user.delete()
-        return HttpResponse("User deleted!") 
+        return HttpResponse("User account deleted!") 
+
+@api_view(['POST'])
+def CreateSuperuserView(request):
+    username = request.POST.get('username','')
+    password = request.POST.get('password','')
+    get_user_model().objects.create_superuser(username = username, password = password)
+    return HttpResponse("Superuser account created!")
+
 
 @api_view(['POST'])
 def LoginView(request):
