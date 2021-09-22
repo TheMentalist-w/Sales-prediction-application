@@ -25,12 +25,15 @@ SECRET_KEY = 't1^+qpb0!4yg3s#%$%!l1ss3!bh9*&p7^g1jct=r48^_brmd7@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+AUTH_USER_MODEL = 'pitbull.User'
+
 ALLOWED_HOSTS = []
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'pitbull',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
