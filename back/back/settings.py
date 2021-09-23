@@ -29,10 +29,12 @@ AUTH_USER_MODEL = 'pitbull.User'
 
 ALLOWED_HOSTS = []
 
+REST_FRAMEWORK = {'DEFAULT_SCHEMA_CLASS':'rest_framework.schemas.coreapi.AutoSchema' }
 
 # Application definition
 
 INSTALLED_APPS = [
+    'rest_framework_swagger',
     'pitbull',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -66,6 +68,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {  
+                    'staticfiles': 'django.templatetags.static',
+                 },
         },
     },
 ]
