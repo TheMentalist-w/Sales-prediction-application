@@ -1,6 +1,7 @@
 # Pitbull - backend 
 
 ### Endpoints:
+* (GET) /pitbull/apiDocs/  -  view API documentation
 * (GET) /pitbull/users  -  get all users' data
 * (POST) /pitbull/users/  -  create new user  (provide username and password in form-data)
 * (DELETE) /pitbull/users/  - delete desired user  (provide username in form-data)
