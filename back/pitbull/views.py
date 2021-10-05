@@ -10,7 +10,10 @@ def index(request):
 def HandleUsersView(request):
 
     if request.method == 'GET':    #list all users
-        users_data = list(get_user_model().objects.values())  
+        users_data = list(get_user_model().objects.values()) 
+
+        #return only specific fields
+        users_data = [ { key: user[key] for key in ["id","username","first_name","last_name","password","email","is_staff"] } for user in users_data]
         return JsonResponse({'users': users_data}) 
     
     elif request.method == 'POST':   #create new user
