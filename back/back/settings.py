@@ -31,9 +31,12 @@ ALLOWED_HOSTS = []
 
 REST_FRAMEWORK = {'DEFAULT_SCHEMA_CLASS':'rest_framework.schemas.coreapi.AutoSchema' }
 
+CORS_ORIGIN_ALLOW_ALL=True   # CORS_ORIGIN_WHITELIST = ["http://localhost:8080"]
+
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'rest_framework_swagger',
     'pitbull',
     'django.contrib.admin',
@@ -45,6 +48,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
