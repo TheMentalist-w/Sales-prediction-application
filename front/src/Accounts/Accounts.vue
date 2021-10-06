@@ -151,6 +151,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "Accounts",
   data() {
@@ -216,12 +218,14 @@ export default {
       },
     }
   },
+  mounted() {
+    axios.get('http://localhost:8000/pitbull/users/').then(data => console.log(data))
+  },
   computed: {
     formTitle () {
       return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
     },
   },
-
   watch: {
     dialog (val) {
       val || this.close()
