@@ -37,11 +37,17 @@ def CreateSuperuserView(request):
 
 @api_view(['POST'])
 def LoginView(request):
-    username = request.POST['username']
-    password = request.POST['password']
-    user = authenticate(request, username=username, password=password)
-    if user is not None:
-        login(request, user)
+    username = request.POST.get('username','')
+    password = request.POST.get('password','')
+    print(password)
+    username = authenticate(request, username = username, password = password)
+    useremail = authenticate(request, email = username, password = password)
+    if username is not None:
+        login(request, username)
+        # Redirect to a success page. @TODO
+        return HttpResponse("Login successful!")
+    elif useremail is not None:
+        login(request, useremail)
         # Redirect to a success page. @TODO
         return HttpResponse("Login successful!")
     else:

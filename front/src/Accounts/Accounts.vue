@@ -220,6 +220,14 @@ export default {
   },
   mounted() {
     axios.get('http://localhost:8000/pitbull/users/').then(data => console.log(data))
+    let data = new FormData(); // 2
+
+    data.append("username", '123')
+    data.append("password", '123')
+
+    axios.post('http://localhost:8000/pitbull/login/', data) // 4
+     .then(res => alert("Form Submitted")) // 5
+     .catch(errors => console.log(errors)) // 6
   },
   computed: {
     formTitle () {

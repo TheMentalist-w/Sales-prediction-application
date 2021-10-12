@@ -6,14 +6,15 @@
       <v-divider></v-divider>
       <div class="mt-6"/>
       <v-text-field
-        type="email"
-        label="Email"
+        type="text"
+        label="Username or Email"
         prepend-icon="mdi-account-circle"
         v-model="email"
-        :rules="[rules.required, rules.email]"
+        :rules="[rules.required]"
       />
       <v-text-field
         :type="showPassword ? 'text' : 'password'"
+        id="password"
         label="Password"
         prepend-icon="mdi-lock"
         v-model="password"
@@ -24,13 +25,18 @@
     </v-card-text>
     <v-divider class="mt-16"></v-divider>
     <v-card-actions>
-      <v-btn x-large class="mx-auto mt-5 success">Login</v-btn>
+      <v-btn x-large class="mx-auto mt-5 success" @click="logIn">Login</v-btn>
     </v-card-actions>
   </v-card>
 </v-content>
 </template>
 
 <script>
+import Vue from 'vue'
+import axios from "axios";
+import Notifications from 'vue-notification'
+Vue.use(Notifications)
+
 export default {
   name: "Login",
   data() {
@@ -39,12 +45,30 @@ export default {
       email: null,
       password: null,
       rules: {
-        required: value => !!value || 'Required.',
-        email: value => {
-          const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-          return pattern.test(value) || 'Invalid e-mail.'
-        },
+        required: value => !!value || 'Required.'
       },
+    }
+  },
+  beforeCreate: function() {
+    let login = sessionStorage.getItem('login')
+    if(login){
+       this.$router.push(this.$route.query.redirect || '/accounts')
+    }
+
+  },
+  methods: {
+    logIn () {
+      let data = new FormData(); // 2
+
+      data.append("username", this.email)
+      data.append("password", this.password)
+      axios.post('http://localhost:8000/pitbull/login/', data) // 4
+      .then(() => {
+        sessionStorage.setItem('login', this.email);
+        this.$router.push(this.$route.query.redirect || '/accounts')
+      })
+      .catch(errors => this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Niepoprawne dane logowania', type: 'error text-white' })) // 6
+
     }
   }
 }
