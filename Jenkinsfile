@@ -15,7 +15,7 @@ pipeline {
         }
         stage('Frontend Build') {
             steps {
-                sh 'cd front && npm build'
+                sh 'cd front && npm run build'
             }
         }
     }
