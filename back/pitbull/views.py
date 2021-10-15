@@ -13,8 +13,16 @@ def HandleUsersView(request):
         users_data = list(get_user_model().objects.values()) 
 
         #return only specific fields
-        users_data = [ { key: user[key] for key in ["id","username","first_name","last_name","password","email","is_staff"] } for user in users_data]
-        return JsonResponse({'users': users_data}) 
+        #users_data = [ { key: user[key] for key in ["id","username", "first_name", "last_name","password","email","is_staff"] } for user in users_data]
+        users = []
+        
+        for i in users_data:
+            account_type = 'Normal'
+            if i['is_staff']:
+                account_type = 'Admin'
+            users += [{'id':i['id'], 'username':i['username'], 'employee':i['first_name'] + " " + i['last_name'], 'email':i['email'], 'type':account_type}]
+        #users_data = [ { key: user[key] for key in ["id","username", "first_name", "last_name","password","email","is_staff"] } for user in users_data]
+        return JsonResponse({'users':users})
     
     elif request.method == 'POST':   #create new user
         username = request.POST.get('username','')
@@ -39,7 +47,6 @@ def CreateSuperuserView(request):
 def LoginView(request):
     username = request.POST.get('username','')
     password = request.POST.get('password','')
-    print(password)
     username = authenticate(request, username = username, password = password)
     useremail = authenticate(request, email = username, password = password)
     if username is not None:
@@ -53,6 +60,44 @@ def LoginView(request):
     else:
         # Return an 'invalid login' error message. @TODO
         return HttpResponseNotFound("Login failed! User not found or password is incorrect")
+
+@api_view(['POST'])
+def DeleteUser(request):
+    id = request.POST.get('id','')
+    user = get_user_model().objects.get(id=id)
+    if user is not None:
+        user.delete()
+        # Redirect to a success page. @TODO
+        return HttpResponse("Deletion successful!")
+    else:
+        # Return an 'invalid login' error message. @TODO
+        return HttpResponseNotFound("Cannot delete user")
+
+@api_view(['POST'])
+def NewUser(request):
+    #user = get_user_model()
+    #user['is_staff'] = request.POST.get('is_staff', '')
+    return JsonResponse({'id': 5})
+    #user.save()
+    #if user.id is not None:
+        # Redirect to a success page. @TODO
+    #    return JsonResponse({'id': 5})
+    #else:
+        # Return an 'invalid login' error message. @TODO
+    #    return HttpResponseNotFound("Cannot create user")
+
+@api_view(['POST'])
+def EditUser(request):
+    #user = get_user_model()
+    #user['is_staff'] = request.POST.get('is_staff', '')
+    return HttpResponse("You have ben successfully logged out!")
+    #user.save()
+    #if user.id is not None:
+        # Redirect to a success page. @TODO
+    #    return JsonResponse({'id': 5})
+    #else:
+        # Return an 'invalid login' error message. @TODO
+    #    return HttpResponseNotFound("Cannot create user")
 
 @api_view(['POST'])
 def LogoutView(request):

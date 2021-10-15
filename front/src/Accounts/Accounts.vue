@@ -6,6 +6,8 @@
     :search="search"
     class="elevation-1 mx-auto mt-16"
     loading-text="Loading... Please wait"
+    :key="tableKey"
+    v-if="loggedIn"
   >
     <template v-slot:top>
       <v-toolbar
@@ -70,6 +72,7 @@
                     <v-text-field
                       v-model="editedItem.password"
                       type="password"
+                      :rules="[rules.newUser]"
                       label="Password"
                     ></v-text-field>
                   </v-col>
@@ -80,8 +83,18 @@
                     <v-text-field
                       v-model="editedItem.confirmPassword"
                       type="password"
-                      :rules="[rules.password]"
+                      :rules="[rules.password, rules.newUser]"
                       label="Confirm password"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    md="6"
+                  >
+                    <v-text-field
+                      :items="type"
+                      v-model="editedItem.username"
+                      label="Username"
                     ></v-text-field>
                   </v-col>
                   <v-col
@@ -151,7 +164,8 @@
 </template>
 
 <script>
-import axios from "axios";
+import axios from "axios"
+import Vue from 'vue'
 
 export default {
   name: "Accounts",
@@ -160,6 +174,8 @@ export default {
       dialog: false,
       search: "",
       dialogDelete: false,
+      loggedIn: false,
+      tableKey: 0,
       headers: [
         {
           text: 'Email',
@@ -171,63 +187,44 @@ export default {
         { text: 'Actions', value: 'actions', sortable: false, align: 'end',  width: '10%' },
       ],
       type: ['Normal', 'Admin'],
-      employees: [
-        {
-          employee: 'Weronika M**k',
-          email: 'weronikamk@02.pl',
-          password: 'asd',
-          type: 'Admin',
-        },
-        {
-          employee: 'Weronika R**i',
-          email: 'weronikari@02.pl',
-          password: 'asd1',
-          type: 'Normal',
-        },
-        {
-          employee: 'Szymon S**a',
-          email: 'szymonsa@02.pl',
-          password: 'asd',
-          type: 'Admin',
-        },
-        {
-          employee: 'Jakub G**i',
-          email: 'jakubgi@02.pl',
-          password: 'asd',
-          type: 'Normal',
-        },
-      ],
+      employees: [],
       editedIndex: -1,
       editedItem: {
         employee: '',
         email: '',
-        password: '',
-        confirmPassword: '',
+        username: '',
         type: '',
       },
       defaultItem: {
         employee: '',
         email: '',
-        password: '',
+        username: '',
         type: '',
       },
+      deleteId: null,
       rules: {
         password: value => {
           return this.editedItem.password === this.editedItem.confirmPassword
+        },
+        newUser: () => {
+          return this.editedIndex < 0 ? false : true
         }
       },
     }
   },
   mounted() {
-    axios.get('http://localhost:8000/pitbull/users/').then(data => console.log(data))
-    let data = new FormData(); // 2
-
-    data.append("username", '123')
-    data.append("password", '123')
-
-    axios.post('http://localhost:8000/pitbull/login/', data) // 4
-     .then(res => alert("Form Submitted")) // 5
-     .catch(errors => console.log(errors)) // 6
+    let logged = this.$cookies.get('token')
+    if(logged){
+      this.loggedIn = true
+      this.tableKey += 1
+    }
+    else {
+      this.$router.push(this.$route.query.redirect || '/login')
+    }
+    axios.get('http://localhost:8000/pitbull/users/').then(data => {
+      this.employees = data.data.users
+      this.tableKey += 1
+    })
   },
   computed: {
     formTitle () {
@@ -243,21 +240,28 @@ export default {
     },
   },
   methods: {
+    clicks(){
+      console.log(this.items)
+    },
     editItem (item) {
       this.editedIndex = this.employees.indexOf(item)
       this.editedItem = Object.assign({}, item)
-      this.editedItem.confirmPassword = item.password
       this.dialog = true
     },
 
     deleteItem (item) {
       this.editedIndex = this.employees.indexOf(item)
+      this.deleteId = item.id
       this.editedItem = Object.assign({}, item)
       this.dialogDelete = true
     },
 
     deleteItemConfirm () {
-      this.employees.splice(this.editedIndex, 1)
+      let data = new FormData()
+      data.append("id", this.deleteId)
+      axios.post('http://localhost:8000/pitbull/deleteuser/', data)
+      .then(this.employees.splice(this.editedIndex, 1))
+      .catch(errors => this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Błąd usuwania użytkownika', type: 'error text-white' })) // 6
       this.closeDelete()
     },
 
@@ -279,11 +283,45 @@ export default {
 
     save () {
       if (this.editedIndex > -1) {
-        Object.assign(this.employees[this.editedIndex], this.editedItem)
+        let data = new FormData()
+        data.append("id", this.editedItem.email)
+        data.append("fist_name", this.editedItem.employee.split(' ')[0])
+        data.append("last_name", this.editedItem.employee.split(' ')[1])
+        data.append("email",this.editedItem.email)
+        data.append("username",this.editedItem.username)
+        data.append("password", this.editedItem.password)
+        data.append("confirmPassword", this.editedItem.confirmPassword)
+        data.append("type", this.editedItem.type==="Admin" ? true : false)
+        axios.post('http://localhost:8000/pitbull/edituser/', data)
+        .then(() => {
+          Object.assign(this.employees[this.editedIndex], this.editedItem)
+          this.close()
+        })
+        .catch(errors => {
+          this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Błąd edycji użytkownika', type: 'error text-white' })
+          this.close()
+        }) 
       } else {
-        this.employees.push(this.editedItem)
+        let data = new FormData()
+        data.append("id", this.editedItem.email)
+        data.append("fist_name", this.editedItem.employee.split(' ')[0])
+        data.append("last_name", this.editedItem.employee.split(' ')[1])
+        data.append("email",this.editedItem.email)
+        data.append("username",this.editedItem.username)
+        data.append("password", this.editedItem.password)
+        data.append("confirmPassword", this.editedItem.confirmPassword)
+        data.append("type", this.editedItem.type==="Admin" ? true : false)
+        axios.post('http://localhost:8000/pitbull/newuser/', data)
+        .then((response) => {
+          this.employees.push(this.editedItem)
+          this.close()
+          this.employees.slice(-1)[0]['id'] = response.data.id
+        })
+        .catch(errors => {
+          this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Błąd dodawania użytkownika', type: 'error text-white' })
+          this.close()
+        }) // 6
       }
-      this.close()
     },
   },
 }

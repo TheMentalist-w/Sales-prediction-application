@@ -1,5 +1,5 @@
 <template>
-<v-content>
+<v-content :key="loggedKey" v-if="loggedIn">
   <v-card width="30%" class="mx-auto mt-16">
     <v-card-title style="justify-content: center">Login</v-card-title>
     <v-card-text>
@@ -33,9 +33,11 @@
 
 <script>
 import Vue from 'vue'
-import axios from "axios";
+import axios from "axios"
+import VueCookies from 'vue-cookies'
 import Notifications from 'vue-notification'
 Vue.use(Notifications)
+Vue.use(VueCookies)
 
 export default {
   name: "Login",
@@ -44,17 +46,22 @@ export default {
       showPassword: false,
       email: null,
       password: null,
+      loggedIn: false,
+      loggedKey: 0,
       rules: {
         required: value => !!value || 'Required.'
       },
     }
   },
-  beforeCreate: function() {
-    let login = sessionStorage.getItem('login')
-    if(login){
-       this.$router.push(this.$route.query.redirect || '/accounts')
+  mounted() {
+    let logged = this.$cookies.get('token')
+    if(logged){
+      this.$router.push(this.$route.query.redirect || '/accounts')
     }
-
+    else {
+      this.loggedIn = true
+      this.loggedKey += 1
+    }
   },
   methods: {
     logIn () {
@@ -63,8 +70,10 @@ export default {
       data.append("username", this.email)
       data.append("password", this.password)
       axios.post('http://localhost:8000/pitbull/login/', data) // 4
-      .then(() => {
-        sessionStorage.setItem('login', this.email);
+      .then((response) => {
+        this.$cookies.set('token', this.email, { //store jwt token
+          expires: 1
+        })
         this.$router.push(this.$route.query.redirect || '/accounts')
       })
       .catch(errors => this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Niepoprawne dane logowania', type: 'error text-white' })) // 6

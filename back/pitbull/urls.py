@@ -10,5 +10,8 @@ urlpatterns = [
     path('superuser/',views.CreateSuperuserView, name='superUser'),
     path('login/',views.LoginView, name='login'),
     path('logout/',views.LogoutView, name='logout'),
-    path('apiDocs/', get_swagger_view(title='Pitbull API'))
+    path('apiDocs/', get_swagger_view(title='Pitbull API')),
+    path('deleteuser/', views.DeleteUser, name='deleteUser'),
+    path('newuser/',views.NewUser, name='newUser'),
+    path('edituser/',views.EditUser, name='editUser'),
 ]
