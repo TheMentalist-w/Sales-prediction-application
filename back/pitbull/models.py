@@ -5,7 +5,7 @@ class UserManager(BaseUserManager):
     
     def create_user(self, username, password=None):
         if not username:
-            raise ValueError('Users must provide an username!')
+            raise ValueError('User must provide an username!')
 
         user = self.model(
             username = username,
@@ -21,7 +21,7 @@ class UserManager(BaseUserManager):
             username = username,
         )
 
-        user.is_superuser = True   # @TODO is_superuser, is_staff or both?
+        user.is_superuser = True  
         user.is_staff = True
         user.set_password(password)
 

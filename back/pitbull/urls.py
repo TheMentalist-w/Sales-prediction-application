@@ -4,11 +4,13 @@ from . import views
 from rest_framework_swagger.views import get_swagger_view
 
 urlpatterns = [
-    path('', views.index, name='mainPage'),
-    path('users/',views.HandleUsersView, name='handleUsers'),
-    path('users/current',views.CurrentUserView, name='currentUser'),
-    path('superuser/',views.CreateSuperuserView, name='superUser'),
-    path('login/',views.LoginView, name='login'),
-    path('logout/',views.LogoutView, name='logout'),
-    path('apiDocs/', get_swagger_view(title='Pitbull API'))
+    path('users/',views.GetUsersListView, name='getUsersList'),
+    path('user/create/',views.CreateUserView, name='createUser'),
+    path('user/delete/',views.DeleteUserView, name='deleteUser'),
+    path('user/edit/',views.EditUserView, name='editUser'),
+    path('user/current/',views.CurrentUserView, name='currentUser'),
+    path('superuser/create/',views.CreateSuperuserView, name='createSuperuser'),
+    path('user/login/',views.LoginView, name='login'),
+    path('user/logout/',views.LogoutView, name='logout'),
+    path('docs/', get_swagger_view(title='PitbullAPI'))
 ]
