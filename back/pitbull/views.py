@@ -8,20 +8,15 @@ from rest_framework.permissions import IsAdminUser
 @permission_classes((IsAdminUser, )) 
 def GetUsersListView(request):
         users_data = list(get_user_model().objects.values()) 
-
-        #return only specific fields
-        users_data = [ { key: user[key] for key in ["id","username","first_name","last_name","password","email","is_staff"] } for user in users_data]
-        return JsonResponse({'users': users_data}) 
-
-@api_view(['POST'])
-def CreateUserView(request):
-        username = request.POST.get('username','')
-        email = request.POST.get('email','')
-        password = request.POST.get('password','')
-
-        user = get_user_model().objects.create_user(username = username, password = password, email = email)
+        users = []
         
-        return JsonResponse({'new_user_id': user.id}) 
+        for i in users_data:
+            account_type = 'Normal'
+            if i['is_staff']:
+                account_type = 'Admin'
+            users += [{'id':i['id'], 'username':i['username'], 'employee':i['first_name'] + " " + i['last_name'], 'email':i['email'], 'type':account_type}]
+        #users_data = [ { key: user[key] for key in ["id","username", "first_name", "last_name","password","email","is_staff"] } for user in users_data]
+        return JsonResponse({'users':users})
         
 
 @api_view(['DELETE'])
@@ -64,12 +59,57 @@ def EditUserView(request):
 def LoginView(request):
     username = request.POST.get('username','')
     password = request.POST.get('password','')
-    user = authenticate(request, username=username, password=password)
-    if user is not None:
-        login(request, user)
+
+    username_result = authenticate(request, username = username, password = password)
+    useremail_result = authenticate(request, email = username, password = password)
+    if username_result is not None:
+        login(request, username_result)
+        # Redirect to a success page. @TODO
+        return HttpResponse("Login successful!")
+    elif useremail_result is not None:
+        login(request, useremail_result)
+        # Redirect to a success page. @TODO
         return HttpResponse("Login successful!")
     else:
         return HttpResponseNotFound("Login failed! User not found or password is incorrect")
+
+@api_view(['POST'])
+def DeleteUser(request):
+    id = request.POST.get('id','')
+    user = get_user_model().objects.get(id=id)
+    if user is not None:
+        user.delete()
+        # Redirect to a success page. @TODO
+        return HttpResponse("Deletion successful!")
+    else:
+        # Return an 'invalid login' error message. @TODO
+        return HttpResponseNotFound("Cannot delete user")
+
+@api_view(['POST'])
+def NewUser(request):
+    #user = get_user_model()
+    #user['is_staff'] = request.POST.get('is_staff', '')
+    return JsonResponse({'id': 5})
+    #user.save()
+    #if user.id is not None:
+        # Redirect to a success page. @TODO
+    #    return JsonResponse({'id': 5})
+    #else:
+        # Return an 'invalid login' error message. @TODO
+    #    return HttpResponseNotFound("Cannot create user")
+
+@api_view(['POST'])
+def EditUser(request):
+    #user = get_user_model()
+    #user['is_staff'] = request.POST.get('is_staff', '')
+    return HttpResponse("You have ben successfully logged out!")
+    #user.save()
+    #if user.id is not None:
+        # Redirect to a success page. @TODO
+    #    return JsonResponse({'id': 5})
+    #else:
+        # Return an 'invalid login' error message. @TODO
+    #    return HttpResponseNotFound("Cannot create user")
 
 @api_view(['POST'])
 def LogoutView(request):
