@@ -54,7 +54,7 @@ export default {
     }
   },
   mounted() {
-    let logged = this.$cookies.get('token')
+    let logged = this.$cookies.get('sessionid')
     if(logged){
       this.$router.push(this.$route.query.redirect || '/accounts')
     }
@@ -69,9 +69,10 @@ export default {
 
       data.append("username", this.email)
       data.append("password", this.password)
-      axios.post('http://localhost:8000/pitbull/login/', data) // 4
+      axios.post('http://localhost:8000/pitbull/user/login/', data) // 4
       .then((response) => {
-        this.$cookies.set('token', this.email, { //store jwt token
+        console.log(response)
+        this.$cookies.set('sessionid', response.headers, {
           expires: 1
         })
         this.$router.push(this.$route.query.redirect || '/accounts')

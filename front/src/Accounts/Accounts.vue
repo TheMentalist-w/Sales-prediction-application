@@ -213,22 +213,22 @@ export default {
     }
   },
   mounted() {
-    let logged = this.$cookies.get('token')
+    let logged = this.$cookies.get('sessionid')
     if(logged){
       this.loggedIn = true
       this.tableKey += 1
     }
     else {
-      this.$router.push(this.$route.query.redirect || '/login')
+      this.$router.push(this.$route.query.redirect || 'user/login/')
     }
-    axios.get('http://localhost:8000/pitbull/users/').then(data => {
+    axios.get('http://localhost:8000/pitbull/users/', {withCredentials: true}).then(data => {
       this.employees = data.data.users
       this.tableKey += 1
     })
   },
   computed: {
     formTitle () {
-      return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
+      return this.editedIndex === -1 ? 'New Employee' : 'Edit Employee'
     },
   },
   watch: {
@@ -259,8 +259,9 @@ export default {
     deleteItemConfirm () {
       let data = new FormData()
       data.append("id", this.deleteId)
-      axios.post('http://localhost:8000/pitbull/deleteuser/', data)
-      .then(this.employees.splice(this.editedIndex, 1))
+      data.append("token", )
+      axios.post('http://localhost:8000/pitbull/user/delete/', data)
+      .then(() => this.employees.splice(this.editedIndex, 1))
       .catch(errors => this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Błąd usuwania użytkownika', type: 'error text-white' })) // 6
       this.closeDelete()
     },
@@ -292,7 +293,7 @@ export default {
         data.append("password", this.editedItem.password)
         data.append("confirmPassword", this.editedItem.confirmPassword)
         data.append("type", this.editedItem.type==="Admin" ? true : false)
-        axios.post('http://localhost:8000/pitbull/edituser/', data)
+        axios.post('http://localhost:8000/pitbull/user/edit/', data)
         .then(() => {
           Object.assign(this.employees[this.editedIndex], this.editedItem)
           this.close()
@@ -300,7 +301,7 @@ export default {
         .catch(errors => {
           this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Błąd edycji użytkownika', type: 'error text-white' })
           this.close()
-        }) 
+        })
       } else {
         let data = new FormData()
         data.append("id", this.editedItem.email)
@@ -311,7 +312,7 @@ export default {
         data.append("password", this.editedItem.password)
         data.append("confirmPassword", this.editedItem.confirmPassword)
         data.append("type", this.editedItem.type==="Admin" ? true : false)
-        axios.post('http://localhost:8000/pitbull/newuser/', data)
+        axios.post('http://localhost:8000/pitbull/user/create/', data)
         .then((response) => {
           this.employees.push(this.editedItem)
           this.close()
