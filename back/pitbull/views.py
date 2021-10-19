@@ -29,6 +29,16 @@ def DeleteUserView(request):
         return HttpResponse("User account deleted!") 
 
 @api_view(['POST'])
+def CreateUserView(request):
+    username = request.POST.get('username','')
+    email = request.POST.get('email','')
+    password = request.POST.get('password','')
+
+    user = get_user_model().objects.create_user(username = username, password = password, email = email)
+        
+    return JsonResponse({'new_user_id': user.id}) 
+
+@api_view(['POST'])
 def CreateSuperuserView(request):
     username = request.POST.get('username','')
     password = request.POST.get('password','')
