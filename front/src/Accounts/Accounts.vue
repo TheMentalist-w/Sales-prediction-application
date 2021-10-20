@@ -213,7 +213,7 @@ export default {
     }
   },
   mounted() {
-    let logged = this.$cookies.get('sessionid')
+    let logged = this.$cookies.get('authToken')
     if(logged){
       this.loggedIn = true
       this.tableKey += 1
