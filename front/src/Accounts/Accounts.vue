@@ -213,7 +213,7 @@ export default {
     }
   },
   mounted() {
-    let logged = this.$cookies.get('sessionid')
+    let logged = this.$cookies.get('authToken')
     if(logged){
       this.loggedIn = true
       this.tableKey += 1
@@ -221,7 +221,11 @@ export default {
     else {
       this.$router.push(this.$route.query.redirect || 'user/login/')
     }
-    axios.get('http://localhost:8000/pitbull/users/', {withCredentials: true}).then(data => {
+    
+    const config = {
+    headers: { Authorization: `Token ${this.$cookies.get('authToken')}` }
+ };
+    axios.get('http://localhost:8000/pitbull/users/', config).then(data => {
       this.employees = data.data.users
       this.tableKey += 1
     })

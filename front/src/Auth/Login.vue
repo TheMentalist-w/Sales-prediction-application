@@ -72,7 +72,7 @@ export default {
       axios.post('http://localhost:8000/pitbull/user/login/', data) // 4
       .then((response) => {
         console.log(response)
-        this.$cookies.set('sessionid', response.headers, {
+        this.$cookies.set('authToken', response.data.authToken, {
           expires: 1
         })
         this.$router.push(this.$route.query.redirect || '/accounts')

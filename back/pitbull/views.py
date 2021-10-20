@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAdminUser
+from rest_framework.authtoken.models import Token
 
 @api_view(['GET'])
 @permission_classes((IsAdminUser, )) 
@@ -74,8 +75,12 @@ def LoginView(request):
     useremail_result = authenticate(request, email = username, password = password)
     if username_result is not None:
         login(request, username_result)
+        token, created = Token.objects.get_or_create(user=username_result)
+        data = {'text':'Login successful!','authToken':token.key} 
+        response = JsonResponse(data,status=200)
+        return response 
+        
         # Redirect to a success page. @TODO
-        return HttpResponse("Login successful!")
     elif useremail_result is not None:
         login(request, useremail_result)
         # Redirect to a success page. @TODO
