@@ -36,6 +36,8 @@ import Vue from 'vue'
 import axios from "axios"
 import VueCookies from 'vue-cookies'
 import Notifications from 'vue-notification'
+import Vuetify from 'vuetify'
+Vue.use(Vuetify)
 Vue.use(Notifications)
 Vue.use(VueCookies)
 
@@ -53,10 +55,24 @@ export default {
       },
     }
   },
+  beforeMount() {
+    this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === "true" ? true : false
+  },
   mounted() {
-    let logged = this.$cookies.get('sessionid')
+    let logged = this.$cookies.get('authToken')
     if(logged){
-      this.$router.push(this.$route.query.redirect || '/accounts')
+      const config = {
+        headers: { Authorization: `Token ${this.$cookies.get('authToken')}` }
+      }
+      axios.get('http://localhost:8000/pitbull/user/current/', config)
+      .then(() => {
+        this.$router.push(this.$route.query.redirect || '/')
+      })
+      .catch(() => {
+        this.$cookies.remove('authToken')
+        this.loggedIn = true
+        this.loggedKey += 1
+      })
     }
     else {
       this.loggedIn = true
@@ -71,11 +87,10 @@ export default {
       data.append("password", this.password)
       axios.post('http://localhost:8000/pitbull/user/login/', data) // 4
       .then((response) => {
-        console.log(response)
         this.$cookies.set('authToken', response.data.authToken, {
           expires: 1
         })
-        this.$router.push(this.$route.query.redirect || '/accounts')
+        this.$router.push(this.$route.query.redirect || '/')
       })
       .catch(errors => this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Niepoprawne dane logowania', type: 'error text-white' })) // 6
 

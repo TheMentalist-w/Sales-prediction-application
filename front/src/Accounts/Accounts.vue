@@ -166,6 +166,8 @@
 <script>
 import axios from "axios"
 import Vue from 'vue'
+import Vuetify from 'vuetify'
+Vue.use(Vuetify)
 
 export default {
   name: "Accounts",
@@ -212,6 +214,9 @@ export default {
       },
     }
   },
+  beforeMount() {
+    this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === "true" ? true : false
+  },
   mounted() {
     let logged = this.$cookies.get('authToken')
     if(logged){
@@ -219,12 +224,12 @@ export default {
       this.tableKey += 1
     }
     else {
-      this.$router.push(this.$route.query.redirect || 'user/login/')
+      this.$router.push(this.$route.query.redirect || '/login')
     }
     
     const config = {
-    headers: { Authorization: `Token ${this.$cookies.get('authToken')}` }
- };
+      headers: { Authorization: `Token ${this.$cookies.get('authToken')}` }
+    }
     axios.get('http://localhost:8000/pitbull/users/', config).then(data => {
       this.employees = data.data.users
       this.tableKey += 1

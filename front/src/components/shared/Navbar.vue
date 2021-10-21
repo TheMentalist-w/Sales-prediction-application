@@ -4,16 +4,6 @@
     color="primary"
     dark
   >
-    <div class="d-flex align-center">
-      <v-img
-        alt="Vuetify Logo"
-        class="shrink mr-2"
-        contain
-        src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-        transition="scale-transition"
-        width="40"
-      />
-
       <v-toolbar-title style="font-size: 150%">PITBULL</v-toolbar-title>
     </div>
 
@@ -22,11 +12,20 @@
       href="/accounts"
       text
       rounded
+      v-if="loggedIn"
     >
       <span class="mr-2">Accounts</span>
     </v-btn>
     <v-btn
-      @click="$vuetify.theme.dark = !$vuetify.theme.dark"
+      text
+      rounded
+      @click="logOut"
+      v-if="loggedIn"
+    >
+      <span class="mr-2">Logout</span>
+    </v-btn>
+    <v-btn
+      @click="changeTheme"
       text
       rounded
     >
@@ -36,11 +35,41 @@
 </template>
 
 <script>
+import VueCookies from 'vue-cookies'
+import Vuetify from 'vuetify'
+import Vue from 'vue'
+import axios from 'axios'
+Vue.use(VueCookies)
+Vue.use(Vuetify)
 
 export default {
   name: 'Navbar',
-  data: () => ({
-    //
-  })
+  data() {
+    return {
+      loggedIn: this.$cookies.get('authToken')
+    }
+  },
+  methods: {
+    logOut() {
+      const config = {
+        headers: { Authorization: `Token ${this.$cookies.get('authToken')}` }
+      }
+      axios.post('http://localhost:8000/pitbull/user/logout/', config).then(() => {
+        this.$cookies.remove('authToken')
+        this.$router.push('/login')
+      })
+    },
+    changeTheme() {
+      let theme = sessionStorage.getItem('pit_theme')
+      if(theme) {
+        theme === "true" ? sessionStorage.setItem('pit_theme', "false") : sessionStorage.setItem('pit_theme', "true")
+        this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') == "true" ? true : false 
+      }
+      else {
+        sessionStorage.setItem('pit_theme', !this.$vuetify.theme.dark)
+        this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') == "true" ? true : false 
+      }
+    }
+  }
 }
 </script>
