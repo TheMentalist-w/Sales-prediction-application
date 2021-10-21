@@ -22,6 +22,7 @@ def GetUsersListView(request):
         
         return JsonResponse({'users': users_prepared})
 
+@permission_classes((IsAdminUser, )) 
 @api_view(['DELETE'])
 def DeleteUserView(request):
         id =  request.POST.get('id')
@@ -31,6 +32,7 @@ def DeleteUserView(request):
 
         return HttpResponse("User account deleted!") 
 
+@permission_classes((IsAdminUser, )) 
 @api_view(['POST'])
 def CreateUserView(request):
     username = request.POST.get('username','')
@@ -41,6 +43,7 @@ def CreateUserView(request):
         
     return JsonResponse({'new_user_id': user.id}) 
 
+@permission_classes((IsAdminUser, )) 
 @api_view(['POST'])
 def CreateSuperuserView(request):
     username = request.POST.get('username','')
@@ -51,6 +54,7 @@ def CreateSuperuserView(request):
     
     return JsonResponse({'new_superuser_id': user.id}) 
 
+@permission_classes((IsAdminUser, )) 
 @api_view(['POST'])
 def EditUserView(request):
 
@@ -63,7 +67,7 @@ def EditUserView(request):
         user = get_object_or_404(get_user_model(), pk = id)
 
         if username != '': user.username = username
-        if password != '': user.password = password
+        if password != '': user.set_password(password)
         if email != '': user.email = email
         if is_staff != '': user.is_staff = is_staff
 
@@ -87,16 +91,6 @@ def LoginView(request):
         return JsonResponse(data) 
     else:
         return HttpResponseNotFound("Login failed! User not found or password is incorrect")
-
-@api_view(['POST'])
-def DeleteUser(request):
-    id = request.POST.get('id','')
-    user = get_user_model().objects.get(id=id)
-    if user is not None:
-        user.delete()
-        return HttpResponse("Deletion successful!")
-    else:
-        return HttpResponseNotFound("Cannot delete user")
 
 @api_view(['POST'])
 def LogoutView(request):
