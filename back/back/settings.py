@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,16 +32,24 @@ ALLOWED_HOSTS = []
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS':'rest_framework.schemas.coreapi.AutoSchema' ,
-'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',  
-    ],}
+    'DEFAULT_AUTHENTICATION_CLASSES': 
+         [
+         'rest_framework_simplejwt.authentication.JWTAuthentication',
+         ],
+    }
+
+AUTHENTICATION_BACKENDS = ('pitbull.customauth.CustomAuthBackend',)
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
 
 CORS_ORIGIN_ALLOW_ALL=True   # CORS_ORIGIN_WHITELIST = ["http://localhost:8080"]
 
 # Application definition
 
 INSTALLED_APPS = [
-    'rest_framework.authtoken',
     'corsheaders',
     'rest_framework_swagger',
     'pitbull',
