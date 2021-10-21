@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <Navbar/>
+    <Navbar :key="navbarKey" />
     <v-main>
       <router-view/>
     </v-main>
@@ -22,8 +22,16 @@ export default {
     Navbar,
     Footer,
   },
-  data: () => ({
-    max:3
-  })
+  data() {
+    return {
+      max:3,
+      navbarKey: 0
+    }
+  },
+  watch: {
+    $route: function() {
+      this.navbarKey += 1
+    }
+  }
 }
 </script>
