@@ -4,6 +4,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 
 @api_view(['GET'])
 @permission_classes((IsAdminUser, )) 
@@ -24,8 +26,7 @@ def GetUsersListView(request):
 
 @permission_classes((IsAdminUser, )) 
 @api_view(['DELETE'])
-def DeleteUserView(request):
-        id =  request.POST.get('id')
+def DeleteUserView(request,id):
 
         user = get_object_or_404(get_user_model(), pk = id)
         user.delete()
@@ -78,12 +79,15 @@ def EditUserView(request):
 @api_view(['POST'])
 def LoginView(request):
 
-    username = request.POST.get('username','')
+    login_data = request.POST.get('login_data','')
     password = request.POST.get('password','')
 
-    username_result = authenticate(request, username = username, password = password)
-
-    print(username_result)
+    username_result = None
+    try:
+        validate_email(login_data)
+        username_result = authenticate(request, email = login_data, password = password)
+    except ValidationError:
+        username_result = authenticate(request, username = login_data, password = password)
 
     if username_result is not None:
         token_data = RefreshToken.for_user(username_result)

@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 urlpatterns = [
     path('users/',views.GetUsersListView, name='getUsersList'),
     path('user/create/',views.CreateUserView, name='createUser'),
-    path('user/delete/',views.DeleteUserView, name='deleteUser'),
+    path('user/delete/<int:id>/',views.DeleteUserView, name='deleteUser'),
     path('user/edit/',views.EditUserView, name='editUser'),
     path('user/current/',views.CurrentUserView, name='currentUser'),
     path('superuser/create/',views.CreateSuperuserView, name='createSuperuser'),
