@@ -236,13 +236,10 @@ export default {
           return pattern.test(value) || 'Invalid e-mail'
         },
         newUser: value => {
-          return (this.editedIndex < 0 && (value === null || value === '')) ? false : true
+          return ((this.editedIndex < 0 && (value === null || value === '')) || this.checkbox) ? false : true
         }
       },
     }
-  },
-  beforeMount() {
-    this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === "true" ? true : false
   },
   mounted() {
     let logged = this.$cookies.get('authToken')
@@ -296,13 +293,18 @@ export default {
     },
 
     deleteItemConfirm () {
-      let data = new FormData()
-      data.append("id", this.deleteId)
-      axios.post('http://localhost:8000/pitbull/user/delete/', data)
+      axios.delete('http://localhost:8000/pitbull/user/delete/', {params: {id: this.deleteId}})
       .then(() => this.employees.splice(this.editedIndex, 1))
-      .catch(errors => this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Błąd usuwania użytkownika', type: 'error text-white' })) // 6
+      .catch(() =>
+        this.$notify({
+          group: 'notifications-bottom-left',
+          title: 'Error',
+          text:'Błąd usuwania użytkownika',
+          type: 'error text-white' })
+      )
       this.closeDelete()
     },
+
     close () {
       this.dialog = false
       this.$nextTick(() => {
@@ -310,6 +312,7 @@ export default {
         this.editedIndex = -1
       })
     },
+
     closeDelete () {
       this.dialogDelete = false
       this.$nextTick(() => {
@@ -317,6 +320,7 @@ export default {
         this.editedIndex = -1
       })
     },
+
     createForm() {
       let data = new FormData()
       data.append("fist_name", this.editedItem.employee.split(' ')[0])
@@ -327,6 +331,7 @@ export default {
       data.append("confirmPassword", this.editedItem.confirmPassword)
       return data
     },
+
     validateModal() {
       let result
       if (this.editedIndex > -1) {
@@ -338,16 +343,22 @@ export default {
             return (field === null || field === '')
           }
         })
-        result = validate ? {result: false, errorMsg: "All fields are empty"} : ((this.editedItem.password !== this.editedItem.confirmPassword) ? {result: false, errorMsg: "Password and Confirm Password are different"} : {result: true, errorMsg: ""})
+        result = validate ? {result: false, errorMsg: "All fields are empty"} :
+          ((this.editedItem.password !== this.editedItem.confirmPassword) ? {result: false, errorMsg: "Password and Confirm Password are different"} :
+            {result: true, errorMsg: ""})
       }
       else {
         //create
         let validate = Object.values(this.editedItem).every(field => (field === null || field === ''))
         let validateAny = Object.values(this.editedItem).some(field => field === '')
-        result = validate ? {result: false, errorMsg: "All fields are empty"} : (validateAny ? {result: false, errorMsg: "Some fields are empty"} : ((this.editedItem.password !== this.editedItem.confirmPassword) ? {result: false, errorMsg: "Password and Confirm Password are different"} : {result: true, errorMsg: ""} ))
+        result = validate ? {result: false, errorMsg: "All fields are empty"} :
+          (validateAny ? {result: false, errorMsg: "Some fields are empty"} :
+            ((this.editedItem.password !== this.editedItem.confirmPassword) ? {result: false, errorMsg: "Password and Confirm Password are different"} :
+              {result: true, errorMsg: ""} ))
       }
       return result
     },
+
     save () {
       let validate = this.validateModal()
       if(validate.result) {
@@ -357,6 +368,12 @@ export default {
           axios.post('http://localhost:8000/pitbull/user/edit/', data)
             .then(() => {
               Object.assign(this.employees[this.editedIndex], this.editedItem)
+              this.$notify({
+                group: 'notifications-bottom-left',
+                title: 'Success',
+                text: 'Użytkownik edytowany',
+                type: 'success text-white'
+              })
               this.close()
             })
             .catch(errors => {
@@ -373,8 +390,14 @@ export default {
             axios.post('http://localhost:8000/pitbull/superuser/create/', data)
               .then((response) => {
                 this.employees.push(this.editedItem)
-                this.close()
                 this.employees.slice(-1)[0]['id'] = response.data.new_superuser_id
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Success',
+                  text: 'Użytkownik dodany',
+                  type: 'success text-white'
+                })
+                this.close()
               })
               .catch(errors => {
                 this.$notify({
@@ -389,8 +412,14 @@ export default {
             axios.post('http://localhost:8000/pitbull/user/create/', data)
               .then((response) => {
                 this.employees.push(this.editedItem)
-                this.close()
                 this.employees.slice(-1)[0]['id'] = response.data.new_user_id
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Success',
+                  text: 'Użytkownik dodany',
+                  type: 'success text-white'
+                })
+                this.close()
               })
               .catch(errors => {
                 this.$notify({

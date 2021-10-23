@@ -55,9 +55,6 @@ export default {
       },
     }
   },
-  beforeMount() {
-    this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === "true" ? true : false
-  },
   mounted() {
     let logged = this.$cookies.get('authToken')
     if(logged){

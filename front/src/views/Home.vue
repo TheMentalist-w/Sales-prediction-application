@@ -14,8 +14,5 @@ export default {
   components: {
     HelloWorld
   },
-  beforeMount() {
-    this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === "true" ? true : false
-  },
 }
 </script>

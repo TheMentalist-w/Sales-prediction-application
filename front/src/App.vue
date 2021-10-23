@@ -32,6 +32,9 @@ export default {
     $route: function() {
       this.navbarKey += 1
     }
+  },
+  beforeMount() {
+    this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === "true" ? true : false
   }
 }
 </script>
