@@ -63,28 +63,7 @@
                       v-model="editedItem.email"
                       type="email"
                       label="Email"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                    cols="12"
-                    md="6"
-                  >
-                    <v-text-field
-                      v-model="editedItem.password"
-                      type="password"
-                      :rules="[rules.newUser]"
-                      label="Password"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                    cols="12"
-                    md="6"
-                  >
-                    <v-text-field
-                      v-model="editedItem.confirmPassword"
-                      type="password"
-                      :rules="[rules.password, rules.newUser]"
-                      label="Confirm password"
+                      :rules="[rules.email]"
                     ></v-text-field>
                   </v-col>
                   <v-col
@@ -106,6 +85,42 @@
                       v-model="editedItem.type"
                       label="Type"
                     ></v-select>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    md="12"
+                  >
+                    <v-checkbox
+                      v-if="isEdited"
+                      v-model="checkbox"
+                      label="Reset password"
+                      color="primary"
+                      hide-details
+                    ></v-checkbox>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    md="6"
+                  >
+                    <v-text-field
+                      v-if="showPasswordModal"
+                      v-model="editedItem.password"
+                      type="password"
+                      :rules="[rules.newUser]"
+                      label="Password"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    md="6"
+                  >
+                    <v-text-field
+                      v-if="showPasswordModal"
+                      v-model="editedItem.confirmPassword"
+                      type="password"
+                      :rules="[rules.password, rules.newUser]"
+                      label="Confirm password"
+                    ></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
@@ -178,6 +193,7 @@ export default {
       dialogDelete: false,
       loggedIn: false,
       tableKey: 0,
+      checkbox: false,
       headers: [
         {
           text: 'Email',
@@ -192,24 +208,35 @@ export default {
       employees: [],
       editedIndex: -1,
       editedItem: {
+        id: null,
         employee: '',
         email: '',
         username: '',
+        password: '',
+        confirmPassword: '',
         type: '',
       },
       defaultItem: {
+        id: null,
         employee: '',
         email: '',
         username: '',
+        password: '',
+        confirmPassword: '',
         type: '',
       },
       deleteId: null,
       rules: {
         password: value => {
-          return this.editedItem.password === this.editedItem.confirmPassword
+          let result = this.editedItem.password === this.editedItem.confirmPassword
+          return result || "Password and ConfirmPassword don't match"
         },
-        newUser: () => {
-          return this.editedIndex < 0 ? false : true
+        email: value => {
+          const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+          return pattern.test(value) || 'Invalid e-mail'
+        },
+        newUser: value => {
+          return (this.editedIndex < 0 && (value === null || value === '')) ? false : true
         }
       },
     }
@@ -226,7 +253,7 @@ export default {
     else {
       this.$router.push(this.$route.query.redirect || '/login')
     }
-    
+
     const config = {
       headers: { Authorization: `Token ${this.$cookies.get('authToken')}` }
     }
@@ -239,6 +266,12 @@ export default {
     formTitle () {
       return this.editedIndex === -1 ? 'New Employee' : 'Edit Employee'
     },
+    isEdited () {
+      return this.editedIndex !== -1
+    },
+    showPasswordModal () {
+      return (!this.isEdited || this.checkbox)
+    }
   },
   watch: {
     dialog (val) {
@@ -249,9 +282,6 @@ export default {
     },
   },
   methods: {
-    clicks(){
-      console.log(this.items)
-    },
     editItem (item) {
       this.editedIndex = this.employees.indexOf(item)
       this.editedItem = Object.assign({}, item)
@@ -268,13 +298,11 @@ export default {
     deleteItemConfirm () {
       let data = new FormData()
       data.append("id", this.deleteId)
-      data.append("token", )
       axios.post('http://localhost:8000/pitbull/user/delete/', data)
       .then(() => this.employees.splice(this.editedIndex, 1))
       .catch(errors => this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Błąd usuwania użytkownika', type: 'error text-white' })) // 6
       this.closeDelete()
     },
-
     close () {
       this.dialog = false
       this.$nextTick(() => {
@@ -282,7 +310,6 @@ export default {
         this.editedIndex = -1
       })
     },
-
     closeDelete () {
       this.dialogDelete = false
       this.$nextTick(() => {
@@ -290,47 +317,100 @@ export default {
         this.editedIndex = -1
       })
     },
-
-    save () {
+    createForm() {
+      let data = new FormData()
+      data.append("fist_name", this.editedItem.employee.split(' ')[0])
+      data.append("email",this.editedItem.email)
+      data.append("last_name", this.editedItem.employee.split(' ')[1])
+      data.append("username",this.editedItem.username)
+      data.append("password", this.editedItem.password)
+      data.append("confirmPassword", this.editedItem.confirmPassword)
+      return data
+    },
+    validateModal() {
+      let result
       if (this.editedIndex > -1) {
-        let data = new FormData()
-        data.append("id", this.editedItem.email)
-        data.append("fist_name", this.editedItem.employee.split(' ')[0])
-        data.append("last_name", this.editedItem.employee.split(' ')[1])
-        data.append("email",this.editedItem.email)
-        data.append("username",this.editedItem.username)
-        data.append("password", this.editedItem.password)
-        data.append("confirmPassword", this.editedItem.confirmPassword)
-        data.append("type", this.editedItem.type==="Admin" ? true : false)
-        axios.post('http://localhost:8000/pitbull/user/edit/', data)
-        .then(() => {
-          Object.assign(this.employees[this.editedIndex], this.editedItem)
-          this.close()
+        //edit
+        let validate = Object.values(this.editedItem).every(field => {
+          if (field === 'Normal' || field === 'Admin') {
+            return true
+          } else {
+            return (field === null || field === '')
+          }
         })
-        .catch(errors => {
-          this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Błąd edycji użytkownika', type: 'error text-white' })
-          this.close()
+        result = validate ? {result: false, errorMsg: "All fields are empty"} : ((this.editedItem.password !== this.editedItem.confirmPassword) ? {result: false, errorMsg: "Password and Confirm Password are different"} : {result: true, errorMsg: ""})
+      }
+      else {
+        //create
+        let validate = Object.values(this.editedItem).every(field => (field === null || field === ''))
+        let validateAny = Object.values(this.editedItem).some(field => field === '')
+        result = validate ? {result: false, errorMsg: "All fields are empty"} : (validateAny ? {result: false, errorMsg: "Some fields are empty"} : ((this.editedItem.password !== this.editedItem.confirmPassword) ? {result: false, errorMsg: "Password and Confirm Password are different"} : {result: true, errorMsg: ""} ))
+      }
+      return result
+    },
+    save () {
+      let validate = this.validateModal()
+      if(validate.result) {
+        let data = this.createForm()
+        if (this.editedIndex > -1) {
+          data.append("id", this.editedItem.id)
+          axios.post('http://localhost:8000/pitbull/user/edit/', data)
+            .then(() => {
+              Object.assign(this.employees[this.editedIndex], this.editedItem)
+              this.close()
+            })
+            .catch(errors => {
+              this.$notify({
+                group: 'notifications-bottom-left',
+                title: 'Error',
+                text: 'Błąd edycji użytkownika',
+                type: 'error text-white'
+              })
+              this.close()
+            })
+        } else {
+          if (this.editedItem.type === "Admin") {
+            axios.post('http://localhost:8000/pitbull/superuser/create/', data)
+              .then((response) => {
+                this.employees.push(this.editedItem)
+                this.close()
+                this.employees.slice(-1)[0]['id'] = response.data.new_superuser_id
+              })
+              .catch(errors => {
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Error',
+                  text: 'Błąd dodawania użytkownika',
+                  type: 'error text-white'
+                })
+                this.close()
+              })
+          } else {
+            axios.post('http://localhost:8000/pitbull/user/create/', data)
+              .then((response) => {
+                this.employees.push(this.editedItem)
+                this.close()
+                this.employees.slice(-1)[0]['id'] = response.data.new_user_id
+              })
+              .catch(errors => {
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Error',
+                  text: 'Błąd dodawania użytkownika',
+                  type: 'error text-white'
+                })
+                this.close()
+              })
+          }
+        }
+      }
+      else {
+        this.$notify({
+          group: 'notifications-bottom-left',
+          title: 'Error',
+          text: validate.errorMsg,
+          type: 'error text-white'
         })
-      } else {
-        let data = new FormData()
-        data.append("id", this.editedItem.email)
-        data.append("fist_name", this.editedItem.employee.split(' ')[0])
-        data.append("last_name", this.editedItem.employee.split(' ')[1])
-        data.append("email",this.editedItem.email)
-        data.append("username",this.editedItem.username)
-        data.append("password", this.editedItem.password)
-        data.append("confirmPassword", this.editedItem.confirmPassword)
-        data.append("type", this.editedItem.type==="Admin" ? true : false)
-        axios.post('http://localhost:8000/pitbull/user/create/', data)
-        .then((response) => {
-          this.employees.push(this.editedItem)
-          this.close()
-          this.employees.slice(-1)[0]['id'] = response.data.id
-        })
-        .catch(errors => {
-          this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Błąd dodawania użytkownika', type: 'error text-white' })
-          this.close()
-        }) // 6
       }
     },
   },
