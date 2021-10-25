@@ -55,21 +55,16 @@ export default {
       },
     }
   },
-  beforeMount() {
-    this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === "true" ? true : false
-  },
   mounted() {
-    let logged = this.$cookies.get('authToken')
+    let logged = this.$cookies.get('access')
     if(logged){
-      const config = {
-        headers: { Authorization: `Token ${this.$cookies.get('authToken')}` }
-      }
-      axios.get('http://localhost:8000/pitbull/user/current/', config)
+      axios.get('http://localhost:8000/pitbull/user/current/')
       .then(() => {
-        this.$router.push(this.$route.query.redirect || '/')
+        this.$router.push('/')
       })
       .catch(() => {
-        this.$cookies.remove('authToken')
+        this.$cookies.remove('access')
+        this.$cookies.remove('refresh')
         this.loggedIn = true
         this.loggedKey += 1
       })
@@ -82,18 +77,25 @@ export default {
   methods: {
     logIn () {
       let data = new FormData(); // 2
-
-      data.append("username", this.email)
+      data.append("login_data", this.email)
       data.append("password", this.password)
       axios.post('http://localhost:8000/pitbull/user/login/', data) // 4
       .then((response) => {
-        this.$cookies.set('authToken', response.data.authToken, {
+        this.$cookies.set('access', response.data.access, {
           expires: 1
         })
-        this.$router.push(this.$route.query.redirect || '/')
+        this.$cookies.set('refresh', response.data.refresh, {
+          expires: 1
+        })
+        this.$router.push('/')
       })
-      .catch(errors => this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Niepoprawne dane logowania', type: 'error text-white' })) // 6
-
+      .catch(errors => this.$notify({
+        group: 'notifications-bottom-left',
+        title: 'Error',
+        text: 'Invalid credentials',
+        type: 'error text-white'
+        })
+      )
     }
   }
 }
