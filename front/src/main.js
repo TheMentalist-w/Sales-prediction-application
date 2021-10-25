@@ -32,16 +32,10 @@ axios.interceptors.response.use((response) => {
         })
         .then(res => {
           if (res.status === 200) {
-            Cookies.set('access', res.data.access, {expires: 1})
+            Cookies.set('access', res.data.access, {expires: 1 })
             axios.defaults.headers.common['Authorization'] = 'Bearer ' + Cookies.get('access')
             return axios(originalRequest)
           }
-        })
-        .catch(err => {
-          //don't see this
-          const tokenError = new Error("Cannot refresh token")
-          tokenError.originalError = error;
-          return Promise.reject(tokenError);
         })
     }
     return Promise.reject(error)
