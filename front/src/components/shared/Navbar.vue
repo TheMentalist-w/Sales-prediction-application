@@ -5,7 +5,6 @@
     dark
   >
       <v-toolbar-title style="font-size: 150%">PITBULL</v-toolbar-title>
-    </div>
 
     <v-spacer></v-spacer>
     <v-btn
@@ -46,16 +45,14 @@ export default {
   name: 'Navbar',
   data() {
     return {
-      loggedIn: this.$cookies.get('authToken')
+      loggedIn: this.$cookies.get('access')
     }
   },
   methods: {
     logOut() {
-      const config = {
-        headers: { Authorization: `Token ${this.$cookies.get('authToken')}` }
-      }
-      axios.post('http://localhost:8000/pitbull/user/logout/', config).then(() => {
-        this.$cookies.remove('authToken')
+      axios.post('http://localhost:8000/pitbull/user/logout/').then(() => {
+        this.$cookies.remove('access')
+        this.$cookies.remove('refresh')
         this.$router.push('/login')
       })
     },
@@ -63,11 +60,11 @@ export default {
       let theme = sessionStorage.getItem('pit_theme')
       if(theme) {
         theme === "true" ? sessionStorage.setItem('pit_theme', "false") : sessionStorage.setItem('pit_theme', "true")
-        this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') == "true" ? true : false 
+        this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === "true"
       }
       else {
-        sessionStorage.setItem('pit_theme', !this.$vuetify.theme.dark)
-        this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') == "true" ? true : false 
+        sessionStorage.setItem('pit_theme', (!this.$vuetify.theme.dark).toString())
+        this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === "true"
       }
     }
   }
