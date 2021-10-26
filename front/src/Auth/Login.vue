@@ -1,5 +1,5 @@
 <template>
-<v-content :key="loggedKey" v-if="loggedIn">
+<v-content :key="loggedKey" v-if="loginBox">
   <v-card width="30%" class="mx-auto mt-16">
     <v-card-title style="justify-content: center">Login</v-card-title>
     <v-card-text>
@@ -48,7 +48,7 @@ export default {
       showPassword: false,
       email: null,
       password: null,
-      loggedIn: false,
+      loginBox: false,
       loggedKey: 0,
       rules: {
         required: value => !!value || 'Required.'
@@ -65,12 +65,12 @@ export default {
       .catch(() => {
         this.$cookies.remove('access')
         this.$cookies.remove('refresh')
-        this.loggedIn = true
+        this.loginBox = true
         this.loggedKey += 1
       })
     }
     else {
-      this.loggedIn = true
+      this.loginBox = true
       this.loggedKey += 1
     }
   },
