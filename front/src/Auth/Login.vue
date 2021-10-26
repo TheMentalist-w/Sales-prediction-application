@@ -1,5 +1,5 @@
 <template>
-<v-content :key="loggedKey" v-if="loggedIn">
+<v-content :key="loggedKey" v-if="loginBox">
   <v-card width="30%" class="mx-auto mt-16">
     <v-card-title style="justify-content: center">Login</v-card-title>
     <v-card-text>
@@ -48,52 +48,50 @@ export default {
       showPassword: false,
       email: null,
       password: null,
-      loggedIn: false,
+      loginBox: false,
       loggedKey: 0,
       rules: {
         required: value => !!value || 'Required.'
       },
     }
   },
-  beforeMount() {
-    this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === "true" ? true : false
-  },
   mounted() {
-    let logged = this.$cookies.get('authToken')
+    let logged = this.$cookies.get('access')
     if(logged){
-      const config = {
-        headers: { Authorization: `Token ${this.$cookies.get('authToken')}` }
-      }
-      axios.get('http://localhost:8000/pitbull/user/current/', config)
+      axios.get('http://localhost:8000/pitbull/user/current/')
       .then(() => {
-        this.$router.push(this.$route.query.redirect || '/')
+        this.$router.push('/')
       })
       .catch(() => {
-        this.$cookies.remove('authToken')
-        this.loggedIn = true
+        this.$cookies.remove('access')
+        this.$cookies.remove('refresh')
+        this.loginBox = true
         this.loggedKey += 1
       })
     }
     else {
-      this.loggedIn = true
+      this.loginBox = true
       this.loggedKey += 1
     }
   },
   methods: {
     logIn () {
       let data = new FormData(); // 2
-
-      data.append("username", this.email)
+      data.append("login_data", this.email)
       data.append("password", this.password)
       axios.post('http://localhost:8000/pitbull/user/login/', data) // 4
       .then((response) => {
-        this.$cookies.set('authToken', response.data.authToken, {
-          expires: 1
-        })
-        this.$router.push(this.$route.query.redirect || '/')
+        this.$cookies.set('access', response.data.access)
+        this.$cookies.set('refresh', response.data.refresh, 60 * 1439)
+        this.$router.push('/')
       })
-      .catch(errors => this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Niepoprawne dane logowania', type: 'error text-white' })) // 6
-
+      .catch(errors => this.$notify({
+        group: 'notifications-bottom-left',
+        title: 'Error',
+        text: 'Invalid credentials',
+        type: 'error text-white'
+        })
+      )
     }
   }
 }
