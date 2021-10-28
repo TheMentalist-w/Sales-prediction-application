@@ -7,6 +7,12 @@ export class Application {
         this.databaseService = new DatabaseService();
     }
 
-    run(): void {
+    private async startup() {
+        await this.databaseService.setupDb();
+    }
+
+    async run() {
+        await this.startup();
+        await this.databaseService.purgeDatabase();
     }
 }
