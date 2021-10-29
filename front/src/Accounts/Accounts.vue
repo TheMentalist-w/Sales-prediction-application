@@ -66,28 +66,7 @@
                       v-model="editedItem.email"
                       type="email"
                       label="Email"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                    cols="12"
-                    md="6"
-                  >
-                    <v-text-field
-                      v-model="editedItem.password"
-                      type="password"
-                      :rules="[rules.newUser]"
-                      label="Password"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                    cols="12"
-                    md="6"
-                  >
-                    <v-text-field
-                      v-model="editedItem.confirmPassword"
-                      type="password"
-                      :rules="[rules.password, rules.newUser]"
-                      label="Confirm password"
+                      :rules="[rules.email]"
                     ></v-text-field>
                   </v-col>
                   <v-col
@@ -109,6 +88,42 @@
                       v-model="editedItem.type"
                       label="Type"
                     ></v-select>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    md="12"
+                  >
+                    <v-checkbox
+                      v-if="isEdited"
+                      v-model="checkbox"
+                      label="Reset password"
+                      color="primary"
+                      hide-details
+                    ></v-checkbox>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    md="6"
+                  >
+                    <v-text-field
+                      v-if="showPasswordModal"
+                      v-model="editedItem.password"
+                      type="password"
+                      :rules="[rules.newUser]"
+                      label="Password"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    md="6"
+                  >
+                    <v-text-field
+                      v-if="showPasswordModal"
+                      v-model="editedItem.confirmPassword"
+                      type="password"
+                      :rules="[rules.password, rules.newUser]"
+                      label="Confirm password"
+                    ></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
@@ -164,6 +179,17 @@
       </v-icon>
     </template>
   </v-data-table>
+  <v-pagination
+    class="pagination"
+    v-model="page"
+    :length="totalPages"
+    @input="pageChange"
+    circle
+    total-visible="7"
+    next-icon="mdi-menu-right"
+    prev-icon="mdi-menu-left"
+  ></v-pagination>
+</div>
 </template>
 
 <script>
@@ -174,22 +200,45 @@ Vue.use(Vuetify)
 
 export default {
   name: "Accounts",
-  data() {
+  data: function () {
     return {
       dialog: false,
-      search: "",
+      search: '',
+      page: 1,
+      totalPages: 0,
+      pageSize: 10,
       dialogDelete: false,
-      loggedIn: false,
+      adminTable: false,
       tableKey: 0,
+      checkbox: false,
       headers: [
+        {
+          text: 'Username',
+          align: 'start',
+          value: 'username',
+          sortable: false,
+          width: '30%'
+        },
         {
           text: 'Email',
           align: 'start',
           value: 'email',
-          width: '45%',
+          sortable: false,
+          width: '30%'
         },
-        { text: 'Employee', value: 'employee', width: '45%', },
-        { text: 'Actions', value: 'actions', sortable: false, align: 'end',  width: '10%' },
+        {
+          text: 'Employee',
+          value: 'employee',
+          sortable: false,
+          width: '30%'
+        },
+        {
+          text: 'Actions',
+          value: 'actions',
+          align: 'end',
+          sortable: false,
+          width: '10%'
+        },
       ],
       type: ['Normal', 'Admin'],
       employees: [],
@@ -199,16 +248,20 @@ export default {
         email: '',
         username: '',
         type: '',
+        confirmPassword: '',
+        password: '',
       },
       defaultItem: {
         employee: '',
         email: '',
         username: '',
         type: '',
+        confirmPassword: '',
+        password: '',
       },
       deleteId: null,
       rules: {
-        password: value => {
+        password: () => {
           let result = this.editedItem.password === this.editedItem.confirmPassword
           return result || "Password and ConfirmPassword don't match"
         },
@@ -217,7 +270,7 @@ export default {
           return pattern.test(value) || 'Invalid e-mail'
         },
         newUser: value => {
-          return ((this.editedIndex < 0 && (value === null || value === '')) || this.checkbox) ? false : true
+          return ((this.editedIndex < 0 && (value === null || value === '')) || this.checkbox)
         }
       },
     }
@@ -312,6 +365,7 @@ export default {
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
         this.editedIndex = -1
+        this.checkbox = false
       })
     },
 
@@ -473,6 +527,7 @@ export default {
           this.page = response.data.page
           this.adminTable = true
           this.tableKey += 1
+          console.log(response.data.users)
         })
         .catch(() => {
           this.$router.push('/')
