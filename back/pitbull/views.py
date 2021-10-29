@@ -90,16 +90,22 @@ def EditUserView(request):
 
         id = request.POST.get('id',-1)
         username = request.POST.get('username','')
+        first_name = request.POST.get('first_name','')
+        last_name = request.POST.get('last_name','')
         password = request.POST.get('password','')
         email = request.POST.get('email','')
-        is_staff = request.POST.get('is_staff','')
+        is_superuser = request.POST.get('is_superuser','')
 
         user = get_object_or_404(get_user_model(), pk = id)
 
         if username != '': user.username = username
-        if password != '': user.set_password(password)
+        if first_name != '': user.first_name = first_name
+        if last_name != '': user.last_name = last_name
         if email != '': user.email = email
-        if is_staff != '': user.is_staff = is_staff
+        if password != '': user.set_password(password)
+        if is_superuser == 'true': 
+            user.is_superuser = True
+            user.is_staff = True
 
         user.save()
         
