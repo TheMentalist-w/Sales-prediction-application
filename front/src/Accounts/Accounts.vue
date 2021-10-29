@@ -303,6 +303,10 @@ export default {
     dialogDelete (val) {
       val || this.closeDelete()
     },
+    checkbox () {
+      this.editedItem.password = ''
+      this.editedItem.confirmPassword = ''
+    }
   },
   methods: {
     editItem (item) {
@@ -402,6 +406,9 @@ export default {
         result = validate ? {result: false, errorMsg: "All fields are empty"} :
           ((this.editedItem.password !== this.editedItem.confirmPassword) ? {result: false, errorMsg: "Password and Confirm Password are different"} :
             {result: true, errorMsg: ""})
+        if(this.rules.email(this.editedItem.email) !== true) {
+          result = {result: false, errorMsg: "Invalid email"}
+        }
       }
       else {
         //create
@@ -411,6 +418,9 @@ export default {
           (validateAny ? {result: false, errorMsg: "Some fields are empty"} :
             ((this.editedItem.password !== this.editedItem.confirmPassword) ? {result: false, errorMsg: "Password and Confirm Password are different"} :
               {result: true, errorMsg: ""} ))
+        if(this.rules.email(this.editedItem.email) !== true) {
+          result = {result: false, errorMsg: "Invalid email"}
+        }
       }
       return result
     },
@@ -527,7 +537,6 @@ export default {
           this.page = response.data.page
           this.adminTable = true
           this.tableKey += 1
-          console.log(response.data.users)
         })
         .catch(() => {
           this.$router.push('/')
