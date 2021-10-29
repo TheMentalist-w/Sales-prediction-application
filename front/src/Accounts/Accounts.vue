@@ -7,7 +7,7 @@
     class="elevation-1 mx-auto mt-16"
     loading-text="Loading... Please wait"
     :key="tableKey"
-    v-if="loggedIn"
+    v-if="adminTable"
   >
     <template v-slot:top>
       <v-toolbar
@@ -176,16 +176,22 @@ export default {
       dialog: false,
       search: "",
       dialogDelete: false,
-      loggedIn: false,
+      adminTable: false,
       tableKey: 0,
       headers: [
+        {
+          text: 'Username',
+          align: 'start',
+          value: 'username',
+          width: '30%'
+        },
         {
           text: 'Email',
           align: 'start',
           value: 'email',
-          width: '45%',
+          width: '30%'
         },
-        { text: 'Employee', value: 'employee', width: '45%', },
+        { text: 'Employee', value: 'employee', width: '30%' },
         { text: 'Actions', value: 'actions', sortable: false, align: 'end',  width: '10%' },
       ],
       type: ['Normal', 'Admin'],
@@ -196,44 +202,49 @@ export default {
         email: '',
         username: '',
         type: '',
+        password: '',
+        confirmPassword: ''
       },
       defaultItem: {
         employee: '',
         email: '',
         username: '',
         type: '',
+        password: '',
+        confirmPassword: ''
       },
       deleteId: null,
       rules: {
         password: value => {
-          return this.editedItem.password === this.editedItem.confirmPassword
+          let result = this.editedItem.password === this.editedItem.confirmPassword
+          return result || "Password and ConfirmPassword don't match"
         },
-        newUser: () => {
-          return this.editedIndex < 0 ? false : true
+        email: value => {
+          const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+          return pattern.test(value) || 'Invalid e-mail'
+        },
+        newUser: value => {
+          return ((this.editedIndex < 0 && (value === null || value === '')) || this.checkbox) ? false : true
         }
       },
     }
   },
-  beforeMount() {
-    this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === "true" ? true : false
-  },
   mounted() {
-    let logged = this.$cookies.get('authToken')
-    if(logged){
-      this.loggedIn = true
-      this.tableKey += 1
+    let logged = this.$cookies.get('access')
+    if(logged) {
+      axios.get('http://localhost:8000/pitbull/users/')
+        .then(data => {
+          this.employees = data.data.users
+          this.adminTable = true
+          this.tableKey += 1
+        })
+        .catch(() => {
+          this.$router.push('/')
+        })
     }
     else {
-      this.$router.push(this.$route.query.redirect || '/login')
+      this.$router.push('/login')
     }
-    
-    const config = {
-      headers: { Authorization: `Token ${this.$cookies.get('authToken')}` }
-    }
-    axios.get('http://localhost:8000/pitbull/users/', config).then(data => {
-      this.employees = data.data.users
-      this.tableKey += 1
-    })
   },
   computed: {
     formTitle () {
@@ -266,12 +277,35 @@ export default {
     },
 
     deleteItemConfirm () {
-      let data = new FormData()
-      data.append("id", this.deleteId)
-      data.append("token", )
-      axios.post('http://localhost:8000/pitbull/user/delete/', data)
-      .then(() => this.employees.splice(this.editedIndex, 1))
-      .catch(errors => this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Błąd usuwania użytkownika', type: 'error text-white' })) // 6
+      let user = this.editedItem
+      axios.get('http://localhost:8000/pitbull/user/current/')
+        .then((response) => {
+          if(response.data === user.username) {
+            this.$notify({
+              group: 'notifications-bottom-left',
+              title: 'Error',
+              text: 'Cannot delete yourself',
+              type: 'error text-white'
+            })
+          } else {
+            axios.delete('http://localhost:8000/pitbull/user/delete/'+this.deleteId.toString())
+              .then(() => {
+                this.employees.splice(this.editedIndex, 1)
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Success',
+                  text: 'User deleted',
+                  type: 'success text-white'
+                })
+              })
+              .catch(errors => this.$notify({
+                group: 'notifications-bottom-left',
+                title: 'Error',
+                text: 'Error deleting user',
+                type: 'error text-white'
+              }))
+          }
+        })
       this.closeDelete()
     },
 
@@ -291,46 +325,125 @@ export default {
       })
     },
 
-    save () {
+    createForm() {
+      let data = new FormData()
+      data.append("fist_name", this.editedItem.employee.split(' ')[0])
+      data.append("email",this.editedItem.email)
+      data.append("last_name", this.editedItem.employee.split(' ')[1])
+      data.append("username",this.editedItem.username)
+      data.append("password", this.editedItem.password)
+      data.append("confirmPassword", this.editedItem.confirmPassword)
+      return data
+    },
+
+    validateModal() {
+      let result
       if (this.editedIndex > -1) {
-        let data = new FormData()
-        data.append("id", this.editedItem.email)
-        data.append("fist_name", this.editedItem.employee.split(' ')[0])
-        data.append("last_name", this.editedItem.employee.split(' ')[1])
-        data.append("email",this.editedItem.email)
-        data.append("username",this.editedItem.username)
-        data.append("password", this.editedItem.password)
-        data.append("confirmPassword", this.editedItem.confirmPassword)
-        data.append("type", this.editedItem.type==="Admin" ? true : false)
-        axios.post('http://localhost:8000/pitbull/user/edit/', data)
-        .then(() => {
-          Object.assign(this.employees[this.editedIndex], this.editedItem)
-          this.close()
+        //edit
+        let validate = Object.values(this.editedItem).every(field => {
+          if (field === 'Normal' || field === 'Admin') {
+            return true
+          } else {
+            return (field === null || field === '')
+          }
         })
-        .catch(errors => {
-          this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Błąd edycji użytkownika', type: 'error text-white' })
-          this.close()
+        result = validate ? {result: false, errorMsg: "All fields are empty"} :
+          ((this.editedItem.password !== this.editedItem.confirmPassword) ? {result: false, errorMsg: "Password and Confirm Password are different"} :
+            {result: true, errorMsg: ""})
+      }
+      else {
+        //create
+        let validate = Object.values(this.editedItem).every(field => (field === null || field === ''))
+        let validateAny = Object.values(this.editedItem).some(field => field === '')
+        result = validate ? {result: false, errorMsg: "All fields are empty"} :
+          (validateAny ? {result: false, errorMsg: "Some fields are empty"} :
+            ((this.editedItem.password !== this.editedItem.confirmPassword) ? {result: false, errorMsg: "Password and Confirm Password are different"} :
+              {result: true, errorMsg: ""} ))
+      }
+      return result
+    },
+
+    save () {
+      let validate = this.validateModal()
+      if(validate.result) {
+        let data = this.createForm()
+        if (this.editedIndex > -1) {
+          data.append("id", this.editedItem.id)
+          axios.post('http://localhost:8000/pitbull/user/edit/', data)
+            .then(() => {
+              Object.assign(this.employees[this.editedIndex], this.editedItem)
+              this.$notify({
+                group: 'notifications-bottom-left',
+                title: 'Success',
+                text: 'Użytkownik edytowany',
+                type: 'success text-white'
+              })
+              this.close()
+            })
+            .catch(errors => {
+              this.$notify({
+                group: 'notifications-bottom-left',
+                title: 'Error',
+                text: 'Błąd edycji użytkownika',
+                type: 'error text-white'
+              })
+              this.close()
+            })
+        } else {
+          if (this.editedItem.type === "Admin") {
+            axios.post('http://localhost:8000/pitbull/superuser/create/', data)
+              .then((response) => {
+                this.employees.push(this.editedItem)
+                this.employees.slice(-1)[0]['id'] = response.data.new_superuser_id
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Success',
+                  text: 'Użytkownik dodany',
+                  type: 'success text-white'
+                })
+                this.close()
+              })
+              .catch(errors => {
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Error',
+                  text: 'Błąd dodawania użytkownika',
+                  type: 'error text-white'
+                })
+                this.close()
+              })
+          } else {
+            axios.post('http://localhost:8000/pitbull/user/create/', data)
+              .then((response) => {
+                this.employees.push(this.editedItem)
+                this.employees.slice(-1)[0]['id'] = response.data.new_user_id
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Success',
+                  text: 'Użytkownik dodany',
+                  type: 'success text-white'
+                })
+                this.close()
+              })
+              .catch(errors => {
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Error',
+                  text: 'Błąd dodawania użytkownika',
+                  type: 'error text-white'
+                })
+                this.close()
+              })
+          }
+        }
+      }
+      else {
+        this.$notify({
+          group: 'notifications-bottom-left',
+          title: 'Error',
+          text: validate.errorMsg,
+          type: 'error text-white'
         })
-      } else {
-        let data = new FormData()
-        data.append("id", this.editedItem.email)
-        data.append("fist_name", this.editedItem.employee.split(' ')[0])
-        data.append("last_name", this.editedItem.employee.split(' ')[1])
-        data.append("email",this.editedItem.email)
-        data.append("username",this.editedItem.username)
-        data.append("password", this.editedItem.password)
-        data.append("confirmPassword", this.editedItem.confirmPassword)
-        data.append("type", this.editedItem.type==="Admin" ? true : false)
-        axios.post('http://localhost:8000/pitbull/user/create/', data)
-        .then((response) => {
-          this.employees.push(this.editedItem)
-          this.close()
-          this.employees.slice(-1)[0]['id'] = response.data.id
-        })
-        .catch(errors => {
-          this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Błąd dodawania użytkownika', type: 'error text-white' })
-          this.close()
-        }) // 6
       }
     },
   },

@@ -81,7 +81,7 @@ export default {
       data.append("password", this.password)
       axios.post('http://localhost:8000/pitbull/user/login/', data) // 4
       .then((response) => {
-        this.$cookies.set('access', response.data.access)
+        this.$cookies.set('access', response.data.access, 6 * 30)
         this.$cookies.set('refresh', response.data.refresh, 60 * 1439)
         this.$router.push('/')
       })
