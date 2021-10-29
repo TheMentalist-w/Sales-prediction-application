@@ -4,7 +4,6 @@
     style="width: 70%"
     :headers="headers"
     :items="employees"
-    :search="search"
     class="elevation-1 mx-auto mt-16"
     loading-text="Loading... Please wait"
     :hide-default-footer="true"
@@ -19,6 +18,8 @@
           v-model="search"
           append-icon="mdi-magnify"
           label="Search"
+          @click:append="searchEmployees"
+          @keyup.enter="searchEmployees"
           single-line
           hide-details
         ></v-text-field>
@@ -211,13 +212,13 @@ export default {
         },
         { text: 'Employee',
           value: 'employee',
-          sortable: false, 
+          sortable: false,
           width: '30%' },
-        { 
-          text: 'Actions', 
+        {
+          text: 'Actions',
           value: 'actions',
-          align: 'end', 
-          sortable: false,   
+          align: 'end',
+          sortable: false,
           width: '10%' },
       ],
       type: ['Normal', 'Admin'],
@@ -471,9 +472,9 @@ export default {
       this.getEmployees()
     },
 
-    getRequestParams(searchTitle, page, pageSize) {
+    getRequestParams(search, page, pageSize) {
       let params = {}
-      if (searchTitle) params["title"] = searchTitle
+      if (search) params["search"] = search
       if (page) params["page"] = page - 1
       if (pageSize) params["size"] = pageSize
 
@@ -482,7 +483,7 @@ export default {
 
     getEmployees() {
       const params = this.getRequestParams(
-        this.searchTitle,
+        this.search,
         this.page,
         this.pageSize
       )
@@ -497,8 +498,13 @@ export default {
         })
         .catch(() => {
           this.$router.push('/')
-        })      
+        })
     },
+
+    searchEmployees() {
+      this.page = 1
+      this.getEmployees()
+    }
   },
 }
 </script>
