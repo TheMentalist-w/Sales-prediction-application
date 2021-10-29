@@ -18,7 +18,7 @@ def GetUsersListView(request):
                                 'username':i['username'], 
                                 'employee':i['first_name'] + " " + i['last_name'],
                                 'email':i['email'], 
-                                'is_superuser': i['is_superuser']
+                                'type': 'Admin' if i['is_superuser'] else 'Normal'
                              } for i in users_data
                           ]
         
