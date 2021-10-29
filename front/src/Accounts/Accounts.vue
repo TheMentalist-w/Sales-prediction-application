@@ -121,7 +121,7 @@
                       v-if="showPasswordModal"
                       v-model="editedItem.confirmPassword"
                       type="password"
-                      :rules="[rules.password, rules.newUser]"
+                      :rules="[rules.password]"
                       label="Confirm password"
                     ></v-text-field>
                   </v-col>
@@ -263,14 +263,15 @@ export default {
       rules: {
         password: () => {
           let result = this.editedItem.password === this.editedItem.confirmPassword
-          return result || "Password and ConfirmPassword don't match"
+          return result || "Password and Confirm Password don't match"
         },
         email: value => {
-          const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+          let pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
           return pattern.test(value) || 'Invalid e-mail'
         },
         newUser: value => {
-          return ((this.editedIndex < 0 && (value === null || value === '')) || this.checkbox)
+          let result = (value === null || value === '')
+          return !((this.editedIndex < 0 && result) || (this.checkbox && result)) || "Password required"
         }
       },
     }
@@ -383,7 +384,7 @@ export default {
 
     createForm() {
       let data = new FormData()
-      data.append("fist_name", this.editedItem.employee.split(' ')[0])
+      data.append("first_name", this.editedItem.employee.split(' ')[0])
       data.append("email",this.editedItem.email)
       data.append("last_name", this.editedItem.employee.split(' ')[1])
       data.append("username",this.editedItem.username)
@@ -409,6 +410,9 @@ export default {
         if(this.rules.email(this.editedItem.email) !== true) {
           result = {result: false, errorMsg: "Invalid email"}
         }
+        if(this.editedItem.password === '' && this.checkbox) {
+          result = {result: false, errorMsg: "Password required"}
+        }
       }
       else {
         //create
@@ -431,13 +435,14 @@ export default {
         let data = this.createForm()
         if (this.editedIndex > -1) {
           data.append("id", this.editedItem.id)
+          data.append("is_superuser", this.editedItem.type === "Admin")
           axios.post('http://localhost:8000/pitbull/user/edit/', data)
             .then(() => {
               Object.assign(this.employees[this.editedIndex], this.editedItem)
               this.$notify({
                 group: 'notifications-bottom-left',
                 title: 'Success',
-                text: 'Użytkownik edytowany',
+                text: 'Employee edited',
                 type: 'success text-white'
               })
               this.close()
@@ -446,7 +451,7 @@ export default {
               this.$notify({
                 group: 'notifications-bottom-left',
                 title: 'Error',
-                text: 'Błąd edycji użytkownika',
+                text: 'Employee edit error',
                 type: 'error text-white'
               })
               this.close()
@@ -460,7 +465,7 @@ export default {
                 this.$notify({
                   group: 'notifications-bottom-left',
                   title: 'Success',
-                  text: 'Użytkownik dodany',
+                  text: 'Employee added',
                   type: 'success text-white'
                 })
                 this.close()
@@ -469,7 +474,7 @@ export default {
                 this.$notify({
                   group: 'notifications-bottom-left',
                   title: 'Error',
-                  text: 'Błąd dodawania użytkownika',
+                  text: 'Employee addition error',
                   type: 'error text-white'
                 })
                 this.close()
@@ -482,7 +487,7 @@ export default {
                 this.$notify({
                   group: 'notifications-bottom-left',
                   title: 'Success',
-                  text: 'Użytkownik dodany',
+                  text: 'Employee added',
                   type: 'success text-white'
                 })
                 this.close()
@@ -491,7 +496,7 @@ export default {
                 this.$notify({
                   group: 'notifications-bottom-left',
                   title: 'Error',
-                  text: 'Błąd dodawania użytkownika',
+                  text: 'Employee addition error',
                   type: 'error text-white'
                 })
                 this.close()

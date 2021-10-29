@@ -106,6 +106,9 @@ def EditUserView(request):
         if is_superuser == 'true': 
             user.is_superuser = True
             user.is_staff = True
+        else:
+            user.is_superuser = False
+            user.is_staff = False
 
         user.save()
         
