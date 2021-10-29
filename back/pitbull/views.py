@@ -38,8 +38,16 @@ def CreateUserView(request):
     username = request.POST.get('username','')
     email = request.POST.get('email','')
     password = request.POST.get('password','')
+    first_name = request.POST.get('first_name','')
+    last_name = request.POST.get('last_name','')
 
-    user = get_user_model().objects.create_user(username = username, password = password, email = email)
+    user = get_user_model().objects.create_user(
+        username = username,
+        password = password,
+        email = email,
+        first_name = first_name,
+        last_name = last_name
+    )
         
     return JsonResponse({'new_user_id': user.id}) 
 
@@ -49,8 +57,16 @@ def CreateSuperuserView(request):
     username = request.POST.get('username','')
     email = request.POST.get('email','')
     password = request.POST.get('password','')
+    first_name = request.POST.get('first_name','')
+    last_name = request.POST.get('last_name','')
 
-    user = get_user_model().objects.create_superuser(username = username, password = password, email=email)
+    user = get_user_model().objects.create_superuser(
+        username = username,
+        password = password,
+        email = email,
+        first_name = first_name,
+        last_name = last_name
+    )
     
     return JsonResponse({'new_superuser_id': user.id}) 
 

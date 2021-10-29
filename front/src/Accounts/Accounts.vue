@@ -325,56 +325,125 @@ export default {
       })
     },
 
-    save () {
+    createForm() {
+      let data = new FormData()
+      data.append("fist_name", this.editedItem.employee.split(' ')[0])
+      data.append("email",this.editedItem.email)
+      data.append("last_name", this.editedItem.employee.split(' ')[1])
+      data.append("username",this.editedItem.username)
+      data.append("password", this.editedItem.password)
+      data.append("confirmPassword", this.editedItem.confirmPassword)
+      return data
+    },
+
+    validateModal() {
+      let result
       if (this.editedIndex > -1) {
-        let data = new FormData()
-        data.append("id", this.editedItem.email)
-        data.append("fist_name", this.editedItem.employee.split(' ')[0])
-        data.append("last_name", this.editedItem.employee.split(' ')[1])
-        data.append("email",this.editedItem.email)
-        data.append("username",this.editedItem.username)
-        data.append("password", this.editedItem.password)
-        data.append("confirmPassword", this.editedItem.confirmPassword)
-        data.append("type", (this.editedItem.type==="Admin").toString())
-        axios.post('http://localhost:8000/pitbull/user/edit/', data)
-        .then(() => {
-          Object.assign(this.employees[this.editedIndex], this.editedItem)
-          this.close()
+        //edit
+        let validate = Object.values(this.editedItem).every(field => {
+          if (field === 'Normal' || field === 'Admin') {
+            return true
+          } else {
+            return (field === null || field === '')
+          }
         })
-        .catch(errors => {
-          this.$notify({
-            group: 'notifications-bottom-left',
-            title: 'Error',
-            text: 'User update error',
-            type: 'error text-white'
-          })
-          this.close()
+        result = validate ? {result: false, errorMsg: "All fields are empty"} :
+          ((this.editedItem.password !== this.editedItem.confirmPassword) ? {result: false, errorMsg: "Password and Confirm Password are different"} :
+            {result: true, errorMsg: ""})
+      }
+      else {
+        //create
+        let validate = Object.values(this.editedItem).every(field => (field === null || field === ''))
+        let validateAny = Object.values(this.editedItem).some(field => field === '')
+        result = validate ? {result: false, errorMsg: "All fields are empty"} :
+          (validateAny ? {result: false, errorMsg: "Some fields are empty"} :
+            ((this.editedItem.password !== this.editedItem.confirmPassword) ? {result: false, errorMsg: "Password and Confirm Password are different"} :
+              {result: true, errorMsg: ""} ))
+      }
+      return result
+    },
+
+    save () {
+      let validate = this.validateModal()
+      if(validate.result) {
+        let data = this.createForm()
+        if (this.editedIndex > -1) {
+          data.append("id", this.editedItem.id)
+          axios.post('http://localhost:8000/pitbull/user/edit/', data)
+            .then(() => {
+              Object.assign(this.employees[this.editedIndex], this.editedItem)
+              this.$notify({
+                group: 'notifications-bottom-left',
+                title: 'Success',
+                text: 'Użytkownik edytowany',
+                type: 'success text-white'
+              })
+              this.close()
+            })
+            .catch(errors => {
+              this.$notify({
+                group: 'notifications-bottom-left',
+                title: 'Error',
+                text: 'Błąd edycji użytkownika',
+                type: 'error text-white'
+              })
+              this.close()
+            })
+        } else {
+          if (this.editedItem.type === "Admin") {
+            axios.post('http://localhost:8000/pitbull/superuser/create/', data)
+              .then((response) => {
+                this.employees.push(this.editedItem)
+                this.employees.slice(-1)[0]['id'] = response.data.new_superuser_id
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Success',
+                  text: 'Użytkownik dodany',
+                  type: 'success text-white'
+                })
+                this.close()
+              })
+              .catch(errors => {
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Error',
+                  text: 'Błąd dodawania użytkownika',
+                  type: 'error text-white'
+                })
+                this.close()
+              })
+          } else {
+            axios.post('http://localhost:8000/pitbull/user/create/', data)
+              .then((response) => {
+                this.employees.push(this.editedItem)
+                this.employees.slice(-1)[0]['id'] = response.data.new_user_id
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Success',
+                  text: 'Użytkownik dodany',
+                  type: 'success text-white'
+                })
+                this.close()
+              })
+              .catch(errors => {
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Error',
+                  text: 'Błąd dodawania użytkownika',
+                  type: 'error text-white'
+                })
+                this.close()
+              })
+          }
+        }
+      }
+      else {
+        this.$notify({
+          group: 'notifications-bottom-left',
+          title: 'Error',
+          text: validate.errorMsg,
+          type: 'error text-white'
         })
-      } else {
-        let data = new FormData()
-        data.append("id", this.editedItem.email)
-        data.append("fist_name", this.editedItem.employee.split(' ')[0])
-        data.append("last_name", this.editedItem.employee.split(' ')[1])
-        data.append("email",this.editedItem.email)
-        data.append("username",this.editedItem.username)
-        data.append("password", this.editedItem.password)
-        data.append("confirmPassword", this.editedItem.confirmPassword)
-        data.append("type", (this.editedItem.type==="Admin").toString())
-        axios.post('http://localhost:8000/pitbull/user/create/', data)
-        .then((response) => {
-          this.employees.push(this.editedItem)
-          this.close()
-          this.employees.slice(-1)[0]['id'] = response.data.id
-        })
-        .catch(errors => {
-          this.$notify({
-            group: 'notifications-bottom-left',
-            title: 'Error',
-            text: 'Błąd dodawania użytkownika',
-            type: 'error text-white'
-          })
-          this.close()
-        }) // 6
       }
     },
   },
