@@ -6,23 +6,26 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
+from django.core.paginator import Paginator
 
 @api_view(['GET'])
 @permission_classes((IsAdminUser, )) 
 def GetUsersListView(request):
         
         users_data = list(get_user_model().objects.values()) 
-
+        page = int(request.GET['page']) + 1
+        size = request.GET['size']
+        paginator = Paginator(users_data, size)
+        query_set = paginator.page(page)
         users_prepared = [{
                                 'id':i['id'], 
                                 'username':i['username'], 
                                 'employee':i['first_name'] + " " + i['last_name'],
                                 'email':i['email'], 
                                 'type': 'Admin' if i['is_staff'] else 'Normal'
-                             } for i in users_data
+                             } for i in query_set
                           ]
-        
-        return JsonResponse({'users': users_prepared})
+        return JsonResponse({'users': users_prepared, 'totalPages': paginator.num_pages, 'page': page})
 
 @permission_classes((IsAdminUser, )) 
 @api_view(['DELETE'])

@@ -1,4 +1,5 @@
 <template>
+<div>
   <v-data-table
     style="width: 70%"
     :headers="headers"
@@ -6,6 +7,7 @@
     :search="search"
     class="elevation-1 mx-auto mt-16"
     loading-text="Loading... Please wait"
+    :hide-default-footer="true"
     :key="tableKey"
     v-if="adminTable"
   >
@@ -161,6 +163,17 @@
       </v-icon>
     </template>
   </v-data-table>
+  <v-pagination
+    class="pagination"
+    v-model="page"
+    :length="totalPages"
+    @input="pageChange"
+    circle
+    total-visible="7"
+    next-icon="mdi-menu-right"
+    prev-icon="mdi-menu-left"
+></v-pagination>
+</div>
 </template>
 
 <script>
@@ -175,6 +188,9 @@ export default {
     return {
       dialog: false,
       search: "",
+      page: 1,
+      totalPages: 0,
+      pageSize: 10,
       dialogDelete: false,
       adminTable: false,
       tableKey: 0,
@@ -183,16 +199,26 @@ export default {
           text: 'Username',
           align: 'start',
           value: 'username',
+          sortable: false,
           width: '30%'
         },
         {
           text: 'Email',
           align: 'start',
           value: 'email',
+          sortable: false,
           width: '30%'
         },
-        { text: 'Employee', value: 'employee', width: '30%' },
-        { text: 'Actions', value: 'actions', sortable: false, align: 'end',  width: '10%' },
+        { text: 'Employee',
+          value: 'employee',
+          sortable: false, 
+          width: '30%' },
+        { 
+          text: 'Actions', 
+          value: 'actions',
+          align: 'end', 
+          sortable: false,   
+          width: '10%' },
       ],
       type: ['Normal', 'Admin'],
       employees: [],
@@ -230,17 +256,10 @@ export default {
     }
   },
   mounted() {
-    let logged = this.$cookies.get('access')
-    if(logged) {
-      axios.get('http://localhost:8000/pitbull/users/')
-        .then(data => {
-          this.employees = data.data.users
-          this.adminTable = true
-          this.tableKey += 1
-        })
-        .catch(() => {
-          this.$router.push('/')
-        })
+    let access = this.$cookies.get('access')
+    let refresh = this.$cookies.get('refresh')
+    if(access || refresh){
+      this.getEmployees()
     }
     else {
       this.$router.push('/login')
@@ -446,6 +465,40 @@ export default {
         })
       }
     },
+
+    pageChange(value) {
+      this.page = value
+      this.getEmployees()
+    },
+
+    getRequestParams(searchTitle, page, pageSize) {
+      let params = {}
+      if (searchTitle) params["title"] = searchTitle
+      if (page) params["page"] = page - 1
+      if (pageSize) params["size"] = pageSize
+
+      return params
+    },
+
+    getEmployees() {
+      const params = this.getRequestParams(
+        this.searchTitle,
+        this.page,
+        this.pageSize
+      )
+
+      axios.get('http://localhost:8000/pitbull/users/', {params: params})
+        .then(response => {
+          this.employees = response.data.users
+          this.totalPages = response.data.totalPages
+          this.page = response.data.page
+          this.adminTable = true
+          this.tableKey += 1
+        })
+        .catch(() => {
+          this.$router.push('/')
+        })      
+    },
   },
 }
 </script>
@@ -456,5 +509,11 @@ export default {
 }
 .v-data-table td {
   font-size: 20px !important;
+}
+.pagination {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  bottom: 0px;
 }
 </style>
