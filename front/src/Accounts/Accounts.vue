@@ -206,7 +206,7 @@ export default {
       search: '',
       page: 1,
       totalPages: 0,
-      pageSize: 10,
+      pageSize: 8,
       dialogDelete: false,
       adminTable: false,
       tableKey: 0,
@@ -522,7 +522,7 @@ export default {
     getRequestParams(search, page, pageSize) {
       let params = {}
       if (search) params["search"] = search
-      if (page) params["page"] = page - 1
+      if (page) params["page"] = page
       if (pageSize) params["size"] = pageSize
 
       return params

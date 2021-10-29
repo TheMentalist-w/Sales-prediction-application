@@ -14,7 +14,7 @@ from django.db.models import Q
 def GetUsersListView(request):
         
         users_data = list(get_user_model().objects.values()) 
-        page = int(request.GET['page']) + 1
+        page = int(request.GET['page'])
         size = request.GET['size']
         if request.GET.get('search'):
             search = request.GET['search']
@@ -34,7 +34,7 @@ def GetUsersListView(request):
                                 'employee':i['first_name'] + " " + i['last_name'],
                                 'email':i['email'], 
                                 'type': 'Admin' if i['is_superuser'] else 'Normal'
-                             } for i in users_data
+                             } for i in query_set
                           ]
         return JsonResponse({'users': users_prepared, 'totalPages': paginator.num_pages, 'page': page})
 
