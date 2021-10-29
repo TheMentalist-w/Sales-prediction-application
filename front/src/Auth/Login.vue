@@ -58,8 +58,9 @@ export default {
     }
   },
   mounted() {
-    let logged = this.$cookies.get('access')
-    if(logged){
+    let access = this.$cookies.get('access')
+    let refresh = this.$cookies.get('refresh')
+    if(access || refresh){
       axios.get('http://localhost:8000/pitbull/user/current/')
       .then((response) => {
         this.$router.push('/')
@@ -83,7 +84,7 @@ export default {
       data.append("password", this.password)
       axios.post('http://localhost:8000/pitbull/user/login/', data)
       .then((response) => {
-        this.$cookies.set('access', response.data.access, 6 * 30)
+        this.$cookies.set('access', response.data.access, 60 * 30)
         this.$cookies.set('refresh', response.data.refresh, 60 * 1439)
         this.$router.push('/')
       })

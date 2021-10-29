@@ -6,13 +6,28 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
+from django.core.paginator import Paginator
+from django.db.models import Q
 
 @api_view(['GET'])
 @permission_classes((IsAdminUser, )) 
 def GetUsersListView(request):
         
         users_data = list(get_user_model().objects.values()) 
-
+        page = int(request.GET['page']) + 1
+        size = request.GET['size']
+        if request.GET.get('search'):
+            search = request.GET['search']
+            users_data = list(get_user_model().objects.filter(
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(username__icontains=search) |
+                Q(email__icontains=search)).values()
+            )
+        else:
+            users_data = list(get_user_model().objects.values())
+        paginator = Paginator(users_data, size)
+        query_set = paginator.page(page)
         users_prepared = [{
                                 'id':i['id'], 
                                 'username':i['username'], 
@@ -21,8 +36,7 @@ def GetUsersListView(request):
                                 'type': 'Admin' if i['is_superuser'] else 'Normal'
                              } for i in users_data
                           ]
-        
-        return JsonResponse({'users': users_prepared})
+        return JsonResponse({'users': users_prepared, 'totalPages': paginator.num_pages, 'page': page})
 
 @permission_classes((IsAdminUser, )) 
 @api_view(['DELETE'])
@@ -117,9 +131,9 @@ def LogoutView(request):
     return HttpResponse("You have ben successfully logged out!")
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, )) 
+@permission_classes((IsAuthenticated, ))
 def CurrentUserView(request):
-    
+
     data = {
         'username' : request.user.username,
         'is_superuser' :  request.user.is_superuser
