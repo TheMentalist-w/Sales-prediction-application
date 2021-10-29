@@ -33,8 +33,8 @@ def GetUsersListView(request):
                                 'username':i['username'], 
                                 'employee':i['first_name'] + " " + i['last_name'],
                                 'email':i['email'], 
-                                'type': 'Admin' if i['is_staff'] else 'Normal'
-                             } for i in query_set
+                                'type': 'Admin' if i['is_superuser'] else 'Normal'
+                             } for i in users_data
                           ]
         return JsonResponse({'users': users_prepared, 'totalPages': paginator.num_pages, 'page': page})
 
@@ -130,7 +130,13 @@ def LogoutView(request):
     logout(request)
     return HttpResponse("You have ben successfully logged out!")
 
-@permission_classes((IsAuthenticated, )) 
 @api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def CurrentUserView(request):
-    return HttpResponse(request.user.username if request.user.is_authenticated else "Anonymous User")
+
+    data = {
+        'username' : request.user.username,
+        'is_superuser' :  request.user.is_superuser
+    }
+
+    return JsonResponse(data)

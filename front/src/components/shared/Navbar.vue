@@ -11,7 +11,7 @@
       href="/accounts"
       text
       rounded
-      v-if="loggedIn"
+      v-if="adminLoggedIn"
     >
       <span class="mr-2">Accounts</span>
     </v-btn>
@@ -45,16 +45,27 @@ export default {
   name: 'Navbar',
   data() {
     return {
-      loggedIn: this.$cookies.get('access')
+      loggedIn: false,
+      adminLoggedIn: false,
     }
+  },
+  beforeMount() {
+    axios.get('http://localhost:8000/pitbull/user/current/')
+      .then(response => {
+        this.loggedIn = true
+        if(response.data.is_superuser) {
+          this.adminLoggedIn = true
+        }
+      })
   },
   methods: {
     logOut() {
-      axios.post('http://localhost:8000/pitbull/user/logout/').then(() => {
-        this.$cookies.remove('access')
-        this.$cookies.remove('refresh')
-        this.$router.push('/login')
-      })
+      axios.post('http://localhost:8000/pitbull/user/logout/')
+        .then(() => {
+          this.$cookies.remove('access')
+          this.$cookies.remove('refresh')
+          this.$router.push('/login')
+        })
     },
     changeTheme() {
       let theme = sessionStorage.getItem('pit_theme')

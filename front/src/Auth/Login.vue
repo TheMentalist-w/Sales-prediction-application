@@ -10,6 +10,7 @@
         label="Username or Email"
         prepend-icon="mdi-account-circle"
         v-model="email"
+        @keyup.enter="logIn"
         :rules="[rules.required]"
       />
       <v-text-field
@@ -18,6 +19,7 @@
         label="Password"
         prepend-icon="mdi-lock"
         v-model="password"
+        @keyup.enter="logIn"
         :rules="[rules.required]"
         :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
         @click:append="showPassword = !showPassword"
@@ -60,7 +62,7 @@ export default {
     let refresh = this.$cookies.get('refresh')
     if(access || refresh){
       axios.get('http://localhost:8000/pitbull/user/current/')
-      .then(() => {
+      .then((response) => {
         this.$router.push('/')
       })
       .catch(() => {
@@ -80,13 +82,13 @@ export default {
       let data = new FormData(); // 2
       data.append("login_data", this.email)
       data.append("password", this.password)
-      axios.post('http://localhost:8000/pitbull/user/login/', data) // 4
+      axios.post('http://localhost:8000/pitbull/user/login/', data)
       .then((response) => {
         this.$cookies.set('access', response.data.access, 60 * 30)
         this.$cookies.set('refresh', response.data.refresh, 60 * 1439)
         this.$router.push('/')
       })
-      .catch(errors => this.$notify({
+      .catch(() => this.$notify({
         group: 'notifications-bottom-left',
         title: 'Error',
         text: 'Invalid credentials',
