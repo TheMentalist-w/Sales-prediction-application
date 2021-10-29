@@ -27,8 +27,7 @@ def GetUsersListView(request):
 @permission_classes((IsAdminUser, )) 
 @api_view(['DELETE'])
 def DeleteUserView(request,id):
-
-        user = get_object_or_404(get_user_model(), pk = id)
+        user = get_object_or_404(get_user_model(), pk = int(id))
         user.delete()
 
         return HttpResponse("User account deleted!") 
