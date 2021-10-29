@@ -1,13 +1,14 @@
 <template>
+<div>
   <v-data-table
     style="width: 70%"
     :headers="headers"
     :items="employees"
-    :search="search"
     class="elevation-1 mx-auto mt-16"
     loading-text="Loading... Please wait"
+    :hide-default-footer="true"
     :key="tableKey"
-    v-if="loggedIn"
+    v-if="adminTable"
   >
     <template v-slot:top>
       <v-toolbar
@@ -17,6 +18,8 @@
           v-model="search"
           append-icon="mdi-magnify"
           label="Search"
+          @click:append="searchEmployees"
+          @keyup.enter="searchEmployees"
           single-line
           hide-details
         ></v-text-field>
@@ -63,7 +66,28 @@
                       v-model="editedItem.email"
                       type="email"
                       label="Email"
-                      :rules="[rules.email]"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    md="6"
+                  >
+                    <v-text-field
+                      v-model="editedItem.password"
+                      type="password"
+                      :rules="[rules.newUser]"
+                      label="Password"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    md="6"
+                  >
+                    <v-text-field
+                      v-model="editedItem.confirmPassword"
+                      type="password"
+                      :rules="[rules.password, rules.newUser]"
+                      label="Confirm password"
                     ></v-text-field>
                   </v-col>
                   <v-col
@@ -85,42 +109,6 @@
                       v-model="editedItem.type"
                       label="Type"
                     ></v-select>
-                  </v-col>
-                  <v-col
-                    cols="12"
-                    md="12"
-                  >
-                    <v-checkbox
-                      v-if="isEdited"
-                      v-model="checkbox"
-                      label="Reset password"
-                      color="primary"
-                      hide-details
-                    ></v-checkbox>
-                  </v-col>
-                  <v-col
-                    cols="12"
-                    md="6"
-                  >
-                    <v-text-field
-                      v-if="showPasswordModal"
-                      v-model="editedItem.password"
-                      type="password"
-                      :rules="[rules.newUser]"
-                      label="Password"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                    cols="12"
-                    md="6"
-                  >
-                    <v-text-field
-                      v-if="showPasswordModal"
-                      v-model="editedItem.confirmPassword"
-                      type="password"
-                      :rules="[rules.password, rules.newUser]"
-                      label="Confirm password"
-                    ></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
@@ -193,7 +181,6 @@ export default {
       dialogDelete: false,
       loggedIn: false,
       tableKey: 0,
-      checkbox: false,
       headers: [
         {
           text: 'Email',
@@ -208,21 +195,15 @@ export default {
       employees: [],
       editedIndex: -1,
       editedItem: {
-        id: null,
         employee: '',
         email: '',
         username: '',
-        password: '',
-        confirmPassword: '',
         type: '',
       },
       defaultItem: {
-        id: null,
         employee: '',
         email: '',
         username: '',
-        password: '',
-        confirmPassword: '',
         type: '',
       },
       deleteId: null,
@@ -242,22 +223,14 @@ export default {
     }
   },
   mounted() {
-    let logged = this.$cookies.get('authToken')
-    if(logged){
-      this.loggedIn = true
-      this.tableKey += 1
+    let access = this.$cookies.get('access')
+    let refresh = this.$cookies.get('refresh')
+    if(access || refresh){
+      this.getEmployees()
     }
     else {
-      this.$router.push(this.$route.query.redirect || '/login')
+      this.$router.push('/login')
     }
-
-    const config = {
-      headers: { Authorization: `Token ${this.$cookies.get('authToken')}` }
-    }
-    axios.get('http://localhost:8000/pitbull/users/', config).then(data => {
-      this.employees = data.data.users
-      this.tableKey += 1
-    })
   },
   computed: {
     formTitle () {
@@ -302,6 +275,35 @@ export default {
           text:'Błąd usuwania użytkownika',
           type: 'error text-white' })
       )
+      let user = this.editedItem
+      axios.get('http://localhost:8000/pitbull/user/current/')
+        .then((response) => {
+          if(response.data === user.username) {
+            this.$notify({
+              group: 'notifications-bottom-left',
+              title: 'Error',
+              text: 'Cannot delete yourself',
+              type: 'error text-white'
+            })
+          } else {
+            axios.delete('http://localhost:8000/pitbull/user/delete/'+this.deleteId.toString())
+              .then(() => {
+                this.employees.splice(this.editedIndex, 1)
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Success',
+                  text: 'User deleted',
+                  type: 'success text-white'
+                })
+              })
+              .catch(errors => this.$notify({
+                group: 'notifications-bottom-left',
+                title: 'Error',
+                text: 'Error deleting user',
+                type: 'error text-white'
+              }))
+          }
+        })
       this.closeDelete()
     },
 
@@ -442,6 +444,45 @@ export default {
         })
       }
     },
+
+    pageChange(value) {
+      this.page = value
+      this.getEmployees()
+    },
+
+    getRequestParams(search, page, pageSize) {
+      let params = {}
+      if (search) params["search"] = search
+      if (page) params["page"] = page - 1
+      if (pageSize) params["size"] = pageSize
+
+      return params
+    },
+
+    getEmployees() {
+      const params = this.getRequestParams(
+        this.search,
+        this.page,
+        this.pageSize
+      )
+
+      axios.get('http://localhost:8000/pitbull/users/', {params: params})
+        .then(response => {
+          this.employees = response.data.users
+          this.totalPages = response.data.totalPages
+          this.page = response.data.page
+          this.adminTable = true
+          this.tableKey += 1
+        })
+        .catch(() => {
+          this.$router.push('/')
+        })
+    },
+
+    searchEmployees() {
+      this.page = 1
+      this.getEmployees()
+    }
   },
 }
 </script>
@@ -452,5 +493,11 @@ export default {
 }
 .v-data-table td {
   font-size: 20px !important;
+}
+.pagination {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  bottom: 0px;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-<v-content :key="loggedKey" v-if="loggedIn">
+<v-content :key="loggedKey" v-if="loginBox">
   <v-card width="30%" class="mx-auto mt-16">
     <v-card-title style="justify-content: center">Login</v-card-title>
     <v-card-text>
@@ -10,6 +10,7 @@
         label="Username or Email"
         prepend-icon="mdi-account-circle"
         v-model="email"
+        @keyup.enter="logIn"
         :rules="[rules.required]"
       />
       <v-text-field
@@ -18,6 +19,7 @@
         label="Password"
         prepend-icon="mdi-lock"
         v-model="password"
+        @keyup.enter="logIn"
         :rules="[rules.required]"
         :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
         @click:append="showPassword = !showPassword"
@@ -48,7 +50,7 @@ export default {
       showPassword: false,
       email: null,
       password: null,
-      loggedIn: false,
+      loginBox: false,
       loggedKey: 0,
       rules: {
         required: value => !!value || 'Required.'
@@ -56,41 +58,43 @@ export default {
     }
   },
   mounted() {
-    let logged = this.$cookies.get('authToken')
-    if(logged){
-      const config = {
-        headers: { Authorization: `Token ${this.$cookies.get('authToken')}` }
-      }
-      axios.get('http://localhost:8000/pitbull/user/current/', config)
-      .then(() => {
-        this.$router.push(this.$route.query.redirect || '/')
+    let access = this.$cookies.get('access')
+    let refresh = this.$cookies.get('refresh')
+    if(access || refresh){
+      axios.get('http://localhost:8000/pitbull/user/current/')
+      .then((response) => {
+        this.$router.push('/')
       })
       .catch(() => {
-        this.$cookies.remove('authToken')
-        this.loggedIn = true
+        this.$cookies.remove('access')
+        this.$cookies.remove('refresh')
+        this.loginBox = true
         this.loggedKey += 1
       })
     }
     else {
-      this.loggedIn = true
+      this.loginBox = true
       this.loggedKey += 1
     }
   },
   methods: {
     logIn () {
       let data = new FormData(); // 2
-
-      data.append("username", this.email)
+      data.append("login_data", this.email)
       data.append("password", this.password)
-      axios.post('http://localhost:8000/pitbull/user/login/', data) // 4
+      axios.post('http://localhost:8000/pitbull/user/login/', data)
       .then((response) => {
-        this.$cookies.set('authToken', response.data.authToken, {
-          expires: 1
-        })
-        this.$router.push(this.$route.query.redirect || '/')
+        this.$cookies.set('access', response.data.access, 60 * 30)
+        this.$cookies.set('refresh', response.data.refresh, 60 * 1439)
+        this.$router.push('/')
       })
-      .catch(errors => this.$notify({group: 'notifications-bottom-left', title: 'Error', text:'Niepoprawne dane logowania', type: 'error text-white' })) // 6
-
+      .catch(() => this.$notify({
+        group: 'notifications-bottom-left',
+        title: 'Error',
+        text: 'Invalid credentials',
+        type: 'error text-white'
+        })
+      )
     }
   }
 }

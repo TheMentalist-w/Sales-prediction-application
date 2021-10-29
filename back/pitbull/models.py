@@ -3,13 +3,15 @@ from django.contrib.auth.models import BaseUserManager, AbstractUser
 
 class UserManager(BaseUserManager):
     
-    def create_user(self, username, password=None, email=None):
+    def create_user(self, username, password=None, email=None, first_name=None, last_name=None):
         if not username:
             raise ValueError('User must provide an username!')
 
         user = self.model(
             username = username,
-            email = email
+            email = email,
+            first_name = first_name,
+            last_name = last_name
         )
 
         user.set_password(password)
@@ -17,10 +19,12 @@ class UserManager(BaseUserManager):
         
         return user
 
-    def create_superuser(self, username, password, email = None):
+    def create_superuser(self, username, password, email = None, first_name=None, last_name=None):
         user = self.create_user(
             username = username,
-            email = email
+            email = email,
+            first_name = first_name,
+            last_name = last_name
         )
 
         user.is_superuser = True  
