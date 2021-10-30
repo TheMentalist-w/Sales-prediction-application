@@ -16,7 +16,7 @@
 import axios from "axios";
 
 export default {
-  name: "dialogDelete",
+  name: "DialogDelete",
   props: {
     dialogDelete: Boolean,
     deleteId: Number,
