@@ -28,14 +28,30 @@ def GetUsersListView(request):
             users_data = list(get_user_model().objects.values())
         paginator = Paginator(users_data, size)
         query_set = paginator.page(page)
-        users_prepared = [{
-                                'id':i['id'], 
-                                'username':i['username'], 
+        users_prepared = [({
+                                'id':i['id'],
+                                'username':i['username'],
                                 'employee':i['first_name'] + " " + i['last_name'],
-                                'email':i['email'], 
+                                'email':i['email'],
                                 'type': 'Admin' if i['is_superuser'] else 'Normal'
-                             } for i in query_set
-                          ]
+                            } if i['last_name']
+                            else
+                            {
+                                'id':i['id'],
+                                'username':i['username'],
+                                'employee':i['first_name'],
+                                'email':i['email'],
+                                'type': 'Admin' if i['is_superuser'] else 'Normal'
+                            }) if i['first_name']
+                            else
+                            {
+                                'id':i['id'],
+                                'username':i['username'],
+                                'employee':'',
+                                'email':i['email'],
+                                'type': 'Admin' if i['is_superuser'] else 'Normal'
+                            } for i in query_set
+                         ]
         return JsonResponse({'users': users_prepared, 'totalPages': paginator.num_pages, 'page': page})
 
 @permission_classes((IsAdminUser, )) 
