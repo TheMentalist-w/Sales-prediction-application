@@ -41,111 +41,21 @@
               New
             </v-btn>
           </template>
-          <v-card>
-            <v-card-title>
-              <span class="text-h5">{{ formTitle }}</span>
-            </v-card-title>
-
-            <v-card-text>
-              <v-container>
-                <v-row>
-                  <v-col
-                    cols="12"
-                    md="6"
-                  >
-                    <v-text-field
-                      v-model="editedItem.employee"
-                      label="Employee"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                    cols="12"
-                    md="6"
-                  >
-                    <v-text-field
-                      v-model="editedItem.email"
-                      type="email"
-                      label="Email"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                    cols="12"
-                    md="6"
-                  >
-                    <v-text-field
-                      v-model="editedItem.password"
-                      type="password"
-                      :rules="[rules.newUser]"
-                      label="Password"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                    cols="12"
-                    md="6"
-                  >
-                    <v-text-field
-                      v-model="editedItem.confirmPassword"
-                      type="password"
-                      :rules="[rules.password, rules.newUser]"
-                      label="Confirm password"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                    cols="12"
-                    md="6"
-                  >
-                    <v-text-field
-                      :items="type"
-                      v-model="editedItem.username"
-                      label="Username"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                    cols="12"
-                    md="6"
-                  >
-                    <v-select
-                      :items="type"
-                      v-model="editedItem.type"
-                      label="Type"
-                    ></v-select>
-                  </v-col>
-                </v-row>
-              </v-container>
-            </v-card-text>
-
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn
-                color="red darken-1"
-                text
-                rounded
-                @click="close"
-              >
-                Cancel
-              </v-btn>
-              <v-btn
-                color="green darken-1"
-                text
-                rounded
-                @click="save"
-              >
-                Save
-              </v-btn>
-            </v-card-actions>
-          </v-card>
+          <employee-modal
+            :formTitle="formTitle"
+            :editedItem="editedItem"
+            :editedIndex="editedIndex"
+            @closeModal="close"
+            @addEmployee="addEmployee"
+            @editEmployee="editEmployee" />
         </v-dialog>
-        <v-dialog v-model="dialogDelete" max-width="500px">
-          <v-card>
-            <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="red darken-1" rounded text @click="closeDelete">Cancel</v-btn>
-              <v-btn color="green darken-1" rounded text @click="deleteItemConfirm">OK</v-btn>
-              <v-spacer></v-spacer>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
+        <dialog-delete
+          :dialogDelete="dialogDelete"
+          :deleteId="deleteId"
+          :editedIndex="editedIndex"
+          :username="editedItem.username"
+          @deleteFromArray="deleteFromArray"
+          @closeDelete="closeDelete" />
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
@@ -173,7 +83,7 @@
     total-visible="7"
     next-icon="mdi-menu-right"
     prev-icon="mdi-menu-left"
-></v-pagination>
+  ></v-pagination>
 </div>
 </template>
 
@@ -181,6 +91,8 @@
 import axios from "axios"
 import Vue from 'vue'
 import Vuetify from 'vuetify'
+import DialogDelete from "../components/DialogDelete"
+import EmployeeModal from "../components/EmployeeModal"
 Vue.use(Vuetify)
 
 export default {
@@ -188,10 +100,10 @@ export default {
   data() {
     return {
       dialog: false,
-      search: "",
+      search: '',
       page: 1,
       totalPages: 0,
-      pageSize: 10,
+      pageSize: 8,
       dialogDelete: false,
       adminTable: false,
       tableKey: 0,
@@ -210,18 +122,20 @@ export default {
           sortable: false,
           width: '30%'
         },
-        { text: 'Employee',
+        {
+          text: 'Employee',
           value: 'employee',
           sortable: false,
-          width: '30%' },
+          width: '30%'
+        },
         {
           text: 'Actions',
           value: 'actions',
           align: 'end',
           sortable: false,
-          width: '10%' },
+          width: '10%'
+        },
       ],
-      type: ['Normal', 'Admin'],
       employees: [],
       editedIndex: -1,
       editedItem: {
@@ -229,32 +143,24 @@ export default {
         email: '',
         username: '',
         type: '',
+        confirmPassword: '',
         password: '',
-        confirmPassword: ''
       },
       defaultItem: {
         employee: '',
         email: '',
         username: '',
         type: '',
+        confirmPassword: '',
         password: '',
-        confirmPassword: ''
       },
       deleteId: null,
-      rules: {
-        password: value => {
-          let result = this.editedItem.password === this.editedItem.confirmPassword
-          return result || "Password and ConfirmPassword don't match"
-        },
-        email: value => {
-          const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-          return pattern.test(value) || 'Invalid e-mail'
-        },
-        newUser: value => {
-          return ((this.editedIndex < 0 && (value === null || value === '')) || this.checkbox) ? false : true
-        }
-      },
+
     }
+  },
+  components: {
+    DialogDelete,
+    EmployeeModal
   },
   mounted() {
     let access = this.$cookies.get('access')
@@ -278,11 +184,12 @@ export default {
     dialogDelete (val) {
       val || this.closeDelete()
     },
+    checkbox () {
+      this.editedItem.password = ''
+      this.editedItem.confirmPassword = ''
+    }
   },
   methods: {
-    clicks(){
-      console.log(this.items)
-    },
     editItem (item) {
       this.editedIndex = this.employees.indexOf(item)
       this.editedItem = Object.assign({}, item)
@@ -296,37 +203,16 @@ export default {
       this.dialogDelete = true
     },
 
-    deleteItemConfirm () {
-      let user = this.editedItem
-      axios.get('http://localhost:8000/pitbull/user/current/')
-        .then((response) => {
-          if(response.data === user.username) {
-            this.$notify({
-              group: 'notifications-bottom-left',
-              title: 'Error',
-              text: 'Cannot delete yourself',
-              type: 'error text-white'
-            })
-          } else {
-            axios.delete('http://localhost:8000/pitbull/user/delete/'+this.deleteId.toString())
-              .then(() => {
-                this.employees.splice(this.editedIndex, 1)
-                this.$notify({
-                  group: 'notifications-bottom-left',
-                  title: 'Success',
-                  text: 'User deleted',
-                  type: 'success text-white'
-                })
-              })
-              .catch(errors => this.$notify({
-                group: 'notifications-bottom-left',
-                title: 'Error',
-                text: 'Error deleting user',
-                type: 'error text-white'
-              }))
-          }
-        })
-      this.closeDelete()
+    deleteFromArray (item) {
+      this.employees.splice(item, 1)
+    },
+
+    addEmployee (item) {
+      this.employees.push(item)
+    },
+
+    editEmployee (item) {
+      Object.assign(this.employees[this.editedIndex], item)
     },
 
     close () {
@@ -334,6 +220,7 @@ export default {
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
         this.editedIndex = -1
+        this.checkbox = false
       })
     },
 
@@ -345,128 +232,6 @@ export default {
       })
     },
 
-    createForm() {
-      let data = new FormData()
-      data.append("fist_name", this.editedItem.employee.split(' ')[0])
-      data.append("email",this.editedItem.email)
-      data.append("last_name", this.editedItem.employee.split(' ')[1])
-      data.append("username",this.editedItem.username)
-      data.append("password", this.editedItem.password)
-      data.append("confirmPassword", this.editedItem.confirmPassword)
-      return data
-    },
-
-    validateModal() {
-      let result
-      if (this.editedIndex > -1) {
-        //edit
-        let validate = Object.values(this.editedItem).every(field => {
-          if (field === 'Normal' || field === 'Admin') {
-            return true
-          } else {
-            return (field === null || field === '')
-          }
-        })
-        result = validate ? {result: false, errorMsg: "All fields are empty"} :
-          ((this.editedItem.password !== this.editedItem.confirmPassword) ? {result: false, errorMsg: "Password and Confirm Password are different"} :
-            {result: true, errorMsg: ""})
-      }
-      else {
-        //create
-        let validate = Object.values(this.editedItem).every(field => (field === null || field === ''))
-        let validateAny = Object.values(this.editedItem).some(field => field === '')
-        result = validate ? {result: false, errorMsg: "All fields are empty"} :
-          (validateAny ? {result: false, errorMsg: "Some fields are empty"} :
-            ((this.editedItem.password !== this.editedItem.confirmPassword) ? {result: false, errorMsg: "Password and Confirm Password are different"} :
-              {result: true, errorMsg: ""} ))
-      }
-      return result
-    },
-
-    save () {
-      let validate = this.validateModal()
-      if(validate.result) {
-        let data = this.createForm()
-        if (this.editedIndex > -1) {
-          data.append("id", this.editedItem.id)
-          axios.post('http://localhost:8000/pitbull/user/edit/', data)
-            .then(() => {
-              Object.assign(this.employees[this.editedIndex], this.editedItem)
-              this.$notify({
-                group: 'notifications-bottom-left',
-                title: 'Success',
-                text: 'Użytkownik edytowany',
-                type: 'success text-white'
-              })
-              this.close()
-            })
-            .catch(errors => {
-              this.$notify({
-                group: 'notifications-bottom-left',
-                title: 'Error',
-                text: 'Błąd edycji użytkownika',
-                type: 'error text-white'
-              })
-              this.close()
-            })
-        } else {
-          if (this.editedItem.type === "Admin") {
-            axios.post('http://localhost:8000/pitbull/superuser/create/', data)
-              .then((response) => {
-                this.employees.push(this.editedItem)
-                this.employees.slice(-1)[0]['id'] = response.data.new_superuser_id
-                this.$notify({
-                  group: 'notifications-bottom-left',
-                  title: 'Success',
-                  text: 'Użytkownik dodany',
-                  type: 'success text-white'
-                })
-                this.close()
-              })
-              .catch(errors => {
-                this.$notify({
-                  group: 'notifications-bottom-left',
-                  title: 'Error',
-                  text: 'Błąd dodawania użytkownika',
-                  type: 'error text-white'
-                })
-                this.close()
-              })
-          } else {
-            axios.post('http://localhost:8000/pitbull/user/create/', data)
-              .then((response) => {
-                this.employees.push(this.editedItem)
-                this.employees.slice(-1)[0]['id'] = response.data.new_user_id
-                this.$notify({
-                  group: 'notifications-bottom-left',
-                  title: 'Success',
-                  text: 'Użytkownik dodany',
-                  type: 'success text-white'
-                })
-                this.close()
-              })
-              .catch(errors => {
-                this.$notify({
-                  group: 'notifications-bottom-left',
-                  title: 'Error',
-                  text: 'Błąd dodawania użytkownika',
-                  type: 'error text-white'
-                })
-                this.close()
-              })
-          }
-        }
-      }
-      else {
-        this.$notify({
-          group: 'notifications-bottom-left',
-          title: 'Error',
-          text: validate.errorMsg,
-          type: 'error text-white'
-        })
-      }
-    },
-
     pageChange(value) {
       this.page = value
       this.getEmployees()
@@ -475,7 +240,7 @@ export default {
     getRequestParams(search, page, pageSize) {
       let params = {}
       if (search) params["search"] = search
-      if (page) params["page"] = page - 1
+      if (page) params["page"] = page
       if (pageSize) params["size"] = pageSize
 
       return params
