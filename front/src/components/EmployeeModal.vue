@@ -213,14 +213,23 @@ export default {
               })
               this.close()
             })
-            .catch(() => {
-              this.$notify({
-                group: 'notifications-bottom-left',
-                title: 'Error',
-                text: 'Employee edit error',
-                type: 'error text-white'
-              })
-              this.close()
+            .catch((error) => {
+              if(error.response.status === 409) {
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Error',
+                  text: error.response.data,
+                  type: 'error text-white'
+                })
+              } else {
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Error',
+                  text: 'Employee edit error',
+                  type: 'error text-white'
+                })
+                this.close()
+              }
             })
         } else {
           if (this.editedItem.type === "Admin") {
