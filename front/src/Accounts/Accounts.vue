@@ -257,7 +257,7 @@ export default {
         .then(response => {
           this.employees = response.data.users
           this.totalPages = response.data.totalPages
-          this.page = response.data.page
+          this.page = parseInt(response.data.page)
           this.adminTable = true
           this.tableKey += 1
         })

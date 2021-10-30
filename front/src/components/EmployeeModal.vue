@@ -236,13 +236,23 @@ export default {
                 })
                 this.close()
               })
-              .catch(() => {
-                this.$notify({
-                  group: 'notifications-bottom-left',
-                  title: 'Error',
-                  text: 'Employee addition error',
-                  type: 'error text-white'
-                })
+              .catch((error) => {
+                console.log(error)
+                if (error.response.status === 409) {
+                  this.$notify({
+                    group: 'notifications-bottom-left',
+                    title: 'Error',
+                    text: error.response.data,
+                    type: 'error text-white'
+                  })
+                } else {
+                  this.$notify({
+                    group: 'notifications-bottom-left',
+                    title: 'Error',
+                    text: 'Employee addition error',
+                    type: 'error text-white'
+                  })
+                }
                 this.close()
               })
           } else {
@@ -258,13 +268,23 @@ export default {
                 })
                 this.close()
               })
-              .catch(() => {
-                this.$notify({
-                  group: 'notifications-bottom-left',
-                  title: 'Error',
-                  text: 'Employee addition error',
-                  type: 'error text-white'
-                })
+              .catch((error) => {
+                console.log(error.response.status)
+                if (error.response.status === 409) {
+                  this.$notify({
+                    group: 'notifications-bottom-left',
+                    title: 'Error',
+                    text: error.response.data,
+                    type: 'error text-white'
+                  })
+                } else {
+                  this.$notify({
+                    group: 'notifications-bottom-left',
+                    title: 'Error',
+                    text: 'Employee addition error',
+                    type: 'error text-white'
+                  })
+                }
                 this.close()
               })
           }
