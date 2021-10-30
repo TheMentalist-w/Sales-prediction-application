@@ -252,8 +252,8 @@ export default {
                     text: 'Employee addition error',
                     type: 'error text-white'
                   })
+                  this.close()
                 }
-                this.close()
               })
           } else {
             axios.post('http://localhost:8000/pitbull/user/create/', data)
@@ -284,8 +284,8 @@ export default {
                     text: 'Employee addition error',
                     type: 'error text-white'
                   })
+                  this.close()
                 }
-                this.close()
               })
           }
         }
