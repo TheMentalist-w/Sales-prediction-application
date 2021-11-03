@@ -1,55 +1,40 @@
 <template>
   <v-app>
-    <v-app-bar
-      app
-      color="primary"
-      dark
-    >
-      <div class="d-flex align-center">
-        <v-img
-          alt="Vuetify Logo"
-          class="shrink mr-2"
-          contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition"
-          width="40"
-        />
-
-        <v-img
-          alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
-        />
-      </div>
-
-      <v-spacer></v-spacer>
-
-      <v-btn
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
-        target="_blank"
-        text
-      >
-        <span class="mr-2">Latest Release</span>
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn>
-    </v-app-bar>
-
+    <Navbar :key="navbarKey" />
     <v-main>
       <router-view/>
     </v-main>
+    <notifications group="notifications-bottom-left" position="bottom left" :max="max"/>
+    <Footer/>
   </v-app>
 </template>
 
 <script>
+import Vue from 'vue'
+import Notifications from 'vue-notification'
+import Navbar from './components/shared/Navbar';
+import Footer from "./components/shared/Footer";
+Vue.use(Notifications)
 
 export default {
   name: 'App',
-
-  data: () => ({
-    //
-  })
+  components: {
+    Navbar,
+    Footer,
+  },
+  data() {
+    return {
+      max:3,
+      navbarKey: 0
+    }
+  },
+  watch: {
+    $route: function() {
+      this.navbarKey += 1
+    }
+  },
+  beforeMount() {
+    this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === "true"
+  }
 }
 </script>
