@@ -13,6 +13,5 @@ export class Application {
 
     async run() {
         await this.startup();
-        await this.databaseService.purgeDatabase();
     }
 }
