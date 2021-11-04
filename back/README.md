@@ -16,3 +16,7 @@ python manage.py migrate
 ```
 python manage.py runserver [port or address:port]
 ```
+## Running PostgreSQL database (using Docker)
+```
+docker-compose up
+```
