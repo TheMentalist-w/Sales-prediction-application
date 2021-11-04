@@ -26,6 +26,7 @@ SECRET_KEY = 't1^+qpb0!4yg3s#%$%!l1ss3!bh9*&p7^g1jct=r48^_brmd7@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 AUTH_USER_MODEL = 'pitbull.User'
 
 ALLOWED_HOSTS = []
@@ -99,11 +100,14 @@ WSGI_APPLICATION = 'back.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgres',
+        'USER': 'admin',
+        'PASSWORD': 'admin',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
