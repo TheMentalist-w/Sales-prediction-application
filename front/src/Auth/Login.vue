@@ -1,5 +1,5 @@
 <template>
-<div :key="loggedKey" v-if="loginBox">
+<div class="loginBox" :key="loggedKey" v-if="loginBox">
   <v-card width="30%" class="mx-auto mt-16">
     <v-card-title style="justify-content: center">Login</v-card-title>
     <v-card-text>
@@ -7,6 +7,7 @@
       <div class="mt-6"/>
       <v-text-field
         class="username"
+        data-test="username"
         type="text"
         label="Username or Email"
         prepend-icon="mdi-account-circle"
@@ -17,6 +18,8 @@
       <v-text-field
         :type="showPassword ? 'text' : 'password'"
         id="password"
+        class="password"
+        data-test="password"
         label="Password"
         prepend-icon="mdi-lock"
         v-model="password"
@@ -51,7 +54,7 @@ export default {
       showPassword: false,
       email: null,
       password: null,
-      loginBox: true,
+      loginBox: false,
       loggedKey: 0,
       rules: {
         required: value => !!value || 'Required.'
