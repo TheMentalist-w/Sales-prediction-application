@@ -31,6 +31,8 @@ def GetUsersListView(request):
             users_data = list(get_user_model().objects.values())
         
         paginator = Paginator(users_data, size)
+        if paginator.num_pages < int(page):
+            page = paginator.num_pages
         query_set = paginator.page(page)
         users_prepared = [{
                                 'id':i['id'],

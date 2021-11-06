@@ -93,7 +93,9 @@ import Vue from 'vue'
 import Vuetify from 'vuetify'
 import DialogDelete from "../components/DialogDelete"
 import EmployeeModal from "../components/EmployeeModal"
+import VueCookies from 'vue-cookies'
 Vue.use(Vuetify)
+Vue.use(VueCookies)
 
 export default {
   name: "Accounts",
@@ -204,11 +206,13 @@ export default {
     },
 
     deleteFromArray (item) {
-      this.employees.splice(item, 1)
+      //this.employees.splice(item, 1)
+      this.getEmployees()
     },
 
     addEmployee (item) {
-      this.employees.push(item)
+      //this.employees.push(item)
+      this.getEmployees()
     },
 
     editEmployee (item) {
