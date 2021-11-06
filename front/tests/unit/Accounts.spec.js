@@ -46,14 +46,14 @@ describe('Accounts.vue', () => {
       {
         id: 1,
         username: "test1",
-        full_name: "test test",
+        employee: "test test",
         email: "test@test.test",
         type: "Normal"
       },
       {
         id: 2,
         username: "test2",
-        full_name: "test2 test2",
+        employee: "test2 test2",
         email: "test2@test.test",
         type: "Admin"
       }

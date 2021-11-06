@@ -21,6 +21,7 @@
             md="6"
           >
             <v-text-field
+              class="emailField"
               v-model="editedItem.email"
               type="email"
               label="Email"
@@ -32,6 +33,7 @@
             md="6"
           >
             <v-text-field
+              class="usernameField"
               :items="type"
               v-model="editedItem.username"
               label="Username"
@@ -64,6 +66,7 @@
             md="6"
           >
             <v-text-field
+              class="passwordField"
               v-if="showPasswordModal"
               v-model="editedItem.password"
               type="password"
