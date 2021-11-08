@@ -12,6 +12,7 @@
       text
       rounded
       v-if="adminLoggedIn"
+      data-test="accounts"
     >
       <span class="mr-2">Accounts</span>
     </v-btn>
@@ -20,6 +21,7 @@
       rounded
       @click="logOut"
       v-if="loggedIn"
+      data-test="logout"
     >
       <span class="mr-2">Logout</span>
     </v-btn>

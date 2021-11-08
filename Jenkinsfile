@@ -18,5 +18,10 @@ pipeline {
                 sh 'cd front && npm run build'
             }
         }
+        stage('Frontend Test') {
+            steps {
+                sh 'cd front && npm run test:unit'
+            }
+        }
     }
 }

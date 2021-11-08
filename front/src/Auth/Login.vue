@@ -1,11 +1,13 @@
 <template>
-<v-content :key="loggedKey" v-if="loginBox">
+<div class="loginBox" :key="loggedKey" v-if="loginBox">
   <v-card width="30%" class="mx-auto mt-16">
     <v-card-title style="justify-content: center">Login</v-card-title>
     <v-card-text>
       <v-divider></v-divider>
       <div class="mt-6"/>
       <v-text-field
+        class="username"
+        data-test="username"
         type="text"
         label="Username or Email"
         prepend-icon="mdi-account-circle"
@@ -16,6 +18,8 @@
       <v-text-field
         :type="showPassword ? 'text' : 'password'"
         id="password"
+        class="password"
+        data-test="password"
         label="Password"
         prepend-icon="mdi-lock"
         v-model="password"
@@ -30,7 +34,7 @@
       <v-btn x-large class="mx-auto mt-5 success" @click="logIn">Login</v-btn>
     </v-card-actions>
   </v-card>
-</v-content>
+</div>
 </template>
 
 <script>
