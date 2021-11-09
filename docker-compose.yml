@@ -11,7 +11,7 @@ services:
             - POSTGRES_PASSWORD=admin
             - POSTGRES_DB=postgres
         volumes:
-            -   ./database/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+            -   ./database/setup.sql/setup.sql:/docker-entrypoint-initdb.d/setup.sql
     pgadmin:
         container_name: pgadmin
         image:  dpage/pgadmin4

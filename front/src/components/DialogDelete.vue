@@ -27,18 +27,8 @@ export default {
     deleteItemConfirm () {
       let username = this.username
       let index = this.editedIndex
-      axios.get('http://localhost:8000/pitbull/user/current/')
-        .then((response) => {
-          if(response.data.username === username) {
-            this.$notify({
-              group: 'notifications-bottom-left',
-              title: 'Error',
-              text: 'Cannot delete yourself',
-              type: 'error text-white'
-            })
-          } else {
-            axios.delete('http://localhost:8000/pitbull/user/delete/'+this.deleteId.toString())
-              .then(() => {
+      axios.delete('http://localhost:8000/pitbull/user/delete/'+this.deleteId.toString())
+        .then(() => {
                 this.$emit('deleteFromArray', index)
                 this.$notify({
                   group: 'notifications-bottom-left',
@@ -47,12 +37,21 @@ export default {
                   type: 'success text-white'
                 })
               })
-              .catch(() => this.$notify({
-                group: 'notifications-bottom-left',
-                title: 'Error',
-                text: 'Error deleting user',
-                type: 'error text-white'
-              }))
+        .catch((error) => {
+          if(error.response.status === 409) {
+            this.$notify({
+              group: 'notifications-bottom-left',
+              title: 'Error',
+              text: error.response.data,
+              type: 'error text-white'
+            })
+          } else {
+            this.$notify({
+              group: 'notifications-bottom-left',
+              title: 'Error',
+              text: 'Error deleting user',
+              type: 'error text-white'
+            })
           }
         })
       this.closeDelete()
