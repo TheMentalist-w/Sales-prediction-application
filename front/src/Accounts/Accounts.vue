@@ -222,7 +222,7 @@ export default {
     },
 
     editEmployee (item) {
-      Object.assign(this.employees[this.editedIndex], item)
+      this.getEmployees()
     },
 
     close () {
