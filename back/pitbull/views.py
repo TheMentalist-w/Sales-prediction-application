@@ -10,16 +10,16 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 
 @api_view(['GET'])
-@permission_classes((IsAdminUser, )) 
+@permission_classes((IsAdminUser, ))
 def GetUsersListView(request):
-        
+
         users_data = None
 
         page = request.GET.get('page',1)
         size = request.GET.get('size',8)
-        
+
         search_keyword = request.GET.get('search','')
-        
+
         if search_keyword != '':
             users_data = list(get_user_model().objects.filter(
                 Q(first_name__icontains = search_keyword) |
@@ -29,7 +29,7 @@ def GetUsersListView(request):
             )
         else:
             users_data = list(get_user_model().objects.values())
-        
+
         paginator = Paginator(users_data, size)
         if paginator.num_pages < int(page):
             page = paginator.num_pages
@@ -47,7 +47,7 @@ def GetUsersListView(request):
 
 
 @api_view(['DELETE'])
-@permission_classes((IsAdminUser, )) 
+@permission_classes((IsAdminUser, ))
 def DeleteUserView(request,id):
 
         if request.user.id == id:
@@ -56,11 +56,11 @@ def DeleteUserView(request,id):
         user = get_object_or_404(get_user_model(), pk = id)
         user.delete()
 
-        return HttpResponse("User account deleted!") 
+        return HttpResponse("User account deleted!")
 
 
 @api_view(['POST'])
-@permission_classes((IsAdminUser, )) 
+@permission_classes((IsAdminUser, ))
 def CreateUserView(request):
     username = request.POST.get('username','')
     email = request.POST.get('email','')
@@ -79,10 +79,10 @@ def CreateUserView(request):
             last_name = last_name
         )
 
-        return JsonResponse({'new_user_id': user.id}) 
+        return JsonResponse({'new_user_id': user.id})
 
 @api_view(['POST'])
-@permission_classes((IsAdminUser, )) 
+@permission_classes((IsAdminUser, ))
 def CreateSuperuserView(request):
     username = request.POST.get('username','')
     email = request.POST.get('email','')
@@ -100,12 +100,12 @@ def CreateSuperuserView(request):
             first_name = first_name,
             last_name = last_name
         )
-    
-        return JsonResponse({'new_superuser_id': user.id}) 
+
+        return JsonResponse({'new_superuser_id': user.id})
 
 
 @api_view(['POST'])
-@permission_classes((IsAdminUser, )) 
+@permission_classes((IsAdminUser, ))
 def EditUserView(request):
 
         id = request.POST.get('id',-1)
@@ -121,6 +121,9 @@ def EditUserView(request):
         if str(request.user.id) == id and is_superuser.capitalize() != str(request.user.is_superuser):
             return HttpResponse("Can't change your own account type!", status=409)
 
+        for u in get_user_model().objects.filter(Q(username=username) | Q(email=email)):
+            if str(u.id) != id: return HttpResponse("User with given username or email already exists!", status=409)
+
         if username != '': user.username = username
         if first_name != '': user.first_name = first_name
         if last_name != '': user.last_name = last_name
@@ -128,7 +131,7 @@ def EditUserView(request):
         if password != '':
             print(password)
             user.set_password(password)
-        if is_superuser == 'true': 
+        if is_superuser == 'true':
             user.is_superuser = True
             user.is_staff = True
         elif is_superuser == 'false':
@@ -136,7 +139,7 @@ def EditUserView(request):
             user.is_staff = False
 
         user.save()
-        
+
         return HttpResponse("User account edited!")
 
 @api_view(['POST'])
@@ -154,8 +157,8 @@ def LoginView(request):
 
     if username_result is not None:
         token_data = RefreshToken.for_user(username_result)
-        data = {'text':'Login successful!','access': str(token_data.access_token),'refresh':str(token_data)} 
-        return JsonResponse(data) 
+        data = {'text':'Login successful!','access': str(token_data.access_token),'refresh':str(token_data)}
+        return JsonResponse(data)
     else:
         return HttpResponseNotFound("Login failed! User not found or password is incorrect")
 
