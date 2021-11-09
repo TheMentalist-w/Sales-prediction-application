@@ -125,8 +125,14 @@ export default {
           width: '30%'
         },
         {
-          text: 'Employee',
-          value: 'employee',
+          text: 'Name',
+          value: 'first_name',
+          sortable: false,
+          width: '30%'
+        },
+        {
+          text: 'Surname',
+          value: 'last_name',
           sortable: false,
           width: '30%'
         },
@@ -141,7 +147,8 @@ export default {
       employees: [],
       editedIndex: -1,
       editedItem: {
-        employee: '',
+        first_name: '',
+        last_name: '',
         email: '',
         username: '',
         type: '',
@@ -149,7 +156,8 @@ export default {
         password: '',
       },
       defaultItem: {
-        employee: '',
+        first_name: '',
+        last_name: '',
         email: '',
         username: '',
         type: '',

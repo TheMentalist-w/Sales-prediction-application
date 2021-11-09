@@ -37,7 +37,8 @@ def GetUsersListView(request):
         users_prepared = [{
                                 'id':i['id'],
                                 'username':i['username'],
-                                'employee':i['first_name'] + " " + i['last_name'] if i['last_name'] else i['first_name'] if i['first_name'] else i['username'],
+                                'first_name':i['first_name'],
+                                 'last_name':i['last_name'],
                                 'email':i['email'],
                                 'type': 'Admin' if i['is_superuser'] else 'Normal'
                             }  for i in query_set
@@ -117,7 +118,9 @@ def EditUserView(request):
         if first_name != '': user.first_name = first_name
         if last_name != '': user.last_name = last_name
         if email != '': user.email = email
-        if password != '': user.set_password(password)
+        if password != '':
+            print(password)
+            user.set_password(password)
         if is_superuser == 'true': 
             user.is_superuser = True
             user.is_staff = True

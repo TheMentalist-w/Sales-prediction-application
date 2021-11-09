@@ -12,10 +12,21 @@
             md="6"
           >
             <v-text-field
-              v-model="editedItem.employee"
-              label="Employee"
+              v-model="editedItem.first_name"
+              label="Name"
             ></v-text-field>
           </v-col>
+          <v-col
+            cols="12"
+            md="6"
+          >
+            <v-text-field
+              v-model="editedItem.last_name"
+              label="Surname"
+            ></v-text-field>
+          </v-col>
+        </v-row>
+        <v-row>
           <v-col
             cols="12"
             md="6"
@@ -153,12 +164,12 @@ export default {
   methods: {
     createForm() {
       let data = new FormData()
-      data.append("first_name", this.editedItem.employee.split(' ')[0])
+      data.append("first_name", this.editedItem.first_name)
       data.append("email",this.editedItem.email)
-      data.append("last_name", this.editedItem.employee.split(' ')[1])
+      data.append("last_name", this.editedItem.last_name)
       data.append("username",this.editedItem.username)
-      data.append("password", this.editedItem.password)
-      data.append("confirmPassword", this.editedItem.confirmPassword)
+      data.append("password", this.editedItem.password ? this.editedItem.password : '')
+      data.append("confirmPassword", this.editedItem.confirmPassword ? this.editedItem.password : '')
       return data
     },
 
