@@ -51,7 +51,7 @@ def GetUsersListView(request):
 def DeleteUserView(request,id):
 
         if request.user.id == id:
-            return HttpResponse("Can't delete yourself!", status=409)
+            return HttpResponse("You can't delete your own account!", status=409)
 
         user = get_object_or_404(get_user_model(), pk = id)
         user.delete()
@@ -118,7 +118,7 @@ def EditUserView(request):
 
         user = get_object_or_404(get_user_model(), pk = id)
 
-        if request.user.id == id and is_superuser != request.user.is_superuser:
+        if str(request.user.id) == id and is_superuser.capitalize() != str(request.user.is_superuser):
             return HttpResponse("Can't change your own account type!", status=409)
 
         if username != '': user.username = username
