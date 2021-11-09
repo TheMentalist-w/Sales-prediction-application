@@ -48,6 +48,10 @@ def GetUsersListView(request):
 @api_view(['DELETE'])
 @permission_classes((IsAdminUser, )) 
 def DeleteUserView(request,id):
+
+        if request.user.id == id:
+            return HttpResponse("Can't delete yourself!", status=409)
+
         user = get_object_or_404(get_user_model(), pk = id)
         user.delete()
 
@@ -112,6 +116,9 @@ def EditUserView(request):
         is_superuser = request.POST.get('is_superuser','')
 
         user = get_object_or_404(get_user_model(), pk = id)
+
+        if request.user.id == id and is_superuser != request.user.is_superuser:
+            return HttpResponse("Can't change your own account type!", status=409)
 
         if username != '': user.username = username
         if first_name != '': user.first_name = first_name
