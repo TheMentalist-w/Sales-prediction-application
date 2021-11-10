@@ -10,6 +10,22 @@
       :key="stockKey"
       v-if="stockTable"
     >
+      <template v-slot:top>
+        <v-toolbar
+          flat
+        >
+          <v-text-field
+            v-model="search"
+            append-icon="mdi-magnify"
+            label="Search"
+            @click:append="searchProducts"
+            @keyup.enter="searchProducts"
+            single-line
+            hide-details
+          ></v-text-field>        
+        </v-toolbar>
+      </template>
+
       <template v-slot:item.actions="{ item }">
         <v-icon
           class="mr-2"
@@ -43,14 +59,15 @@ Vue.use(Vuetify)
 Vue.use(VueCookies)
 
 export default {
-  name: 'Products',
+  name: 'Index',
   data() {
     return {
       stockKey: 0,
-      stockTable: false,
+      stockTable: true,
       page: 1,
       totalPages: 1,
       pageSize: 8,
+      search: '',
       products: [],
       headers: [
         {
@@ -96,8 +113,9 @@ export default {
     }
   },
   methods: {
-    getRequestParams(page, pageSize) {
+    getRequestParams(search, page, pageSize) {
       let params = {}
+      if (search) params["search"] = search
       if (page) params["page"] = page
       if (pageSize) params["size"] = pageSize
 
@@ -106,6 +124,7 @@ export default {
 
     getProducts() {
       const params = this.getRequestParams(
+        this.search,
         this.page,
         this.pageSize
       )
@@ -123,13 +142,18 @@ export default {
         })
     },
 
+    searchProducts() {
+      this.page = 1
+      this.getProducts()
+    },
+
     pageChange(value) {
       this.page = value
-      this.getEmployees()
+      this.getProducts()
     },
 
     productDetails(item) {
-
+      this.$router.push('/product/' + item.id)
     },
 
   },
