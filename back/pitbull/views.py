@@ -177,3 +177,50 @@ def CurrentUserView(request):
     }
 
     return JsonResponse(data)
+
+'''
+    PRODUCT LIST COMPONENT
+'''
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def GetProductsListView(request):
+
+        users_data = None
+
+        page = request.GET.get('page',1)
+        size = request.GET.get('size',8)
+
+        '''search_keyword = request.GET.get('search','')
+
+        if search_keyword != '':
+            users_data = list(get_user_model().objects.filter(
+                Q(first_name__icontains = search_keyword) |
+                Q(last_name__icontains = search_keyword) |
+                Q(username__icontains = search_keyword) |
+                Q(email__icontains = search_keyword)).values()
+            )
+        else:
+            users_data = list(get_user_model().objects.values())
+
+        paginator = Paginator(users_data, size)
+        if paginator.num_pages < int(page):
+            page = paginator.num_pages
+        query_set = paginator.page(page)
+        users_prepared = [{
+                                'id':i['id'],
+                                'username':i['username'],
+                                'first_name':i['first_name'],
+                                 'last_name':i['last_name'],
+                                'email':i['email'],
+                                'type': 'Admin' if i['is_superuser'] else 'Normal'
+                            }  for i in query_set
+                         ]'''
+        users_prepared = [ {
+            'product_name': 'Skarpetki',
+            'state': 'używane',
+            'product_prediction': '30dni',
+            'id': 1
+        }]
+        return JsonResponse({'products': users_prepared, 'totalPages': 1, 'page': page})
+
