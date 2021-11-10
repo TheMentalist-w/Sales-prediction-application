@@ -17,6 +17,15 @@
       <span class="mr-2">Accounts</span>
     </v-btn>
     <v-btn
+      href="/"
+      text
+      rounded
+      v-if="loggedIn"
+      data-test="logout"
+    >
+      <span class="mr-2">Stock</span>
+    </v-btn>
+    <v-btn
       text
       rounded
       @click="logOut"
