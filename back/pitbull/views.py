@@ -187,10 +187,11 @@ def CurrentUserView(request):
 def GetProductsListView(request):
 
         users_data = None
-
+        #Będzie jeszcze przeszukiwanie po grupach:
+        #parametr będzie array'em o nazwie filteredGroups i będzie zawierał nazwy grup, których produkty chcemy wyświetlić
         page = request.GET.get('page',1)
         size = request.GET.get('size',8)
-
+        groups = request.GET.getlist('filteredGroups[]')
         '''search_keyword = request.GET.get('search','')
 
         if search_keyword != '':
@@ -220,7 +221,16 @@ def GetProductsListView(request):
             'product_name': 'Skarpetki',
             'state': 'używane',
             'product_prediction': '30dni',
-            'id': 1
+            'id': 1,
+            'product_group':'odzież'
         }]
         return JsonResponse({'products': users_prepared, 'totalPages': 1, 'page': page})
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def GetProductsGroups(request):
+    users_prepared = [
+        "Odzież", "AGD", "Jedzenie"
+    ]
+    return JsonResponse({'groups': users_prepared})
 

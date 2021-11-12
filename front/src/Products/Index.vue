@@ -23,6 +23,30 @@
             single-line
             hide-details
           ></v-text-field>
+          <v-spacer></v-spacer>
+          <v-dialog
+            v-model="dialog"
+            max-width="500px"
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                color="primary"
+                dark
+                rounded
+                class="mb-2"
+                v-bind="attrs"
+                v-on="on"
+              >
+                Filter
+              </v-btn>
+            </template>
+            <GroupFilter
+              @closeFilter="closeFilter"
+              @filterProducts="filterProducts"
+              :groups="groups"
+              :key="dialogKey"
+            />
+          </v-dialog>
         </v-toolbar>
       </template>
       <template v-slot:item.product_group="{ item }">
@@ -63,6 +87,7 @@ import Vue from 'vue'
 import Vuetify from 'vuetify'
 import VueCookies from "vue-cookies"
 import axios from 'axios'
+import GroupFilter from "./components/GroupFilter"
 Vue.use(Vuetify)
 Vue.use(VueCookies)
 
@@ -76,7 +101,11 @@ export default {
       totalPages: 1,
       pageSize: 8,
       search: '',
+      dialog: false,
+      dialogKey: 0,
       products: [],
+      groups: [],
+      filteredGroups: [],
       headers: [
         {
           text: 'Product',
@@ -117,31 +146,50 @@ export default {
 
     }
   },
-  mounted() {
+  components: {
+    GroupFilter
+  },
+  watch: {
+    dialog (val) {
+      val || this.closeFilter()
+    },
+  },
+  async mounted () {
     let access = this.$cookies.get('access')
     let refresh = this.$cookies.get('refresh')
     if(access || refresh){
-      this.getProducts()
+      await this.getGroups()
+      await this.getProducts()
     }
     else {
-      this.$router.push('/login')
+      await this.$router.push('/login')
     }
   },
   methods: {
-    getRequestParams(search, page, pageSize) {
+    getRequestParams(search, page, pageSize, filteredGroups) {
       let params = {}
       if (search) params["search"] = search
       if (page) params["page"] = page
       if (pageSize) params["size"] = pageSize
+      if (filteredGroups) params["filteredGroups"] = filteredGroups
 
       return params
+    },
+
+    getGroups() {
+      axios.get('http://localhost:8000/pitbull/products/groups')
+        .then(response => {
+          this.groups = response.data.groups.map(x => Object({title: x, checked: false}))
+          this.filteredGroups = response.data.groups
+        })
     },
 
     getProducts() {
       const params = this.getRequestParams(
         this.search,
         this.page,
-        this.pageSize
+        this.pageSize,
+        this.filteredGroups
       )
 
       axios.get('http://localhost:8000/pitbull/products/', {params: params})
@@ -153,7 +201,7 @@ export default {
           this.stockKey += 1
         })
         .catch(() => {
-          this.$router.push('/')
+          this.$router.push('/login')
         })
     },
 
@@ -171,6 +219,25 @@ export default {
       this.$router.push('/product/' + item.id)
     },
 
+    filterProducts(filters) {
+      this.page = 1
+      this.filteredGroups = filters.map(x => x.title)
+      this.groups = this.groups.map(x => {
+        let check = filters.find(y => y.title === x.title)
+        if(check) {
+          return Object({title: x.title, checked: true})
+        } else {
+          return Object({title: x.title, checked: false})
+        }
+      })
+      this.getProducts()
+      this.closeFilter()
+    },
+
+    closeFilter() {
+      this.dialog = false
+      this.dialogKey += 1
+    }
   },
 }
 </script>
