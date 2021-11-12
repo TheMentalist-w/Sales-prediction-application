@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Products from '../Products/Products.vue'
+import Products from '../Products/Index'
+import ProductShow from '../Products/Show'
 import Login from '../Auth/Login'
 import Accounts from "../Accounts/Accounts"
 
@@ -16,6 +17,11 @@ const routes = [
     path: '/accounts',
     name: 'Accounts',
     component: Accounts
+  },
+  {
+    path: '/product/:id',
+    name: 'ProductShow',
+    component: ProductShow
   },
   {
     path: '/',
