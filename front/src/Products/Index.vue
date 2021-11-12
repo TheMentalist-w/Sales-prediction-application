@@ -22,10 +22,18 @@
             @keyup.enter="searchProducts"
             single-line
             hide-details
-          ></v-text-field>        
+          ></v-text-field>
         </v-toolbar>
       </template>
-
+      <template v-slot:item.product_group="{ item }">
+        <v-btn
+          class="mr-2"
+          color="primary"
+          rounded
+        >
+          {{ item.product_group }}
+        </v-btn>
+      </template>
       <template v-slot:item.actions="{ item }">
         <v-icon
           class="mr-2"
@@ -85,9 +93,16 @@ export default {
           width: '30%'
         },
         {
-          text: 'Predicted ',
+          text: 'Predicted',
           align: 'start',
           value: 'product_prediction',
+          sortable: false,
+          width: '30%'
+        },
+        {
+          text: 'Group',
+          align: 'start',
+          value: 'product_group',
           sortable: false,
           width: '30%'
         },
