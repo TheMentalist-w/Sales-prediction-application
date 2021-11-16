@@ -1,38 +1,34 @@
 <template>
-  <v-card>
-    <v-card-title class="text-h5">Filter options</v-card-title>
-    <v-card-text>
-      <v-container>
-        <v-col>
-          <v-checkbox
-            label="All"
-            v-model="isCheckAll"
-            @click="checkAll"
-            color="primary"
-            hide-details
-          ></v-checkbox>
-        </v-col>
-        <v-col
-          v-for="group in showGroups"
-          :key="group.title"
+  <v-container fluid>
+    <v-select
+      style="margin-top: 25px"
+      v-model="filteredGroups"
+      :items="groups"
+      @change="filterProducts"
+      label="Filter"
+      multiple
+      ref="selectComponent"
+    >
+      <template v-slot:prepend-item>
+        <v-list-item
+          ripple
+          @click="toggle"
         >
-          <v-checkbox
-            :label="group.title"
-            v-model="group.checked"
-            @change='updateCheckall'
-            color="primary"
-            hide-details
-          ></v-checkbox>
-        </v-col>
-      </v-container>
-    </v-card-text>
-    <v-card-actions>
-      <v-spacer></v-spacer>
-      <v-btn color="red darken-1" rounded text @click="closeFilter">Cancel</v-btn>
-      <v-btn color="green darken-1" rounded text @click="filterProducts">Filter</v-btn>
-      <v-spacer></v-spacer>
-    </v-card-actions>
-  </v-card>
+          <v-list-item-action>
+            <v-icon :color="filteredGroups.length > 0 ? 'green' : ''">
+              {{ icon }}
+            </v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>
+              Select All
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-divider class="mt-2"></v-divider>
+      </template>
+    </v-select>
+  </v-container>
 </template>
 
 <script>
@@ -40,43 +36,51 @@ export default {
   name: "GroupFilter",
   data() {
     return {
-      isCheckAll: false,
-      checked: [],
-      showGroups: [],
+      groups: [],
+      filteredGroups: [],
     }
   },
   props: {
-    groups: Array,
+    filters: Array,
+    filtered: Array,
   },
   mounted() {
-    this.checked = this.groups.filter(x => x.checked)
-    this.showGroups = JSON.parse(JSON.stringify(this.groups));
-    this.updateCheckall()
+    this.groups = this.filters.map(x => x)
+    this.filteredGroups = this.filtered.map(x => x)
+  },
+  computed: {
+    checkAllFilters() {
+      return this.filteredGroups.length === this.groups.length
+    },
+    checkSomeFilters() {
+      return this.filteredGroups.length > 0 && !this.checkAllFilters
+    },
+    icon() {
+      if (this.checkAllFilters) return 'mdi-close-box'
+      if (this.checkSomeFilters) return 'mdi-minus-box'
+      return 'mdi-checkbox-blank-outline'
+    },
   },
   methods: {
-    updateCheckall() {
-      let check = this.showGroups.every(x => x.checked)
-      this.isCheckAll = !!check
-    },
-
-    checkAll() {
-      if(this.isCheckAll) {
-        this.showGroups = this.showGroups.map(x => Object({title: x.title, checked: true}))
-      }
-    },
-
     filterProducts() {
-      this.checked = this.showGroups.filter(x => x.checked)
-      this.$emit('filterProducts', this.checked)
+      this.$emit('filterProducts', this.filteredGroups)
     },
 
-    closeFilter() {
-      this.$emit('closeFilter')
-    }
+    toggle () {
+      this.$nextTick(() => {
+        if (this.checkAllFilters) {
+          this.filteredGroups = []
+          this.filterProducts()
+        } else {
+          this.filteredGroups = this.groups.slice()
+          this.filterProducts()
+        }
+      })
+    },
   }
 }
 </script>
 
-<style scoped>
+<style>
 
 </style>

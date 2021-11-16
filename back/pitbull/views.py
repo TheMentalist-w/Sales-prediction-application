@@ -230,7 +230,7 @@ def GetProductsListView(request):
 @permission_classes((IsAuthenticated, ))
 def GetProductsGroups(request):
     users_prepared = [
-        "Odzież", "AGD", "Jedzenie"
+        "Odzież", "AGD", "Jedzenie", "Plis", "Work", ";---;"
     ]
     return JsonResponse({'groups': users_prepared})
 
