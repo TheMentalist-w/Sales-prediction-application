@@ -216,15 +216,16 @@ def GetProductsListView(request):
     with pyodbc.connect(
             'DRIVER=' + driver + ';SERVER=tcp:' + server + ';PORT=80;DATABASE=' + database + ';UID=' + username + ';PWD=' + password) as conn:
         with conn.cursor() as cursor:
-            cursor.execute("SELECT tw_Nazwa, (SELECT SUM(st_Stan) from tw_stan WHERE st_TowId = tw_Id), tw_Id, (SELECT grt_Nazwa FROM sl_GrupaTw WHERE grt_Id = tw_IdGrupa) as category FROM tw__towar;")
+            cursor.execute("SELECT tw_Nazwa, tw_Symbol, (SELECT SUM(st_Stan) from tw_stan WHERE st_TowId = tw_Id), tw_Id, (SELECT grt_Nazwa FROM sl_GrupaTw WHERE grt_Id = tw_IdGrupa) as category FROM tw__towar;")
             for row in cursor.fetchall():
                 products.append(
                     {
                         'product_name': row[0],
-                        'state': int(row[1]),
+                        'product_symbol': row[1],
+                        'state': int(row[2]),
                         'product_prediction': random.randint(1, 50),
-                        'id': row[2],
-                        'product_group': row[3]
+                        'id': row[3],
+                        'product_group': row[4]
                     }
                 )
 
