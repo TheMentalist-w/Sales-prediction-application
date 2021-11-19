@@ -191,6 +191,7 @@ def CurrentUserView(request):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 def GetProductsGroupsView(request):
+    categories = []
     with pyodbc.connect(
             'DRIVER=' + driver + ';SERVER=tcp:' + server + ';PORT=80;DATABASE=' + database + ';UID=' + username + ';PWD=' + password) as conn:
         with conn.cursor() as cursor:
@@ -207,8 +208,8 @@ def GetProductsListView(request):
     page = request.GET.get('page', 1)
     size = request.GET.get('size', 8)
     categories = request.GET.getlist('filteredGroups[]', [])
+    characteristics = request.GET.getlist('filteredCharacteristics[]', [])
     search = request.GET.get('search', '')
-    order_direction = request.GET.get('order_direction', 'ASC')
 
     products = []
     random.seed(0)
@@ -216,7 +217,12 @@ def GetProductsListView(request):
     with pyodbc.connect(
             'DRIVER=' + driver + ';SERVER=tcp:' + server + ';PORT=80;DATABASE=' + database + ';UID=' + username + ';PWD=' + password) as conn:
         with conn.cursor() as cursor:
-            cursor.execute("SELECT tw_Nazwa, tw_Symbol, (SELECT SUM(st_Stan) from tw_stan WHERE st_TowId = tw_Id), tw_Id, (SELECT grt_Nazwa FROM sl_GrupaTw WHERE grt_Id = tw_IdGrupa) as category FROM tw__towar;")
+            cursor.execute("SELECT tw_Nazwa, tw_Symbol, "
+                           "(SELECT SUM(st_Stan) from tw_stan WHERE st_TowId = tw_Id), "
+                           "tw_Id, "
+                           "(SELECT grt_Nazwa FROM sl_GrupaTw WHERE grt_Id = tw_IdGrupa) as product_group, "
+                           "(select STRING_AGG(ctw_Nazwa, ';')  FROM sl_CechaTw  where ctw_Id = tw_Id) as properties "
+                           "FROM tw__towar ;")
             for row in cursor.fetchall():
                 products.append(
                     {
@@ -225,7 +231,8 @@ def GetProductsListView(request):
                         'state': int(row[2]),
                         'product_prediction': random.randint(1, 50),
                         'id': row[3],
-                        'product_group': row[4]
+                        'product_group': row[4],
+                        'characteristics': row[5] if row[5] is not None else ''
                     }
                 )
 
@@ -235,8 +242,10 @@ def GetProductsListView(request):
         if ( product['product_group'] in categories or not categories ) and (
                     search.lower() in product['product_name'].lower()
                     or search.lower() in product['product_symbol'].lower()
-                    or search == ''
-                ):  products_processed.append(product)
+                    or search == '') and (
+                    len(set(characteristics).intersection(set(product['characteristics'].split(';')))) > 0
+                    or not characteristics
+                    ): products_processed.append(product)
 
     paginator = Paginator(products_processed, size)
 
@@ -246,6 +255,22 @@ def GetProductsListView(request):
     query_set = [prod for prod in paginator.page(page)]
 
     return JsonResponse({'products': query_set, 'totalPages': paginator.num_pages, 'page': page})
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def GetAvailablePropertiesList(request):
+
+    categories = []
+
+    with pyodbc.connect(
+            'DRIVER=' + driver + ';SERVER=tcp:' + server + ';PORT=80;DATABASE=' + database + ';UID=' + username + ';PWD=' + password) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "select ctw_Nazwa from sl_CechaTw where ctw_Id in (select distinct cht_IdCecha from tw_CechaTw);")
+            categories = [item[0] for item in cursor.fetchall()]
+
+    return JsonResponse({'characteristics': categories})
+
 
 
 # only for development purposes!
