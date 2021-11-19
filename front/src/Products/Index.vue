@@ -27,6 +27,16 @@
           <v-col
             cols="2"
           >
+            <CharacteristicFilter
+              :key="characteristicKey"
+              :filters="characteristics"
+              :filtered="filteredCharacteristics"
+              @filterProducts="filterCharacteristics"
+            />
+          </v-col>
+          <v-col
+            cols="2"
+          >
             <GroupFilter
               :key="filterKey"
               :filters="groups"
@@ -75,6 +85,7 @@ import Vuetify from 'vuetify'
 import VueCookies from "vue-cookies"
 import axios from 'axios'
 import GroupFilter from "./components/GroupFilter"
+import CharacteristicFilter from "./components/CharacteristicFilter"
 
 Vue.use(Vuetify)
 Vue.use(VueCookies)
@@ -93,6 +104,9 @@ export default {
       groups: [],
       filteredGroups: [],
       filterKey: 0,
+      characteristics: [],
+      filteredCharacteristics: [],
+      characteristicKey: 0,
       headers: [
         {
           text: 'Symbol',
@@ -145,6 +159,7 @@ export default {
     let refresh = this.$cookies.get('refresh')
     if(access || refresh){
       await this.getGroups()
+      await this.getCharacteristics()
       await this.getProducts()
     }
     else {
@@ -152,15 +167,16 @@ export default {
     }
   },
   components: {
-    GroupFilter
+    GroupFilter, CharacteristicFilter
   },
   methods: {
-    getRequestParams(search, page, pageSize, filteredGroups) {
+    getRequestParams(search, page, pageSize, filteredGroups, filteredCharacteristics) {
       let params = {}
       if (search) params["search"] = search
       if (page) params["page"] = page
       if (pageSize) params["size"] = pageSize
       if (filteredGroups) params["filteredGroups"] = filteredGroups
+      if (filteredCharacteristics) params["filteredCharacteristics"] = filteredCharacteristics
 
       return params
     },
@@ -173,12 +189,21 @@ export default {
         })
     },
 
+    getCharacteristics() {
+      axios.get('http://localhost:8000/pitbull/products/characteristics')
+        .then(response => {
+          this.characteristics = response.data.characteristics
+          this.characteristicKey += 1
+        })
+    },
+
     getProducts() {
       const params = this.getRequestParams(
         this.search,
         this.page,
         this.pageSize,
-        this.filteredGroups
+        this.filteredGroups,
+        this.filteredCharacteristics
       )
 
       axios.get('http://localhost:8000/pitbull/products/', {params: params})
@@ -213,6 +238,12 @@ export default {
       this.filteredGroups = item
       this.getProducts()
     },
+
+    filterCharacteristics(item) {
+      this.page = 1
+      this.filteredCharacteristics = item
+      this.getProducts()
+    }
   },
 }
 </script>
