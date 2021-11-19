@@ -3,9 +3,19 @@ pipeline {
         docker { image 'node:14-alpine' }
     }
     stages {
-        stage('Not ready Backend Install') {
+        stage('Backend Install') {
             steps {
-                sh 'echo not yet...'
+                sh 'cd back && pip install -r requirements.txt'
+            }
+        }
+        stage('Backend Build') {
+            steps {
+                sh 'cd back && python manage.py runserver'
+            }
+        }
+        stage('Backend Test') {
+            steps {
+                sh 'cd back && python manage.py test'
             }
         }
         stage('Frontend Install') {
