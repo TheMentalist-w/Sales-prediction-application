@@ -6,8 +6,6 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
     path('users/',views.GetUsersListView, name='getUsersList'),
-    path('products/',views.GetProductsListView, name='getProductsList'),
-    path('products/groups/',views.GetProductsGroups, name='getProductsGroups'),
     path('user/create/',views.CreateUserView, name='createUser'),
     path('user/delete/<int:id>/',views.DeleteUserView, name='deleteUser'),
     path('user/edit/',views.EditUserView, name='editUser'),
@@ -17,5 +15,8 @@ urlpatterns = [
     path('user/login/refresh/', TokenRefreshView.as_view(), name='tokenRefresh'),
     path('user/logout/',views.LogoutView, name='logout'),
     path('docs/', get_swagger_view(title='PitbullAPI')),
-    
+    path('products/', views.GetProductsListView, name='getProductsList'),
+    path('products/groups/', views.GetProductsGroupsView, name='getProductsGroups'),
+    path('init/superuser/',views.CreateInitialSuperuser,name='createInitialSuperuser')
 ]
+
