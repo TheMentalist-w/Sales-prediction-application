@@ -232,8 +232,11 @@ def GetProductsListView(request):
     products_processed = []
 
     for product in products:
-        if (product['product_group'] in categories or not categories) and (search.lower() in product['product_name'].lower() or search == ''):
-            products_processed.append(product)
+        if ( product['product_group'] in categories or not categories ) and (
+                    search.lower() in product['product_name'].lower()
+                    or search.lower() in product['product_symbol'].lower()
+                    or search == ''
+                ):  products_processed.append(product)
 
     paginator = Paginator(products_processed, size)
 
