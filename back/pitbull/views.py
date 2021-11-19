@@ -8,7 +8,19 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.core.paginator import Paginator
 from django.db.models import Q
+import environ
+import pyodbc
+import random
 
+#handling environmental variables
+env = environ.Env()
+environ.Env.read_env()
+
+server = env("PB_SERVER")
+database = env("PB_DATABASE")
+username = env("PB_USERNAME")
+password = env("PB_PASSWORD")
+driver = env("PB_DRIVER")
 
 @api_view(['GET'])
 @permission_classes((IsAdminUser,))
@@ -176,15 +188,6 @@ def CurrentUserView(request):
     return JsonResponse(data)
 
 
-import pyodbc
-
-server = '150.254.30.116,80'
-database = 'BOZYDAR'
-username = 'SA'
-password = 'Pitbull2021!'
-driver = '{ODBC Driver 17 for SQL Server}'
-
-
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 def GetProductsGroupsView(request):
@@ -196,9 +199,6 @@ def GetProductsGroupsView(request):
             categories = [item[0] for item in cursor.fetchall()]
 
     return JsonResponse({'groups': categories})
-
-
-import random
 
 
 @api_view(['GET'])
