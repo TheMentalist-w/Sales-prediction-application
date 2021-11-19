@@ -27,6 +27,8 @@
         <v-dialog
           v-model="dialog"
           max-width="500px"
+          @click:outside="close"
+          :key="dialogKey"
         >
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -102,6 +104,7 @@ export default {
   data() {
     return {
       dialog: false,
+      dialogKey: 0,
       search: '',
       page: 1,
       totalPages: 0,
@@ -231,6 +234,7 @@ export default {
         this.editedItem = Object.assign({}, this.defaultItem)
         this.editedIndex = -1
         this.checkbox = false
+        this.dialogKey += 1
       })
     },
 
