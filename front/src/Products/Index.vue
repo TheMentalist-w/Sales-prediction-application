@@ -95,11 +95,18 @@ export default {
       filterKey: 0,
       headers: [
         {
+          text: 'Symbol',
+          align: 'start',
+          value: 'product_symbol',
+          sortable: false,
+          width: '20%'
+        },
+        {
           text: 'Product',
           align: 'start',
           value: 'product_name',
           sortable: false,
-          width: '30%'
+          width: '40%'
         },
         {
           text: 'State',
