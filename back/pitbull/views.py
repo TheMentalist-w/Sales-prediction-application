@@ -234,7 +234,14 @@ def GetProductsListView(request):
         if (product['product_group'] in categories or not categories) and (search.lower() in product['product_name'].lower() or search == ''):
             products_processed.append(product)
 
-    return JsonResponse({'products': products_processed})
+    paginator = Paginator(products_processed, size)
+
+    if paginator.num_pages < int(page):
+        page = paginator.num_pages
+
+    query_set = [prod for prod in paginator.page(page)]
+
+    return JsonResponse({'products': query_set, 'totalPages': paginator.num_pages, 'page': page})
 
 
 # only for development purposes!
