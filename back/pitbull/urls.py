@@ -17,6 +17,7 @@ urlpatterns = [
     path('docs/', get_swagger_view(title='PitbullAPI')),
     path('products/', views.GetProductsListView, name='getProductsList'),
     path('products/groups/', views.GetProductsGroupsView, name='getProductsGroups'),
+    path('products/characteristics/', views.GetAvailablePropertiesList, name='getAvailableProperties'),
     path('init/superuser/',views.CreateInitialSuperuser,name='createInitialSuperuser')
 ]
 
