@@ -17,7 +17,12 @@ urlpatterns = [
     path('docs/', get_swagger_view(title='PitbullAPI')),
     path('products/', views.GetProductsListView, name='getProductsList'),
     path('products/groups/', views.GetProductsGroupsView, name='getProductsGroups'),
-    path('products/characteristics/', views.GetAvailablePropertiesList, name='getAvailableProperties'),
-    path('init/superuser/',views.CreateInitialSuperuser,name='createInitialSuperuser')
+    path('products/characteristics/', views.GetAvailableFeaturesList, name='getAvailableFeatures'),
+    path('init/superuser/', views.CreateInitialSuperuser, name='createInitialSuperuser'),
+    path('fetch/products/', views.FetchProducts, name='fetchProducts'),
+    path('fetch/groups/', views.FetchGroups, name='fetchGroups'),
+    path('fetch/features/dict/', views.FetchFeaturesDict, name='fetchFeaturesDict'),
+    path('fetch/features/dependencies/', views.FetchFeaturesDependencies, name='fetchFeaturesDependencies'),
+    path('fetch/all/', views.FetchAllData, name='fetchAllData'),
 ]
 

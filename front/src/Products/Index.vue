@@ -111,35 +111,35 @@ export default {
         {
           text: 'Symbol',
           align: 'start',
-          value: 'product_symbol',
+          value: 'symbol',
           sortable: false,
           width: '20%'
         },
         {
           text: 'Product',
           align: 'start',
-          value: 'product_name',
+          value: 'name',
           sortable: false,
           width: '40%'
         },
         {
           text: 'State',
           align: 'start',
-          value: 'state',
+          value: 'inventory',
           sortable: false,
           width: '30%'
         },
         {
           text: 'Predicted',
           align: 'start',
-          value: 'product_prediction',
+          value: 'prediction',
           sortable: false,
           width: '30%'
         },
         {
           text: 'Group',
           align: 'start',
-          value: 'product_group',
+          value: 'group_name',
           sortable: false,
           width: '30%'
         },
