@@ -7,10 +7,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, F
+from .models import Product, Group, Feature, ProductFeature
+
 import environ
 import pyodbc
-import random
 
 #handling environmental variables
 env = environ.Env()
@@ -21,6 +22,8 @@ database = env("PB_DATABASE")
 username = env("PB_USERNAME")
 password = env("PB_PASSWORD")
 driver = env("PB_DRIVER")
+
+conn_string = 'DRIVER=' + driver + ';SERVER=tcp:' + server + ';PORT=80;DATABASE=' + database + ';UID=' + username + ';PWD=' + password
 
 @api_view(['GET'])
 @permission_classes((IsAdminUser,))
@@ -191,15 +194,8 @@ def CurrentUserView(request):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 def GetProductsGroupsView(request):
-    categories = []
-    with pyodbc.connect(
-            'DRIVER=' + driver + ';SERVER=tcp:' + server + ';PORT=80;DATABASE=' + database + ';UID=' + username + ';PWD=' + password) as conn:
-        with conn.cursor() as cursor:
-            cursor.execute(
-                "select grt_Nazwa from sl_GrupaTw where grt_Id in (select distinct tw_IdGrupa from tw__towar);")
-            categories = [item[0] for item in cursor.fetchall()]
-
-    return JsonResponse({'groups': categories})
+    groups_names = [{'name':group.name, 'id':group.id} for group in Group.objects.all()]
+    return JsonResponse({'groups': groups_names})
 
 
 @api_view(['GET'])
@@ -207,45 +203,21 @@ def GetProductsGroupsView(request):
 def GetProductsListView(request):
     page = request.GET.get('page', 1)
     size = request.GET.get('size', 8)
-    categories = request.GET.getlist('filteredGroups[]', [])
-    characteristics = request.GET.getlist('filteredCharacteristics[]', [])
+    groups = request.GET.getlist('filteredGroups[]', [])
+    characteristics = request.GET.getlist('filteredFeatures[]', [])
     search = request.GET.get('search', '')
 
-    products = []
-    random.seed(0)
+    products = Product.objects.filter((Q(name__icontains=search) | Q(symbol__icontains=search))).annotate(group_name=F('group__name'))
 
-    with pyodbc.connect(
-            'DRIVER=' + driver + ';SERVER=tcp:' + server + ';PORT=80;DATABASE=' + database + ';UID=' + username + ';PWD=' + password) as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT tw_Nazwa, tw_Symbol, "
-                           "(SELECT SUM(st_Stan) from tw_stan WHERE st_TowId = tw_Id), "
-                           "tw_Id, "
-                           "(SELECT grt_Nazwa FROM sl_GrupaTw WHERE grt_Id = tw_IdGrupa) as product_group, "
-                           "(select STRING_AGG(ctw_Nazwa, ';')  FROM sl_CechaTw  where ctw_Id = tw_Id) as properties "
-                           "FROM tw__towar ;")
-            for row in cursor.fetchall():
-                products.append(
-                    {
-                        'product_name': row[0],
-                        'product_symbol': row[1],
-                        'state': int(row[2]),
-                        'product_prediction': random.randint(1, 50),
-                        'id': row[3],
-                        'product_group': row[4],
-                        'characteristics': row[5] if row[5] is not None else ''
-                    }
-                )
+    if groups:
+#         products = products.filter(Q(group__name__in=groups))
+        products = products.filter(Q(group__id__in=groups))
 
-    products_processed = []
+    if characteristics:
+#         products = products.filter(Q(features__name__in=characteristics))
+        products = products.filter(Q(features__id__in=characteristics))
 
-    for product in products:
-        if ( product['product_group'] in categories or not categories ) and (
-                    search.lower() in product['product_name'].lower()
-                    or search.lower() in product['product_symbol'].lower()
-                    or search == '') and (
-                    len(set(characteristics).intersection(set(product['characteristics'].split(';')))) > 0
-                    or not characteristics
-                    ): products_processed.append(product)
+    products_processed = list(products.values())
 
     paginator = Paginator(products_processed, size)
 
@@ -258,25 +230,84 @@ def GetProductsListView(request):
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
-def GetAvailablePropertiesList(request):
+def GetAvailableFeaturesList(request):
 
-    categories = []
-
-    with pyodbc.connect(
-            'DRIVER=' + driver + ';SERVER=tcp:' + server + ';PORT=80;DATABASE=' + database + ';UID=' + username + ';PWD=' + password) as conn:
-        with conn.cursor() as cursor:
-            cursor.execute(
-                "select ctw_Nazwa from sl_CechaTw where ctw_Id in (select distinct cht_IdCecha from tw_CechaTw);")
-            categories = [item[0] for item in cursor.fetchall()]
-
-    return JsonResponse({'characteristics': categories})
+    features_names = [{'name':feature.name, 'id':feature.id} for feature in Feature.objects.all()]
+    return JsonResponse({'features': features_names})
 
 
 
-# only for development purposes!
 @api_view(['GET'])
 def CreateInitialSuperuser(request):
-    user = get_object_or_404(get_user_model(), username="admin")
-    user.delete()
     get_user_model().objects.create_superuser('admin', 'admin', 'admin@example.com', 'admin_f', 'admin_l')
     return HttpResponse("InitialSuperuser created!")
+
+
+def FetchProducts(request):
+
+    #delete all existing products
+    #Product.objects.all().delete()
+
+    #download data from PitbullDB and insert new products
+    with pyodbc.connect(conn_string) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT tw_Nazwa, tw_Symbol, "
+                           "(SELECT SUM(st_Stan) from tw_stan WHERE st_TowId = tw_Id),"
+                           "tw_Id,"
+                           "tw_IdGrupa "
+                           "FROM tw__Towar;")
+
+            for row in cursor.fetchall():
+                Product.objects.update_or_create(name=row[0], symbol=row[1], inventory=int(row[2]), id=int(row[3]), group=Group.objects.get(id=int(row[4])))
+
+    return HttpResponse("Products fetched!")
+
+def FetchGroups(request):
+    # delete all existing groups
+    #Group.objects.all().delete()
+
+    with pyodbc.connect(conn_string) as conn:
+
+        with conn.cursor() as cursor:
+            cursor.execute("select grt_Id, grt_Nazwa from sl_GrupaTw;")
+            for row in cursor.fetchall():
+                Group.objects.update_or_create(id=int(row[0]), name=row[1])
+
+    return HttpResponse("Groups fetched!")
+
+
+def FetchFeaturesDict(request):
+    # delete all existing features dict entries
+    #Feature.objects.all().delete()
+
+    with pyodbc.connect(conn_string) as conn:
+
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT ctw_Id, ctw_Nazwa FROM sl_CechaTw;")
+            for row in cursor.fetchall():
+                Feature.objects.update_or_create(id=int(row[0]), name=row[1])
+
+    return HttpResponse(f"Features dict fetched!")
+
+
+def FetchFeaturesDependencies(request):
+    # delete all existing product-features dependencies
+    #ProductFeature.objects.all().delete()
+
+    with pyodbc.connect(conn_string) as conn:
+
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT cht_Id, cht_IdTowar, cht_IdCecha FROM tw_CechaTw;")
+            for row in cursor.fetchall():
+                product = Product.objects.get(id=int(row[1]))
+                feature = Feature.objects.get(id=int(row[2]))
+                ProductFeature.objects.update_or_create(id=int(row[0]), product=product, feature=feature)
+
+    return HttpResponse(f"Product-features dependencies fetched!")
+
+def FetchAllData(request):
+    FetchGroups(request)
+    FetchFeaturesDict(request)
+    FetchProducts(request)
+    FetchFeaturesDependencies(request)
+    return HttpResponse("All data fetched!")
