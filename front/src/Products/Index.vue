@@ -10,6 +10,7 @@
       @update:sort-desc="sortByDesc"
       :key="stockKey"
       v-if="stockTable"
+      :loading="loading"
     >
       <template v-slot:top>
         <v-toolbar
@@ -109,6 +110,7 @@ export default {
       filteredFeatures: [],
       featureKey: 0,
       sort: -1,
+      loading: true,
       headers: [
         {
           text: 'Symbol',
@@ -201,6 +203,7 @@ export default {
     },
 
     getProducts() {
+      this.loading = true
       const params = this.getRequestParams(
         this.search,
         this.page,
@@ -216,6 +219,7 @@ export default {
           this.totalPages = response.data.totalPages
           this.page = parseInt(response.data.page)
           this.stockTable = true
+          this.loading = false
           this.stockKey += 1
         })
         .catch(() => {
