@@ -7,6 +7,7 @@
     class="elevation-1 mx-auto mt-16 adminTable"
     loading-text="Loading... Please wait"
     :hide-default-footer="true"
+    :loading="loading"
     :key="tableKey"
     v-if="adminTable"
   >
@@ -112,6 +113,7 @@ export default {
       dialogDelete: false,
       adminTable: false,
       tableKey: 0,
+      loading: true,
       headers: [
         {
           text: 'Username',
@@ -261,6 +263,7 @@ export default {
     },
 
     getEmployees() {
+      this.loading = true
       const params = this.getRequestParams(
         this.search,
         this.page,
@@ -273,6 +276,7 @@ export default {
           this.totalPages = response.data.totalPages
           this.page = parseInt(response.data.page)
           this.adminTable = true
+          this.loading = false
           this.tableKey += 1
         })
         .catch(() => {

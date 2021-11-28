@@ -7,8 +7,10 @@
       :hide-default-footer="true"
       loading-text="Loading... Please wait"
       class="elevation-1 mx-auto mt-16 stockTable"
+      @update:sort-desc="sortByDesc"
       :key="stockKey"
       v-if="stockTable"
+      :loading="loading"
     >
       <template v-slot:top>
         <v-toolbar
@@ -107,6 +109,8 @@ export default {
       features: [],
       filteredFeatures: [],
       featureKey: 0,
+      sort: -1,
+      loading: true,
       headers: [
         {
           text: 'Symbol',
@@ -127,14 +131,14 @@ export default {
           align: 'start',
           value: 'inventory',
           sortable: false,
-          width: '30%'
+          width: '25%'
         },
         {
           text: 'Predicted',
           align: 'start',
           value: 'prediction',
-          sortable: false,
-          width: '30%'
+          sortable: true,
+          width: '35%'
         },
         {
           text: 'Group',
@@ -170,13 +174,14 @@ export default {
     GroupFilter, FeatureFilter
   },
   methods: {
-    getRequestParams(search, page, pageSize, filteredGroups, filteredFeatures) {
+    getRequestParams(search, page, pageSize, filteredGroups, filteredFeatures, sort) {
       let params = {}
       if (search) params["search"] = search
       if (page) params["page"] = page
       if (pageSize) params["size"] = pageSize
       if (filteredGroups) params["filteredGroups"] = filteredGroups
       if (filteredFeatures) params["filteredFeatures"] = filteredFeatures
+      if (sort) params["sort"] = sort
 
       return params
     },
@@ -198,12 +203,14 @@ export default {
     },
 
     getProducts() {
+      this.loading = true
       const params = this.getRequestParams(
         this.search,
         this.page,
         this.pageSize,
         this.filteredGroups,
-        this.filteredFeatures
+        this.filteredFeatures,
+        this.sort
       )
 
       axios.get('http://localhost:8000/pitbull/products/', {params: params})
@@ -212,6 +219,7 @@ export default {
           this.totalPages = response.data.totalPages
           this.page = parseInt(response.data.page)
           this.stockTable = true
+          this.loading = false
           this.stockKey += 1
         })
         .catch(() => {
@@ -243,7 +251,13 @@ export default {
       this.page = 1
       this.filteredFeatures = item
       this.getProducts()
-    }
+    },
+
+    sortByDesc(value) {
+      //none - (-1), asc - 0, desc - 1
+      value.length === 1 ? this.sort = (value[0] ? 1 : 0) : this.sort = -1
+      this.getProducts()
+    },
   },
 }
 </script>
