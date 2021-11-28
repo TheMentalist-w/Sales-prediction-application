@@ -27,11 +27,11 @@
           <v-col
             cols="2"
           >
-            <CharacteristicFilter
-              :key="characteristicKey"
-              :filters="characteristics"
-              :filtered="filteredCharacteristics"
-              @filterProducts="filterCharacteristics"
+            <FeatureFilter
+              :key="featureKey"
+              :filters="features"
+              :filtered="filteredFeatures"
+              @filterProducts="filterFeatures"
             />
           </v-col>
           <v-col
@@ -46,13 +46,13 @@
           </v-col>
         </v-toolbar>
       </template>
-      <template v-slot:item.product_group="{ item }">
+      <template v-slot:item.group_name="{ item }">
         <v-btn
           class="mr-2"
           color="primary"
           rounded
         >
-          {{ item.product_group }}
+          {{ item.group_name }}
         </v-btn>
       </template>
       <template v-slot:item.actions="{ item }">
@@ -85,7 +85,7 @@ import Vuetify from 'vuetify'
 import VueCookies from "vue-cookies"
 import axios from 'axios'
 import GroupFilter from "./components/GroupFilter"
-import CharacteristicFilter from "./components/CharacteristicFilter"
+import FeatureFilter from "./components/FeatureFilter"
 
 Vue.use(Vuetify)
 Vue.use(VueCookies)
@@ -104,9 +104,9 @@ export default {
       groups: [],
       filteredGroups: [],
       filterKey: 0,
-      characteristics: [],
-      filteredCharacteristics: [],
-      characteristicKey: 0,
+      features: [],
+      filteredFeatures: [],
+      featureKey: 0,
       headers: [
         {
           text: 'Symbol',
@@ -159,7 +159,7 @@ export default {
     let refresh = this.$cookies.get('refresh')
     if(access || refresh){
       await this.getGroups()
-      await this.getCharacteristics()
+      await this.getFeatures()
       await this.getProducts()
     }
     else {
@@ -167,33 +167,33 @@ export default {
     }
   },
   components: {
-    GroupFilter, CharacteristicFilter
+    GroupFilter, FeatureFilter
   },
   methods: {
-    getRequestParams(search, page, pageSize, filteredGroups, filteredCharacteristics) {
+    getRequestParams(search, page, pageSize, filteredGroups, filteredFeatures) {
       let params = {}
       if (search) params["search"] = search
       if (page) params["page"] = page
       if (pageSize) params["size"] = pageSize
       if (filteredGroups) params["filteredGroups"] = filteredGroups
-      if (filteredCharacteristics) params["filteredCharacteristics"] = filteredCharacteristics
+      if (filteredFeatures) params["filteredFeatures"] = filteredFeatures
 
       return params
     },
 
     getGroups() {
-      axios.get('http://localhost:8000/pitbull/products/groups')
+      axios.get('http://localhost:8000/pitbull/products/groups/')
         .then(response => {
           this.groups = response.data.groups
           this.filterKey += 1
         })
     },
 
-    getCharacteristics() {
-      axios.get('http://localhost:8000/pitbull/products/characteristics')
+    getFeatures() {
+      axios.get('http://localhost:8000/pitbull/products/features/')
         .then(response => {
-          this.characteristics = response.data.characteristics
-          this.characteristicKey += 1
+          this.features = response.data.features
+          this.featureKey += 1
         })
     },
 
@@ -203,7 +203,7 @@ export default {
         this.page,
         this.pageSize,
         this.filteredGroups,
-        this.filteredCharacteristics
+        this.filteredFeatures
       )
 
       axios.get('http://localhost:8000/pitbull/products/', {params: params})
@@ -239,9 +239,9 @@ export default {
       this.getProducts()
     },
 
-    filterCharacteristics(item) {
+    filterFeatures(item) {
       this.page = 1
-      this.filteredCharacteristics = item
+      this.filteredFeatures = item
       this.getProducts()
     }
   },

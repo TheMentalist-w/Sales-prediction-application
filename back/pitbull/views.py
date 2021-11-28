@@ -194,7 +194,7 @@ def CurrentUserView(request):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 def GetProductsGroupsView(request):
-    groups_names = [group.name for group in Group.objects.all()]
+    groups_names = [{'name':group.name, 'id':group.id} for group in Group.objects.all()]
     return JsonResponse({'groups': groups_names})
 
 
@@ -204,16 +204,18 @@ def GetProductsListView(request):
     page = request.GET.get('page', 1)
     size = request.GET.get('size', 8)
     groups = request.GET.getlist('filteredGroups[]', [])
-    characteristics = request.GET.getlist('filteredCharacteristics[]', [])
+    characteristics = request.GET.getlist('filteredFeatures[]', [])
     search = request.GET.get('search', '')
 
     products = Product.objects.filter((Q(name__icontains=search) | Q(symbol__icontains=search))).annotate(group_name=F('group__name'))
 
     if groups:
-        products = products.filter(Q(group__name__in=groups))
+#         products = products.filter(Q(group__name__in=groups))
+        products = products.filter(Q(group__id__in=groups))
 
     if characteristics:
-        products = products.filter(Q(features__name__in=characteristics))
+#         products = products.filter(Q(features__name__in=characteristics))
+        products = products.filter(Q(features__id__in=characteristics))
 
     products_processed = list(products.values())
 
@@ -230,8 +232,8 @@ def GetProductsListView(request):
 @permission_classes((IsAuthenticated, ))
 def GetAvailableFeaturesList(request):
 
-    features_names = [feature.name for feature in Feature.objects.all()]
-    return JsonResponse({'characteristics': features_names})
+    features_names = [{'name':feature.name, 'id':feature.id} for feature in Feature.objects.all()]
+    return JsonResponse({'features': features_names})
 
 
 

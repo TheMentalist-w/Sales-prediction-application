@@ -4,6 +4,8 @@
       style="margin-top: 25px"
       v-model="filteredGroups"
       :items="groups"
+      item-text="name"
+      item-value="id"
       @change="filterProducts"
       label="Filter"
       multiple

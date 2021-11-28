@@ -2,8 +2,10 @@
   <v-container fluid>
     <v-select
       style="margin-top: 25px"
-      v-model="filteredCharacteristics"
-      :items="characteristics"
+      v-model="filteredFeatures"
+      :items="features"
+      item-text="name"
+      item-value="id"
       @change="filterProducts"
       label="Filter"
       multiple
@@ -23,7 +25,7 @@
               dense
               placeholder="Search"
               v-model="filterSearch"
-              @input="searchCharacteristics"
+              @input="searchFeatures"
             />
           </v-list-item-content>
         </v-list-item>
@@ -35,11 +37,11 @@
 
 <script>
 export default {
-  name: "CharacteristicFilter",
+  name: "FeatureFilter",
   data() {
     return {
-      characteristics: [],
-      filteredCharacteristics: [],
+      features: [],
+      filteredFeatures: [],
       filterSearch: null,
     }
   },
@@ -48,17 +50,16 @@ export default {
     filtered: Array
   },
   mounted() {
-    this.characteristics = this.filters.map(x => x)
-    this.filteredCharacteristics = this.filtered.map(x => x)
+    this.features = this.filters.map(x => x)
+    this.filteredFeatures = this.filtered.map(x => x)
   },
   methods: {
     filterProducts() {
-      this.$emit('filterProducts', this.filteredCharacteristics)
+      this.$emit('filterProducts', this.filteredFeatures)
     },
 
-    searchCharacteristics() {
-      console.log("change")
-      this.characteristics = this.filters.filter(x => x.includes(this.filterSearch))
+    searchFeatures() {
+      this.features = this.filters.filter(x => x.name.toUpperCase().includes(this.filterSearch.toUpperCase()))
     }
   }
 }
