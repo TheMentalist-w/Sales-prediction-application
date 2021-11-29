@@ -7,8 +7,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.core.paginator import Paginator
-from django.db.models import Q, F
-from .models import Product, Group, Feature, ProductFeature
+from django.db.models import Q, F, Subquery,OuterRef, Max
+from .models import Product, Group, Feature, ProductFeature, Prediction
 
 import environ
 import pyodbc
@@ -199,25 +199,38 @@ def GetProductsGroupsView(request):
 
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+#@permission_classes((IsAuthenticated, ))
 def GetProductsListView(request):
     page = request.GET.get('page', 1)
     size = request.GET.get('size', 8)
     groups = request.GET.getlist('filteredGroups[]', [])
     characteristics = request.GET.getlist('filteredFeatures[]', [])
     search = request.GET.get('search', '')
+    sort = request.GET.get('sort', "-1")
 
-    products = Product.objects.filter((Q(name__icontains=search) | Q(symbol__icontains=search))).annotate(group_name=F('group__name'))
+    pr = Prediction(value=5532)
+    pr.save()
+    Product.objects.get(id=6).predictions.add(pr)
+
+    latest_prediction = Subquery(Prediction.objects.filter(product__id = OuterRef('id'),).order_by("-date").values('value')[:1])
+
+    products = Product.objects.filter((Q(name__icontains=search) | Q(symbol__icontains=search))).annotate(group_name=F('group__name'), prediction =latest_prediction)
 
     if groups:
-#         products = products.filter(Q(group__name__in=groups))
         products = products.filter(Q(group__id__in=groups))
 
     if characteristics:
-#         products = products.filter(Q(features__name__in=characteristics))
         products = products.filter(Q(features__id__in=characteristics))
 
+    if sort == "0":
+        products = products.order_by("prediction")
+    elif sort == "-1":
+        products = products.order_by("-prediction")
+
     products_processed = list(products.values())
+
+    for p in products_processed:
+        p["prediction"]=2
 
     paginator = Paginator(products_processed, size)
 
