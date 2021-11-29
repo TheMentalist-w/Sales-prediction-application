@@ -263,8 +263,14 @@ def FetchProducts(request):
                            "tw_IdGrupa "
                            "FROM tw__Towar;")
 
+            existing_ids = set(p.id for p in Product.objects.all())
+
             for row in cursor.fetchall():
-                Product.objects.update_or_create(name=row[0], symbol=row[1], inventory=int(row[2]), id=int(row[3]), group=Group.objects.get(id=int(row[4])))
+                existing_ids.remove(int(row[3]))
+                Product.objects.update_or_create(name=row[0], symbol=row[1], inventory=int(row[2]), id=int(row[3]), group=Group.objects.get(id=int(row[4])),is_archived=False)
+
+            for removed_id in existing_ids:
+                Product.objects.get(id=removed_id).is_archived = True
 
     return HttpResponse("Products fetched!")
 
