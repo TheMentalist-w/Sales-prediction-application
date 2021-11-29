@@ -208,10 +208,6 @@ def GetProductsListView(request):
     search = request.GET.get('search', '')
     sort = request.GET.get('sort', "-1")
 
-    pr = Prediction(value=5532)
-    pr.save()
-    Product.objects.get(id=6).predictions.add(pr)
-
     latest_prediction = Subquery(Prediction.objects.filter(product__id = OuterRef('id'),).order_by("-date").values('value')[:1])
 
     products = Product.objects.filter((Q(name__icontains=search) | Q(symbol__icontains=search))).annotate(group_name=F('group__name'), prediction =latest_prediction)
@@ -228,9 +224,6 @@ def GetProductsListView(request):
         products = products.order_by("-prediction")
 
     products_processed = list(products.values())
-
-    for p in products_processed:
-        p["prediction"]=2
 
     paginator = Paginator(products_processed, size)
 
@@ -317,6 +310,7 @@ def FetchFeaturesDependencies(request):
                 ProductFeature.objects.update_or_create(id=int(row[0]), product=product, feature=feature)
 
     return HttpResponse(f"Product-features dependencies fetched!")
+
 
 def FetchAllData(request):
     FetchGroups(request)
