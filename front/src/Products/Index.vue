@@ -7,7 +7,6 @@
       :hide-default-footer="true"
       loading-text="Loading... Please wait"
       class="elevation-1 mx-auto mt-16 stockTable"
-      @update:sort-desc="sortByDesc"
       :key="stockKey"
       v-if="stockTable"
       :loading="loading"
@@ -47,6 +46,9 @@
             />
           </v-col>
         </v-toolbar>
+      </template>
+      <template v-slot:header.prediction="{ header }">
+        {{ header.text }}<v-btn x-small text @click="sortByDesc"><v-icon>{{arrow}}</v-icon></v-btn>
       </template>
       <template v-slot:item.group_name="{ item }">
         <v-btn
@@ -131,14 +133,14 @@ export default {
           align: 'start',
           value: 'inventory',
           sortable: false,
-          width: '25%'
+          width: '20%'
         },
         {
           text: 'Predicted',
           align: 'start',
           value: 'prediction',
-          sortable: true,
-          width: '35%'
+          sortable: false,
+          width: '40%'
         },
         {
           text: 'Group',
@@ -173,6 +175,17 @@ export default {
   components: {
     GroupFilter, FeatureFilter
   },
+  computed: {
+    arrow() {
+      if (this.sort === 1) {
+        return 'mdi-sort-numeric-ascending-variant'
+      } else if (this.sort === 0) {
+        return 'mdi-sort-numeric-descending-variant'
+      } else {
+        return 'mdi-sort-numeric-variant'
+      }
+    }
+  },
   methods: {
     getRequestParams(search, page, pageSize, filteredGroups, filteredFeatures, sort) {
       let params = {}
@@ -181,7 +194,7 @@ export default {
       if (pageSize) params["size"] = pageSize
       if (filteredGroups) params["filteredGroups"] = filteredGroups
       if (filteredFeatures) params["filteredFeatures"] = filteredFeatures
-      if (sort) params["sort"] = sort
+      params["sort"] = sort
 
       return params
     },
@@ -212,7 +225,6 @@ export default {
         this.filteredFeatures,
         this.sort
       )
-
       axios.get('http://localhost:8000/pitbull/products/', {params: params})
         .then(response => {
           this.products = response.data.products
@@ -253,9 +265,15 @@ export default {
       this.getProducts()
     },
 
-    sortByDesc(value) {
+    sortByDesc() {
       //none - (-1), asc - 0, desc - 1
-      value.length === 1 ? this.sort = (value[0] ? 1 : 0) : this.sort = -1
+      if(this.sort === -1) {
+        this.sort = 0
+      } else if(this.sort === 0) {
+        this.sort = 1
+      } else {
+        this.sort = -1
+      }
       this.getProducts()
     },
   },
