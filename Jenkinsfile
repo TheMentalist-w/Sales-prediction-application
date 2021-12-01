@@ -1,6 +1,7 @@
 pipeline {
     agent {
-        docker { image 'node:14-alpine' }
+        //docker { image 'node:14-alpine' }
+        docker { image 'nikolaik/python-nodejs' }
     }
     stages {
         stage('Backend Install') {
