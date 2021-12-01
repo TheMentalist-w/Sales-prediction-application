@@ -5,7 +5,7 @@ pipeline {
     stages {
         stage('Backend Install') {
             steps {
-                sh 'cd back && pip install -r requirements.txt'
+                sh 'cd back && py pip install -r requirements.txt'
             }
         }
         stage('Backend Build') {
