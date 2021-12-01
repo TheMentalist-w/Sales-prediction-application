@@ -1,6 +1,7 @@
 from django.contrib.auth import  get_user_model, backends
 from django.db.models import Q
 
+
 class CustomAuthBackend(backends.ModelBackend):
     def authenticate(self, request, username=None, email=None,password=None):
             try:

@@ -40,7 +40,7 @@ REST_FRAMEWORK = {
          ],
     }
 
-AUTHENTICATION_BACKENDS = ('pitbull.customauth.CustomAuthBackend',)
+AUTHENTICATION_BACKENDS = ('pitbull.custom_modules.customauth.CustomAuthBackend',)
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
