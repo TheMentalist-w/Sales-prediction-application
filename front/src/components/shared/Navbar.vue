@@ -61,7 +61,7 @@ export default {
     }
   },
   beforeMount() {
-    axios.get('http://localhost:8000/pitbull/user/current/')
+    axios.get('/pitbull/user/current/')
       .then(response => {
         this.loggedIn = true
         if(response.data.is_superuser) {
@@ -71,7 +71,7 @@ export default {
   },
   methods: {
     logOut() {
-      axios.post('http://localhost:8000/pitbull/user/logout/')
+      axios.post('/pitbull/user/logout/')
         .then(() => {
           this.$cookies.remove('access')
           this.$cookies.remove('refresh')
