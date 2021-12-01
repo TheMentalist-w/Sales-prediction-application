@@ -14,8 +14,8 @@ pipeline {
                 docker { image: 'python:3.10-alpine3.14' }
             }
             steps {
-                sh 'cd back && ls && pip install -r requirements.txt',
-                sh 'python manage.py runserver',
+                sh 'cd back && ls && pip install -r requirements.txt'
+                sh 'python manage.py runserver'
                 sh 'python manage.py test'
             }
         }
@@ -24,8 +24,8 @@ pipeline {
                 docker { image: 'node:14-alpine' }
             }
             steps {
-                sh 'cd front && npm install',
-                sh 'npm run build',
+                sh 'cd front && npm install'
+                sh 'npm run build'
                 sh 'npm run test:unit'
             }
         }
