@@ -1,15 +1,7 @@
 pipeline {
     agent none
     stages {
-        stage('Database') {
-            agent {
-                docker { image 'docker:20' }
-            }
-            steps {
-                sh 'ls'
-                sh 'docker-compose up'
-            }
-        }
+
         stage('Backend') {
             agent {
                 docker { image 'python:3.10-alpine3.14' }
