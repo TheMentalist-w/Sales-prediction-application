@@ -8,8 +8,8 @@ pipeline {
             }
             steps {
                 sh 'cd back && ls && pip install -r requirements.txt'
-                sh 'python manage.py runserver'
-                sh 'python manage.py test'
+                sh 'cd back && ls && python manage.py runserver'
+                sh 'cd back && ls && python manage.py test'
             }
         }
         stage('Forntend') {
@@ -18,8 +18,8 @@ pipeline {
             }
             steps {
                 sh 'cd front && npm install'
-                sh 'npm run build'
-                sh 'npm run test:unit'
+                sh 'cd front && npm run build'
+                sh 'cd front && npm run test:unit'
             }
         }
     }
