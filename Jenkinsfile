@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Database') {
             agent {
-                docker { image: 'docker:20' }
+                docker { image 'docker:20' }
             }
             steps {
                 sh 'docker-compose up'
@@ -11,7 +11,7 @@ pipeline {
         }
         stage('Backend') {
             agent {
-                docker { image: 'python:3.10-alpine3.14' }
+                docker { image 'python:3.10-alpine3.14' }
             }
             steps {
                 sh 'cd back && ls && pip install -r requirements.txt'
@@ -21,7 +21,7 @@ pipeline {
         }
         stage('Forntend') {
             agent {
-                docker { image: 'node:14-alpine' }
+                docker { image 'node:14-alpine' }
             }
             steps {
                 sh 'cd front && npm install'
