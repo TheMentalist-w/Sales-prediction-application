@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        docker { image 'python:3.11.0a2-alpine3.15' }
+        docker { image 'python:3.10-alpine3.14' }
 //         docker { image 'node:14-alpine' }
 //         docker { image 'nikolaik/python-nodejs' }
     }
