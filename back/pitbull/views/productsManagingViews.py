@@ -14,7 +14,6 @@ def get_products_groups(request):
     return JsonResponse({'groups': groups_names})
 
 
-
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 def get_products_list(request):

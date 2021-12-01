@@ -1,4 +1,4 @@
 from .authViews import *
 from .dataFetchingViews import *
-from .productsViews import *
-from .usersViews import *
+from .productsManagingViews import *
+from .usersManagingViews import *
