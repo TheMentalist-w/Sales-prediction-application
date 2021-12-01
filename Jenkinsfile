@@ -10,6 +10,11 @@ pipeline {
                 sh 'cd back && ls && pip install -r requirements.txt'
             }
         }
+        stage('docker Install') {
+                    steps {
+                        sh 'docker-compose up'
+                    }
+                }
         stage('Backend Build') {
             steps {
                 sh 'cd back && python manage.py runserver'
