@@ -7,7 +7,7 @@ pipeline {
     stages {
         stage('Backend Install') {
             steps {
-                sh 'cd back && ls && python3 pip install -r requirements.txt'
+                sh 'cd back && ls && pip install -r requirements.txt'
             }
         }
         stage('Backend Build') {
