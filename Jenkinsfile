@@ -6,6 +6,7 @@ pipeline {
                 docker { image 'docker:20' }
             }
             steps {
+                sh 'ls'
                 sh 'docker-compose up'
             }
         }
