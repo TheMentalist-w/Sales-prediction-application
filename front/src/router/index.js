@@ -1,9 +1,5 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Products from '../Products/Index'
-import ProductShow from '../Products/Show'
-import Login from '../Auth/Login'
-import Accounts from "../Accounts/Accounts"
 
 Vue.use(VueRouter)
 
@@ -11,22 +7,22 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: Login
+    component: () => import('../Auth/Login')
   },
   {
     path: '/accounts',
     name: 'Accounts',
-    component: Accounts
+    component: () => import('../Accounts/Accounts')
   },
   {
     path: '/product/:id',
     name: 'ProductShow',
-    component: ProductShow
+    component: () => import('../Products/Show')
   },
   {
     path: '/',
     name: 'Products',
-    component: Products
+    component: () => import('../Products/Index')
   },
 ]
 

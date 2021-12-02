@@ -216,7 +216,7 @@ export default {
         if (this.editedIndex > -1) {
           data.append("id", this.editedItem.id)
           data.append("is_superuser", this.editedItem.type === "Admin")
-          axios.post('http://localhost:8000/pitbull/user/edit/', data)
+          axios.post('/pitbull/user/edit/', data)
             .then(() => {
               this.$emit("editEmployee", this.editedItem)
               this.$notify({
@@ -247,7 +247,7 @@ export default {
             })
         } else {
           if (this.editedItem.type === "Admin") {
-            axios.post('http://localhost:8000/pitbull/superuser/create/', data)
+            axios.post('/pitbull/superuser/create/', data)
               .then((response) => {
                 this.editedItem['id'] = response.data.new_user_id
                 this.addEmployee()
@@ -279,7 +279,7 @@ export default {
                 }
               })
           } else {
-            axios.post('http://localhost:8000/pitbull/user/create/', data)
+            axios.post('/pitbull/user/create/', data)
               .then((response) => {
                 this.editedItem['id'] = response.data.new_user_id
                 this.addEmployee()

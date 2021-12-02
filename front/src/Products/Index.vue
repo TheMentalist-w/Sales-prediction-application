@@ -200,7 +200,7 @@ export default {
     },
 
     getGroups() {
-      axios.get('http://localhost:8000/pitbull/products/groups/')
+      axios.get('/pitbull/products/groups/')
         .then(response => {
           this.groups = response.data.groups
           this.filterKey += 1
@@ -208,7 +208,7 @@ export default {
     },
 
     getFeatures() {
-      axios.get('http://localhost:8000/pitbull/products/features/')
+      axios.get('/pitbull/products/features/')
         .then(response => {
           this.features = response.data.features
           this.featureKey += 1
@@ -225,7 +225,7 @@ export default {
         this.filteredFeatures,
         this.sort
       )
-      axios.get('http://localhost:8000/pitbull/products/', {params: params})
+      axios.get('/pitbull/products/', {params: params})
         .then(response => {
           this.products = response.data.products
           this.totalPages = response.data.totalPages

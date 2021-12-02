@@ -26,7 +26,7 @@ axios.interceptors.response.use((response) => {
     const originalRequest = error.config
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
-      return axios.post('http://localhost:8000/pitbull/user/login/refresh/',
+      return axios.post('/pitbull/user/login/refresh/',
         {
           "refresh": Cookies.get('refresh')
         })
