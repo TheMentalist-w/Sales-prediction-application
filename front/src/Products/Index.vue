@@ -19,6 +19,7 @@
             v-model="search"
             append-icon="mdi-magnify"
             label="Search"
+            data-test="search_product"
             @click:append="searchProducts"
             @keyup.enter="searchProducts"
             single-line
