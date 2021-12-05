@@ -65,7 +65,7 @@ export default {
     let access = this.$cookies.get('access')
     let refresh = this.$cookies.get('refresh')
     if(access || refresh){
-      axios.get('/pitbull/user/current/')
+      axios.get('/user_auth/current/')
       .then((response) => {
         this.$router.push('/')
       })
@@ -86,7 +86,7 @@ export default {
       let data = new FormData(); // 2
       data.append("login_data", this.email)
       data.append("password", this.password)
-      axios.post('/pitbull/user/login/', data)
+      axios.post('/user_auth/login/', data)
       .then((response) => {
         this.$cookies.set('access', response.data.access, 60 * 30)
         this.$cookies.set('refresh', response.data.refresh, 60 * 1439)
