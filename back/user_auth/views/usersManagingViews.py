@@ -8,6 +8,13 @@ from rest_framework.permissions import IsAdminUser
 
 
 @api_view(['GET'])
+def create_initial_superuser(request):
+
+    get_user_model().objects.create_superuser('admin', 'admin', 'admin@example.com', 'admin_f', 'admin_l')
+    return HttpResponse("InitialSuperuser created!")
+
+
+@api_view(['GET'])
 @permission_classes((IsAdminUser,))
 def get_users_list(request):
     users_data = None

@@ -1,7 +1,8 @@
-from django.contrib.auth import get_user_model, authenticate, logout
+from django.contrib.auth import authenticate, logout
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
+from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponseNotFound
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -45,10 +46,3 @@ def get_current_user(request):
     }
 
     return JsonResponse(data)
-
-
-@api_view(['GET'])
-def create_initial_superuser(request):
-
-    get_user_model().objects.create_superuser('admin', 'admin', 'admin@example.com', 'admin_f', 'admin_l')
-    return HttpResponse("InitialSuperuser created!")
