@@ -284,4 +284,11 @@ export default {
 .v-select__selections {
   display: contents;
 }
+
+.pagination {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  bottom: 0px;
+}
 </style>
