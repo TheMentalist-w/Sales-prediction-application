@@ -24,7 +24,7 @@ def fetch_products(request):
             existing_ids = set(p.id for p in Product.objects.all())
 
             for row in cursor.fetchall():
-                existing_ids.remove(int(row[3]))
+                #existing_ids.remove(int(row[3]))
                 Product.objects.update_or_create(name=row[0], symbol=row[1], inventory=int(row[2]), id=int(row[3]), group=Group.objects.get(id=int(row[4])),is_archived=False)
 
             for removed_id in existing_ids:

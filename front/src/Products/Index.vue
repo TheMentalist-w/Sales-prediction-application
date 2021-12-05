@@ -169,7 +169,7 @@ export default {
       await this.getProducts()
     }
     else {
-      await this.$router.push('/login')
+      this.$router.push('/login')
     }
   },
   components: {
