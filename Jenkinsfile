@@ -2,6 +2,10 @@ pipeline {
     agent any
     environment {
         DATABASE_NAME = 'postgresql'
+        DATABASE_USER = 'admin'
+        DATABASE_PASSWORD = 'admin'
+        DATABASE_HOST = "127.0.0.1"
+        DATABASE_PORT = "5432"
     }
     stages {
         stage('Database'){
@@ -12,7 +16,10 @@ pipeline {
 
         stage('Backend') {
             agent {
-                docker { image 'python:3.10-alpine3.14' }
+                docker {
+                    image 'python:3.10-alpine3.14'
+                    args '--network="host"'
+                }
             }
             steps {
                 sh 'cd back && ls && pip install -r requirements.txt'
