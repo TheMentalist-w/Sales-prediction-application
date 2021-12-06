@@ -31,7 +31,7 @@ pipeline {
             steps {
                 sh 'python --version'
                 sh 'apk add --no-cache postgresql-dev gcc musl-dev'
-                sh 'pip install psycopg2-binary'
+                sh 'pip install psycopg2'
                 sh 'cd back && ls && pip install -r requirements.txt'
                 sh 'cd back && ls && python manage.py runserver'
                 //sh 'cd back && ls && python manage.py test'
