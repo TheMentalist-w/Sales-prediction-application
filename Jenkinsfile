@@ -1,10 +1,9 @@
 pipeline {
-    agent none
-    stages {
-        stage('Database'){
-        agent {
+    agent {
             docker { image 'docker:latest'}
         }
+    stages {
+        stage('Database'){
             steps{
                 step([$class: 'DockerComposeBuilder', dockerComposeFile: 'docker-compose.yml', option: [$class: 'StartAllServices'], useCustomDockerComposeFile: false])
             }
