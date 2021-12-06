@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    enviroment {
+    environment {
         DATABASE_NAME = 'postgresql'
     }
     stages {
