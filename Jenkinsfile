@@ -18,7 +18,7 @@ pipeline {
             agent {
                 docker {
                     image 'python:3.10-alpine3.14'
-                    args '--network=host --shm-size=256m'
+                    args '--network=host --shm-size=512m'
                 }
             }
             environment {
