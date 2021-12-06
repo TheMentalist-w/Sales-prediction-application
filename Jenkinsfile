@@ -13,7 +13,7 @@ pipeline {
             }
             steps {
                 sh 'cd back && ls && pip install -r requirements.txt'
-                //sh 'cd back && ls && python manage.py runserver'
+                sh 'cd back && ls && python manage.py runserver'
                 //sh 'cd back && ls && python manage.py test'
             }
         }
