@@ -4,7 +4,9 @@ import router from './router'
 import vuetify from './plugins/vuetify'
 import axios from "axios"
 import Cookies from "js-cookie"
-
+import {Chart} from 'chart.js'
+import Chartkick from 'vue-chartkick'
+Vue.use(Chartkick.use(Chart));
 Vue.config.productionTip = false
 
 axios.interceptors.request.use(
