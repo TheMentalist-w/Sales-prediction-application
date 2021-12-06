@@ -35,7 +35,7 @@ pipeline {
 //                 sh 'pip install psycopg2-binary==2.9.2'
                 sh 'cd back && ls && pip install -r requirements.txt'
 //                 sh 'cd back && ls && python manage.py runserver'
-                sh 'cd back && ls && python manage.py test'
+//                 sh 'cd back && ls && python manage.py test'
             }
         }
         stage('Frontend') {
