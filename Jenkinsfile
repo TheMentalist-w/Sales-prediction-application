@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-            docker { image 'docker:latest'}
-        }
+    agent any
     stages {
         stage('Database'){
             steps{
@@ -25,8 +23,8 @@ pipeline {
             }
             steps {
                 sh 'cd front && npm install'
-                sh 'cd front && npm run build'
-                sh 'cd front && npm run test:unit'
+                //sh 'cd front && npm run build'
+                //sh 'cd front && npm run test:unit'
             }
         }
     }
