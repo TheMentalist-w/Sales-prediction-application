@@ -1,12 +1,5 @@
 pipeline {
     agent any
-//     environment {
-//         DATABASE_NAME = 'postgresql'
-//         DATABASE_USER = 'admin'
-//         DATABASE_PASSWORD = 'admin'
-//         DATABASE_HOST = "127.0.0.1"
-//         DATABASE_PORT = "5432"
-//     }
     stages {
 //         stage('Database'){
 //             steps{
@@ -21,13 +14,13 @@ pipeline {
 //                     args '--network=host'
                 }
             }
-            environment {
-                DATABASE_NAME = 'postgresql'
-                DATABASE_USER = 'admin'
-                DATABASE_PASSWORD = 'admin'
-                DATABASE_HOST = "127.0.0.1"
-                DATABASE_PORT = "5432"
-            }
+//             environment {
+//                 DATABASE_NAME = 'postgresql'
+//                 DATABASE_USER = 'admin'
+//                 DATABASE_PASSWORD = 'admin'
+//                 DATABASE_HOST = "127.0.0.1"
+//                 DATABASE_PORT = "5432"
+//             }
             steps {
 //                 sh 'python --version'
                 sh 'apk add --no-cache gcc musl-dev'
