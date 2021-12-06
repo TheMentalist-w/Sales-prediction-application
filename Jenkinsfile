@@ -8,11 +8,11 @@ pipeline {
 //         DATABASE_PORT = "5432"
 //     }
     stages {
-        stage('Database'){
-            steps{
-                step([$class: 'DockerComposeBuilder', dockerComposeFile: 'docker-compose.yml', option: [$class: 'StartAllServices'], useCustomDockerComposeFile: false])
-            }
-        }
+//         stage('Database'){
+//             steps{
+//                 step([$class: 'DockerComposeBuilder', dockerComposeFile: 'docker-compose.yml', option: [$class: 'StartAllServices'], useCustomDockerComposeFile: false])
+//             }
+//         }
 
         stage('Backend') {
             agent {
