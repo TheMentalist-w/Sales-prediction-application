@@ -19,12 +19,6 @@ class Feature(models.Model):
     name = models.CharField(max_length=50)
 
 
-class ProductPrediction(models.Model):
-    id = models.IntegerField(primary_key=True)
-    product = models.ForeignKey('Product', on_delete=models.DO_NOTHING)
-    prediction = models.ForeignKey('Prediction', on_delete=models.DO_NOTHING)
-
-
 class Prediction(models.Model):
     id = models.IntegerField(primary_key=True)
     date = models.DateTimeField(auto_now_add=True, blank=True)
@@ -38,7 +32,7 @@ class Product(models.Model):
     group = models.ForeignKey(Group, on_delete=models.DO_NOTHING)
     inventory = models.IntegerField()
     features = models.ManyToManyField(Feature, through=ProductFeature)
-    predictions = models.ManyToManyField(Prediction, through=ProductPrediction)
+    predictions = models.ForeignKey(Prediction, on_delete=models.DO_NOTHING)
     is_archived = models.BooleanField(default=False)
 
 
