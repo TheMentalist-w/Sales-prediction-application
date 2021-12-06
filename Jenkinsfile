@@ -1,12 +1,12 @@
 pipeline {
     agent any
-    environment {
-        DATABASE_NAME = 'postgresql'
-        DATABASE_USER = 'admin'
-        DATABASE_PASSWORD = 'admin'
-        DATABASE_HOST = "127.0.0.1"
-        DATABASE_PORT = "5432"
-    }
+//     environment {
+//         DATABASE_NAME = 'postgresql'
+//         DATABASE_USER = 'admin'
+//         DATABASE_PASSWORD = 'admin'
+//         DATABASE_HOST = "127.0.0.1"
+//         DATABASE_PORT = "5432"
+//     }
     stages {
         stage('Database'){
             steps{
@@ -20,6 +20,13 @@ pipeline {
                     image 'python:3.10-alpine3.14'
                     args '--network="host"'
                 }
+            }
+            environment {
+                DATABASE_NAME = 'postgresql'
+                DATABASE_USER = 'admin'
+                DATABASE_PASSWORD = 'admin'
+                DATABASE_HOST = "127.0.0.1"
+                DATABASE_PORT = "5432"
             }
             steps {
                 sh 'cd back && ls && pip install -r requirements.txt'
