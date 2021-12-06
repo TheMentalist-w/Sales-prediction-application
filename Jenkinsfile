@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    enviroment {
+        DATABASE_NAME = 'postgresql'
+    }
     stages {
         stage('Database'){
             steps{
@@ -26,6 +29,11 @@ pipeline {
                 //sh 'cd front && npm run build'
                 //sh 'cd front && npm run test:unit'
             }
+        }
+    }
+    post {
+        always {
+            step([$class: 'DockerComposeBuilder', dockerComposeFile: 'docker-compose.yml', option: [$class: 'StopAllServices'], useCustomDockerComposeFile: false])
         }
     }
 }
