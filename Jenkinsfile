@@ -18,7 +18,7 @@ pipeline {
             agent {
                 docker {
                     image 'python:3.10-alpine3.14'
-                    args '--network=host --shm-size=512m'
+                    args '--network=host'
                 }
             }
             environment {
@@ -30,9 +30,9 @@ pipeline {
             }
             steps {
                 sh 'python --version'
-                sh 'apk add --no-cache postgresql-dev'
-                sh 'apk add --no-cache gcc musl-dev'
-                sh 'pip install psycopg2'
+//                 sh 'apk add --no-cache postgresql-libs'
+//                 sh 'apk add --no-cache gcc musl-dev'
+//                 sh 'pip install psycopg2'
                 sh 'cd back && ls && pip install -r requirements.txt'
                 sh 'cd back && ls && python manage.py runserver'
                 //sh 'cd back && ls && python manage.py test'
