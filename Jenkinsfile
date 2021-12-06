@@ -30,7 +30,7 @@ pipeline {
             }
             steps {
                 sh 'python --version'
-                sh 'app add --nocache postgresql-libs'
+                sh 'apk add --nocache postgresql-libs'
                 sh 'pip install psycopg2-binary'
                 sh 'cd back && ls && pip install -r requirements.txt'
                 sh 'cd back && ls && python manage.py runserver'
