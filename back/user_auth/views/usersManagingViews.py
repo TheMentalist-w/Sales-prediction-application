@@ -108,7 +108,7 @@ def create_superuser(request):
         return JsonResponse({'new_superuser_id': user.id})
 
 
-@api_view(['POST'])
+@api_view(['PATCH'])
 @permission_classes((IsAdminUser,))
 def edit_user(request):
     given_id = request.POST.get('id', -1)

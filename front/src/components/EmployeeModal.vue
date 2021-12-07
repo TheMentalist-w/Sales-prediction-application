@@ -216,7 +216,7 @@ export default {
         if (this.editedIndex > -1) {
           data.append("id", this.editedItem.id)
           data.append("is_superuser", this.editedItem.type === "Admin")
-          axios.post('/user_auth/edit/', data)
+          axios.patch('/user_auth/edit/', data)
             .then(() => {
               this.$emit("editEmployee", this.editedItem)
               this.$notify({

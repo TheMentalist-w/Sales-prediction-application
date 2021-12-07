@@ -98,7 +98,7 @@ export default ({
     },
     methods: {
       getProduct() {
-        axios.get(`/pitbull/product/${this.$route.params.id}`)
+        axios.get(`/stock_management/product/${this.$route.params.id}`)
         .then(response => {
           this.product = Object.assign({}, response.data)
         })

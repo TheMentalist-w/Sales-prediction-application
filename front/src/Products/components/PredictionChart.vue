@@ -25,7 +25,7 @@ export default {
         '2017-05-15': 2, '2017-05-16': 5, '2017-05-17': 2, '2017-05-18': 5, '2017-05-19': 2, '2017-05-20': 5, '2017-05-21': 2,
         '2017-05-22': 5, '2017-05-23': 2, '2017-05-24': 5, '2017-05-25': 2, '2017-05-26': 5, '2017-05-27': 2, '2017-05-28': 5,
         '2017-05-29': 2, '2017-05-30': 5, '2017-05-31': 2},
-      shops: [{id: 1, name: 'raz'}, {id:2, name:'dwa'}],
+      shops: [],
       selectedShop: '',
     }
   },
@@ -43,7 +43,10 @@ export default {
   },
   methods: {
     getShops() {
-      axios.get('/pitbull/shops/')
+      const params = {
+        'productId': this.$route.params.id
+      }
+      axios.get('/stock_management/shops/',{params: params})
       .then(response => {
         this.shops = response.data.shops
         this.selectedShop = response.data.shops[0]
@@ -55,7 +58,7 @@ export default {
         'shopId': this.selectedShop,
         'productId': this.$route.params.id
       }
-      axios.get('/pitbull/prediction/history/', {params: params})
+      axios.get('/stock_management/prediction/history/', {params: params})
       .then(response => {
         //assign data to chart
         this.chartData = response.data.history

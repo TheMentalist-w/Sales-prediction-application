@@ -6,5 +6,6 @@ stock_managing_urlpatterns = [
     path('products/', views.get_products_list, name='getProductsList'),
     path('products/groups/', views.get_products_groups, name='getProductsGroups'),
     path('products/features/', views.get_available_features, name='getAvailableFeatures'),
+    path('shops/', views.get_available_shops, name='getAvailableShops'),
 ]
 

@@ -19,10 +19,17 @@ class Feature(models.Model):
     name = models.CharField(max_length=50)
 
 
+class Place(models.Model):
+    name = models.CharField(max_length=40)
+    # population = models.IntegerField(default=None, blank=True)
+    # avg_salary = models.FloatField(default=None, blank=True)
+
+
 class Prediction(models.Model):
     id = models.IntegerField(primary_key=True)
     date = models.DateTimeField(auto_now_add=True, blank=True)
     value = models.IntegerField()
+    place = models.ForeignKey(Place, on_delete=models.DO_NOTHING)
 
 
 class Product(models.Model):
@@ -32,15 +39,8 @@ class Product(models.Model):
     group = models.ForeignKey(Group, on_delete=models.DO_NOTHING)
     inventory = models.IntegerField()
     features = models.ManyToManyField(Feature, through=ProductFeature)
-    predictions = models.ForeignKey(Prediction, on_delete=models.DO_NOTHING)
+    predictions = models.ForeignKey(Prediction, on_delete=models.DO_NOTHING, null=True)
     is_archived = models.BooleanField(default=False)
-
-
-class Place(models.Model):
-    id = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length=40)
-    population = models.IntegerField()
-    avg_salary = models.FloatField()
 
 
 class Item(models.Model):

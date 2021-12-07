@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
-from ..models import Product, Group, Feature, Prediction
+from ..models import Product, Group, Feature, Prediction, Place
 
 
 @api_view(['GET'])
@@ -57,3 +57,12 @@ def get_available_features(request):
 
     features_names = [{'name':feature.name, 'id':feature.id} for feature in Feature.objects.all()]
     return JsonResponse({'features': features_names})
+
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def get_available_shops(request):
+
+    shops = [ {'id': place.id, 'name': place.name} for place in Place.objects.all()]
+
+    return JsonResponse({'shops': shops})
