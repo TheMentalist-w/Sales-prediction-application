@@ -25,13 +25,6 @@ class Place(models.Model):
     # avg_salary = models.FloatField(default=None, blank=True)
 
 
-class Prediction(models.Model):
-    id = models.IntegerField(primary_key=True)
-    date = models.DateTimeField(auto_now_add=True, blank=True)
-    value = models.IntegerField()
-    place = models.ForeignKey(Place, on_delete=models.DO_NOTHING)
-
-
 class Product(models.Model):
     id = models.IntegerField(primary_key=True)
     symbol = models.CharField(max_length=64)
@@ -39,14 +32,21 @@ class Product(models.Model):
     group = models.ForeignKey(Group, on_delete=models.DO_NOTHING)
     inventory = models.IntegerField()
     features = models.ManyToManyField(Feature, through=ProductFeature)
-    predictions = models.ForeignKey(Prediction, on_delete=models.DO_NOTHING, null=True)
     is_archived = models.BooleanField(default=False)
 
 
+class Prediction(models.Model):
+    id = models.AutoField(primary_key=True)
+    date = models.DateTimeField() #auto_now_add=True, blank=True
+    value = models.IntegerField()
+    place = models.ForeignKey(Place, on_delete=models.DO_NOTHING)
+    product = models.ForeignKey(Product,on_delete=models.DO_NOTHING)
+
+
 class Item(models.Model):
-    id = models.IntegerField(primary_key=True)
     product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
     amount = models.IntegerField()
+    sign = models.IntegerField()
 
 
 class Document(models.Model):

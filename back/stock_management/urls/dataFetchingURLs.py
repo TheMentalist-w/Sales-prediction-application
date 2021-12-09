@@ -9,6 +9,8 @@ data_fetching_urlpatterns = [
     path('fetch/features/dict/', views.fetch_features_dict, name='fetchFeaturesDict'),
     path('fetch/features/dependencies/', views.fetch_product_features_dependencies, name='fetchProductFeaturesDependencies'),
     path('fetch/documents/', views.fetch_documents, name='fetchDocuments'),
+    path('fetch/documents/items/', views.fetch_documents_items, name='fetchDocumentsItems'),
     path('fetch/all/', views.fetch_all_data, name='fetchAllData'),
+    path('populate/predictions/', views.populate_predictions, name='populatePredictions'),
 ]
 

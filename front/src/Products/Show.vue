@@ -87,7 +87,7 @@ export default ({
       let access = this.$cookies.get('access')
       let refresh = this.$cookies.get('refresh')
       if(access || refresh){
-        // this.getProduct()
+      this.getProduct()
       }
       else {
         this.$router.push('/login')

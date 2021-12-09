@@ -1,7 +1,8 @@
 import pyodbc
 from django.http import HttpResponse
-from ..models import Product, Group, Feature, ProductFeature, Document, Place
+from ..models import *
 import environ
+from random import randint
 
 env = environ.Env()
 environ.Env.read_env()
@@ -53,7 +54,7 @@ def fetch_features_dict(request):
             for row in cursor.fetchall():
                 Feature.objects.update_or_create(id=int(row[0]), name=row[1])
 
-    return HttpResponse(f"Features dict fetched!")
+    return HttpResponse("Features dict fetched!")
 
 
 def fetch_product_features_dependencies(request):
@@ -66,7 +67,7 @@ def fetch_product_features_dependencies(request):
                 feature = Feature.objects.get(id=int(row[2]))
                 ProductFeature.objects.update_or_create(id=int(row[0]), product=product, feature=feature)
 
-    return HttpResponse(f"Product-features dependencies fetched!")
+    return HttpResponse("Product-features dependencies fetched!")
 
 
 def fetch_documents(request):
@@ -83,7 +84,45 @@ def fetch_documents(request):
 
                 Document.objects.update_or_create(id=int(row[0]), type=int(row[1]), place=place, datetime=row[3])
 
-    return HttpResponse(f"Documents fetched!")
+    return HttpResponse("Documents fetched!")
+
+
+def fetch_documents_items(request):
+    with pyodbc.connect(conn_string) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT ob_Id, ob_TowId, ob_Ilosc, ob_Znak, ob_DokHanId, ob_DokMagId FROM dok_Pozycja;")
+            for row in cursor.fetchall():
+                product = Product.objects.get(id=int(row[1]))
+                Item.objects.update_or_create(id=int(row[0]), product=product, amount=int(row[2]), sign=int(row[3]))
+
+                for i in [4, 5]: # "ob_DokHanId, ob_DokMagId"
+                    if row[i]:
+                        doc_items = Document.objects.get(id=int(row[i])).items
+                        if not doc_items.filter(id=int(row[i])).exists():
+                            doc_items.add(int(row[0]))
+
+    return HttpResponse("Documents items fetched!")
+
+# # # # from stackoverflow, just for development purposes
+
+from random import randrange
+from datetime import timedelta, datetime
+
+
+def random_date():
+    return datetime.strptime('1/1/2020 1:30 PM', '%m/%d/%Y %I:%M %p') + timedelta(seconds=randrange(10**5,10**10))
+
+# # # #
+
+
+# invoked while fetching all data or manually ("stock_management/populate/predictions/"), just for development purposes
+def populate_predictions(request):
+
+    for pr in Product.objects.all():
+        for pl in Place.objects.all():
+            Prediction.objects.create(product=pr, value=randint(1, 100), place=pl, date=random_date())
+
+    return HttpResponse("Predictions table populated!")
 
 
 def fetch_all_data(request):
@@ -91,4 +130,8 @@ def fetch_all_data(request):
     fetch_features_dict(request)
     fetch_products(request)
     fetch_product_features_dependencies(request)
-    return HttpResponse("All data fetched!")
+    fetch_documents(request)
+    fetch_documents_items(request)
+    populate_predictions(request)
+
+    return HttpResponse("All data fetched! Predictions were also made.")
