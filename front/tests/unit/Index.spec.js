@@ -67,32 +67,20 @@ describe('Index.vue', () => {
   })
 
   it('Checks search function',  async () => {
-    const products = [
-      {
-        id: 1,
-        symbol: "A_GAZ_ZIEMNY",
-        name: "Gaz ziemny",
-        group: 1,
-        inventory: 0,
-        features: 8,
-        predictions: 4,
-        is_archived: false
-      },
-      {
-        id: 2,
-        symbol: "A_OLEJ",
-        name: "Olej napędowy",
-        group: 1,
-        inventory: 16,
-        features: 8,
-        predictions: 4,
-        is_archived: false
-      }
-    ]
+   
     await wrapper.find('[data-test="search_product"]').trigger('focus')
     await wrapper.find('[data-test="search_product"]').setValue('gaz')
     expect(wrapper.findAll('tbody tr').length).toBe(1)
   })
 
+  it('Checks search feature',  async () => {
+    const group=[{
+      id:1,
+      name: "Podstawowa"
+    }]
+    await wrapper.setData({group: group})
+    await wrapper.find('[data-test="group_feature"]').trigger('checked')
+    //await wrapper.find('[data-test="group_feature"]').setChecked()
+  })
 })
   

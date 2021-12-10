@@ -35,6 +35,7 @@ export default {
   },
   beforeMount() {
     this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === "true"
+    this.$vuetify.font.font = sessionStorage.getItem('pit_font') === "true"
   }
 }
 </script>

@@ -34,6 +34,7 @@
               :filters="features"
               :filtered="filteredFeatures"
               @filterProducts="filterFeatures"
+              data-test="filer_feature"
             />
           </v-col>
           <v-col
@@ -44,6 +45,7 @@
               :filters="groups"
               :filtered="filteredGroups"
               @filterProducts="filterProducts"
+              data-test="filer_group"
             />
           </v-col>
         </v-toolbar>
