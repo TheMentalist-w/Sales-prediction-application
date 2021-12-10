@@ -26,7 +26,6 @@ export default {
   },
   async mounted() {
     await this.getShops()
-    await this.getPredictionHistory()
   },
   components: {
     ShopFilter
@@ -39,14 +38,15 @@ export default {
       axios.get('/stock_management/shops/',{params: params})
       .then(response => {
         this.shops = response.data.shops
-        this.selectedShop = response.data.shops[0]
+        this.selectedShop = response.data.shops[0].id
         this.shopKey += 1
+        this.getPredictionHistory()
       })
     },
 
     getPredictionHistory() {
       const params = {
-        'shopId': this.selectedShop.id,
+        'shopId': this.selectedShop,
         'productId': this.$route.params.id
       }
       axios.get('/stock_management/product/prediction_history/', {params: params})

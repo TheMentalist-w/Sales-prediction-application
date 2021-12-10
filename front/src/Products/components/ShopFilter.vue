@@ -46,7 +46,7 @@ export default {
   },
   props: {
     filters: Array,
-    filtered: Array
+    filtered: Number
   },
   mounted() {
     this.shops = this.filters.map(x => x)
