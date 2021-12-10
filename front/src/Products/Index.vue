@@ -1,10 +1,15 @@
 <template>
-  <div>
+  <div style="display: flex; flex-direction: column; height: 100%">
+    <v-container fluid :style="layoutStyle">
+      <v-layout column>
+    <v-flex>
     <v-data-table
+
       style="width: 90%"
       :headers="headers"
       :items="products"
       :hide-default-footer="true"
+      :disable-pagination="true"
       loading-text="Loading... Please wait"
       class="elevation-1 mx-auto mt-16 stockTable"
       :key="stockKey"
@@ -69,8 +74,12 @@
         </v-icon>
       </template>
     </v-data-table>
+    </v-flex>
+      </v-layout>
+    </v-container>
     <v-pagination
       class="pagination"
+      style="align-items: flex-end"
       v-model="page"
       :length="totalPages"
       @input="pageChange"
@@ -102,7 +111,8 @@ export default {
       stockTable: true,
       page: 1,
       totalPages: 1,
-      pageSize: 8,
+      pageSize: 5,
+      layoutStyle: 'height: 100%',
       search: '',
       products: [],
       groups: [],
@@ -286,9 +296,13 @@ export default {
 }
 
 .pagination {
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  bottom: 0px;
+  /*position: sticky;*/
+  /*left: 0;*/
+  /*right: 0;*/
+  /*bottom: 0px;*/
+}
+
+#data {
+  overflow: auto;
 }
 </style>
