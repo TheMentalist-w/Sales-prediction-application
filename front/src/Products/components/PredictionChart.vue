@@ -1,19 +1,13 @@
 <template>
   <div>
-    <v-select
-      :items="shops"
-      item-value="id"
-      item-text="name"
-      v-model="selectedShop"
-      label="Shop"
-    >
-    </v-select>
+    <ShopFilter :key="shopKey" :filters="shops" :filtered="selectedShop" @changeShop="changeShop" />
     <line-chart :data="chartData" :colors="['#4CAF50']"></line-chart>
   </div>
 </template>
 
 <script>
 import axios from "axios"
+import ShopFilter from "./ShopFilter"
 
 export default {
   name: "PredictionChart",
@@ -26,7 +20,8 @@ export default {
         '2017-05-22': 5, '2017-05-23': 2, '2017-05-24': 5, '2017-05-25': 2, '2017-05-26': 5, '2017-05-27': 2, '2017-05-28': 5,
         '2017-05-29': 2, '2017-05-30': 5, '2017-05-31': 2},
       shops: [],
-      selectedShop: '',
+      selectedShop: null,
+      shopKey: 0,
     }
   },
   async mounted() {
@@ -34,12 +29,7 @@ export default {
     await this.getPredictionHistory()
   },
   components: {
-
-  },
-  watch: {
-    selectedShop() {
-      this.getPredictionHistory()
-    }
+    ShopFilter
   },
   methods: {
     getShops() {
@@ -50,6 +40,7 @@ export default {
       .then(response => {
         this.shops = response.data.shops
         this.selectedShop = response.data.shops[0]
+        this.shopKey += 1
       })
     },
 
@@ -63,6 +54,11 @@ export default {
         //assign data to chart
         this.chartData = response.data.history
       })
+    },
+
+    changeShop(value) {
+      this.selectedShop = value
+      this.getPredictionHistory()
     }
   }
 }
