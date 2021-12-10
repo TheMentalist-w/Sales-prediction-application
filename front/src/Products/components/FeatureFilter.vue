@@ -7,7 +7,7 @@
       item-text="name"
       item-value="id"
       @change="filterProducts"
-      label="Filter"
+      label="Feature"
       multiple
       ref="selectComponent"
     >
