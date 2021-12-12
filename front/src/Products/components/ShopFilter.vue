@@ -2,13 +2,12 @@
   <v-container fluid>
     <v-select
       style="margin-top: 25px"
-      v-model="filteredFeatures"
-      :items="features"
+      v-model="shop"
+      :items="shops"
       item-text="name"
       item-value="id"
-      @change="filterProducts"
-      label="Feature"
-      multiple
+      @change="changeShop"
+      label="Shop"
       ref="selectComponent"
     >
       <template v-slot:prepend-item>
@@ -25,7 +24,7 @@
               dense
               placeholder="Search"
               v-model="filterSearch"
-              @input="searchFeatures"
+              @input="searchShops"
             />
           </v-list-item-content>
         </v-list-item>
@@ -37,29 +36,29 @@
 
 <script>
 export default {
-  name: "FeatureFilter",
+  name: "ShopFilter",
   data() {
     return {
-      features: [],
-      filteredFeatures: [],
+      shops: [],
+      shop: null,
       filterSearch: null,
     }
   },
   props: {
     filters: Array,
-    filtered: Array
+    filtered: Number
   },
   mounted() {
-    this.features = this.filters.map(x => x)
-    this.filteredFeatures = this.filtered.map(x => x)
+    this.shops = this.filters.map(x => x)
+    this.shop = this.filtered
   },
   methods: {
-    filterProducts() {
-      this.$emit('filterProducts', this.filteredFeatures)
+    changeShop() {
+      this.$emit('changeShop', this.shop)
     },
 
-    searchFeatures() {
-      this.features = this.filters.filter(x => x.name.toUpperCase().includes(this.filterSearch.toUpperCase()))
+    searchShops() {
+      this.shops = this.filters.filter(x => x.name.toUpperCase().includes(this.filterSearch.toUpperCase()))
     }
   }
 }

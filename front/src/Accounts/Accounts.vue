@@ -1,93 +1,111 @@
 <template>
-<div>
-  <v-data-table
-    style="width: 70%"
-    :headers="headers"
-    :items="employees"
-    class="elevation-1 mx-auto mt-16 adminTable"
-    loading-text="Loading... Please wait"
-    :hide-default-footer="true"
-    :loading="loading"
-    :key="tableKey"
-    v-if="adminTable"
-  >
-    <template v-slot:top>
-      <v-toolbar
-        flat
-      >
-        <v-text-field
-          v-model="search"
-          append-icon="mdi-magnify"
-          label="Search"
-          @click:append="searchEmployees"
-          @keyup.enter="searchEmployees"
-          single-line
-          hide-details
-        ></v-text-field>
-        <v-spacer></v-spacer>
-        <v-dialog
-          v-model="dialog"
-          max-width="500px"
-          @click:outside="close"
-          :key="dialogKey"
-        >
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn
-              color="primary"
-              dark
-              rounded
-              class="mb-2"
-              v-bind="attrs"
-              v-on="on"
-            >
-              <v-icon>mdi-plus</v-icon>
-              New
-            </v-btn>
-          </template>
-          <employee-modal
-            :formTitle="formTitle"
-            :editedItem="editedItem"
-            :editedIndex="editedIndex"
-            @closeModal="close"
-            @addEmployee="addEmployee"
-            @editEmployee="editEmployee" />
-        </v-dialog>
-        <dialog-delete
-          :dialogDelete="dialogDelete"
-          :deleteId="deleteId"
-          :editedIndex="editedIndex"
-          :username="editedItem.username"
-          @deleteFromArray="deleteFromArray"
-          @closeDelete="closeDelete" />
-      </v-toolbar>
-    </template>
-    <template v-slot:item.actions="{ item }">
-      <v-icon
-        class="mr-2"
-        color="secondary"
-        @click="editItem(item)"
-      >
-        mdi-pencil
-      </v-icon>
-      <v-icon
-        color="secondary"
-        @click="deleteItem(item)"
-      >
-        mdi-delete
-      </v-icon>
-    </template>
-  </v-data-table>
-  <v-pagination
-    class="pagination"
-    v-model="page"
-    :length="totalPages"
-    @input="pageChange"
-    circle
-    total-visible="7"
-    next-icon="mdi-menu-right"
-    prev-icon="mdi-menu-left"
-  ></v-pagination>
-</div>
+  <div style="display: flex; flex-direction: column; height: 100%">
+    <v-container fluid style="height: 100%">
+      <v-layout column>
+        <v-flex>
+          <v-data-table
+            style="width: 70%"
+            :headers="headers"
+            :items="employees"
+            class="elevation-1 mx-auto mt-16 adminTable"
+            loading-text="Loading... Please wait"
+            :hide-default-footer="true"
+            :loading="loading"
+            :key="tableKey"
+            v-if="adminTable"
+          >
+            <template v-slot:top>
+              <v-toolbar
+                flat
+              >
+                <v-text-field
+                  style="padding-right: 20px"
+                  v-model="search"
+                  append-icon="mdi-magnify"
+                  label="Search"
+                  @click:append="searchEmployees"
+                  @keyup.enter="searchEmployees"
+                  single-line
+                  hide-details
+                ></v-text-field>
+
+                <v-dialog
+                  v-model="dialog"
+                  max-width="500px"
+                  @click:outside="close"
+                  :key="dialogKey"
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="primary"
+                      dark
+                      rounded
+                      class="mb-2"
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+                      <v-icon>mdi-plus</v-icon>
+                      New
+                    </v-btn>
+                  </template>
+                  <employee-modal
+                    :formTitle="formTitle"
+                    :editedItem="editedItem"
+                    :editedIndex="editedIndex"
+                    @closeModal="close"
+                    @addEmployee="addEmployee"
+                    @editEmployee="editEmployee" />
+                </v-dialog>
+                <dialog-delete
+                  :dialogDelete="dialogDelete"
+                  :deleteId="deleteId"
+                  :editedIndex="editedIndex"
+                  :username="editedItem.username"
+                  @deleteFromArray="deleteFromArray"
+                  @closeDelete="closeDelete" />
+                <v-spacer></v-spacer>
+                <v-spacer></v-spacer>
+                <v-spacer></v-spacer>
+                <v-select
+                  style="margin-top: 25px; width: 1%"
+                  v-model="pageSize"
+                  :items="pageSizes"
+                  @change="changePageSize"
+                  label="Items on page"
+                >
+                </v-select>
+              </v-toolbar>
+            </template>
+            <template v-slot:item.actions="{ item }">
+              <v-icon
+                class="mr-2"
+                color="secondary"
+                @click="editItem(item)"
+              >
+                mdi-pencil
+              </v-icon>
+              <v-icon
+                color="secondary"
+                @click="deleteItem(item)"
+              >
+                mdi-delete
+              </v-icon>
+            </template>
+          </v-data-table>
+        </v-flex>
+      </v-layout>
+    </v-container>
+    <v-pagination
+      style="align-items: flex-end"
+      v-model="page"
+      :length="totalPages"
+      @input="pageChange"
+      circle
+      total-visible="7"
+      next-icon="mdi-menu-right"
+      prev-icon="mdi-menu-left"
+    ></v-pagination>
+  </div>
 </template>
 
 <script>
@@ -109,7 +127,8 @@ export default {
       search: '',
       page: 1,
       totalPages: 0,
-      pageSize: 8,
+      pageSize: 10,
+      pageSizes: [10, 25, 50, 100],
       dialogDelete: false,
       adminTable: false,
       tableKey: 0,
@@ -120,26 +139,26 @@ export default {
           align: 'start',
           value: 'username',
           sortable: false,
-          width: '30%'
+          width: '22%'
         },
         {
           text: 'Email',
           align: 'start',
           value: 'email',
           sortable: false,
-          width: '30%'
+          width: '25%'
         },
         {
           text: 'Name',
           value: 'first_name',
           sortable: false,
-          width: '30%'
+          width: '22%'
         },
         {
           text: 'Surname',
           value: 'last_name',
           sortable: false,
-          width: '30%'
+          width: '22%'
         },
         {
           text: 'Actions',
@@ -287,22 +306,14 @@ export default {
     searchEmployees() {
       this.page = 1
       this.getEmployees()
+    },
+
+    changePageSize() {
+      this.getEmployees()
     }
   },
 }
 </script>
 
 <style>
-.v-data-table th {
-  font-size: 28px !important;
-}
-.v-data-table td {
-  font-size: 20px !important;
-}
-.pagination {
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  bottom: 0px;
-}
 </style>

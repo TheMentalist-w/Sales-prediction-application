@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div :key="cardKey" v-if="show">
       <v-card width="80%" class="mx-auto mt-16">
         <v-card-title style="justify-content: left">{{product.name}}</v-card-title>
         <v-card-text>
@@ -36,7 +36,7 @@
                     <v-list-item-title>Features</v-list-item-title>
                     <v-list-item-subtitle>
                       <ul>
-                        <li v-for="feature in this.product.features" :key="feature.id">{{ feature.name }}</li>
+                        <li v-for="feature in product.features" :key="feature.id">{{ feature.name }}</li>
                       </ul>
                     </v-list-item-subtitle>
                   </v-list-item-content>
@@ -57,10 +57,12 @@
 import axios from "axios"
 import PredictionChart from "./components/PredictionChart"
 
-export default ({
+export default {
     name: 'Show',
     data() {
         return {
+          show: false,
+          cardKey: 0,
           product: {
             symbol: 'Tw_Bl',
             name: 'Bluza',
@@ -87,7 +89,7 @@ export default ({
       let access = this.$cookies.get('access')
       let refresh = this.$cookies.get('refresh')
       if(access || refresh){
-      this.getProduct()
+        this.getProduct()
       }
       else {
         this.$router.push('/login')
@@ -101,9 +103,11 @@ export default ({
         axios.get(`/stock_management/product/${this.$route.params.id}`)
         .then(response => {
           this.product = Object.assign({}, response.data)
+          this.show = true
+          this.cardKey += 1
         })
       },
     }
 
-})
+}
 </script>

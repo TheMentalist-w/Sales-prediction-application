@@ -1,76 +1,96 @@
 <template>
-  <div>
-    <v-data-table
-      style="width: 90%"
-      :headers="headers"
-      :items="products"
-      :hide-default-footer="true"
-      loading-text="Loading... Please wait"
-      class="elevation-1 mx-auto mt-16 stockTable"
-      :key="stockKey"
-      v-if="stockTable"
-      :loading="loading"
-    >
-      <template v-slot:top>
-        <v-toolbar
-          flat
-        >
-          <v-text-field
-            v-model="search"
-            append-icon="mdi-magnify"
-            label="Search"
-            @click:append="searchProducts"
-            @keyup.enter="searchProducts"
-            single-line
-            hide-details
-          ></v-text-field>
-          <v-spacer></v-spacer>
-          <v-col
-            cols="2"
+  <div style="display: flex; flex-direction: column; height: 100%">
+    <v-container fluid :style="layoutStyle">
+      <v-layout column>
+        <v-flex>
+          <v-data-table
+
+            style="width: 90%"
+            :headers="headers"
+            :items="products"
+            :hide-default-footer="true"
+            :disable-pagination="true"
+            loading-text="Loading... Please wait"
+            class="elevation-1 mx-auto mt-16 stockTable"
+            :key="stockKey"
+            v-if="stockTable"
+            :loading="loading"
           >
-            <FeatureFilter
-              :key="featureKey"
-              :filters="features"
-              :filtered="filteredFeatures"
-              @filterProducts="filterFeatures"
-            />
-          </v-col>
-          <v-col
-            cols="2"
-          >
-            <GroupFilter
-              :key="filterKey"
-              :filters="groups"
-              :filtered="filteredGroups"
-              @filterProducts="filterProducts"
-            />
-          </v-col>
-        </v-toolbar>
-      </template>
-      <template v-slot:header.prediction="{ header }">
-        {{ header.text }}<v-btn x-small text @click="sortByDesc"><v-icon>{{arrow}}</v-icon></v-btn>
-      </template>
-      <template v-slot:item.group_name="{ item }">
-        <v-btn
-          class="mr-2"
-          color="primary"
-          rounded
-        >
-          {{ item.group_name }}
-        </v-btn>
-      </template>
-      <template v-slot:item.actions="{ item }">
-        <v-icon
-          class="mr-2"
-          color="secondary"
-          @click="productDetails(item)"
-        >
-          mdi-magnify
-        </v-icon>
-      </template>
-    </v-data-table>
+            <template v-slot:top>
+              <v-toolbar
+                flat
+              >
+                <v-text-field
+                  style="margin-top: 3px;"
+                  v-model="search"
+                  append-icon="mdi-magnify"
+                  label="Search"
+                  @click:append="searchProducts"
+                  @keyup.enter="searchProducts"
+                  single-line
+                  hide-details
+                ></v-text-field>
+                <v-col
+                  cols="2"
+                >
+                  <FeatureFilter
+                    :key="featureKey"
+                    :filters="features"
+                    :filtered="filteredFeatures"
+                    @filterProducts="filterFeatures"
+                  />
+                </v-col>
+                <v-col
+                  cols="2"
+                >
+                  <GroupFilter
+                    :key="filterKey"
+                    :filters="groups"
+                    :filtered="filteredGroups"
+                    @filterProducts="filterProducts"
+                  />
+                </v-col>
+                <v-spacer></v-spacer>
+                <v-spacer></v-spacer>
+                <v-spacer></v-spacer>
+
+                <v-select
+                  style="margin-top: 25px; width: 1%"
+                  v-model="pageSize"
+                  :items="pageSizes"
+                  @change="changePageSize"
+                  label="Items on page"
+                >
+                </v-select>
+              </v-toolbar>
+            </template>
+            <template v-slot:header.prediction="{ header }">
+              {{ header.text }}<v-btn x-small text @click="sortByDesc"><v-icon>{{arrow}}</v-icon></v-btn>
+            </template>
+            <template v-slot:item.group_name="{ item }">
+              <v-btn
+                class="mr-2"
+                color="primary"
+                rounded
+              >
+                {{ item.group_name }}
+              </v-btn>
+            </template>
+            <template v-slot:item.actions="{ item }">
+              <v-icon
+                class="mr-2"
+                color="secondary"
+                @click="productDetails(item)"
+              >
+                mdi-magnify
+              </v-icon>
+            </template>
+          </v-data-table>
+        </v-flex>
+      </v-layout>
+    </v-container>
     <v-pagination
-      class="pagination"
+      style="align-items: flex-end"
       v-model="page"
       :length="totalPages"
       @input="pageChange"
@@ -102,7 +122,9 @@ export default {
       stockTable: true,
       page: 1,
       totalPages: 1,
-      pageSize: 8,
+      pageSize: 10,
+      pageSizes: [10, 25, 50, 100],
+      layoutStyle: 'height: 100%',
       search: '',
       products: [],
       groups: [],
@@ -276,6 +298,10 @@ export default {
       }
       this.getProducts()
     },
+
+    changePageSize() {
+      this.getProducts()
+    }
   },
 }
 </script>
@@ -285,10 +311,7 @@ export default {
   display: contents;
 }
 
-.pagination {
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  bottom: 0px;
+#data {
+  overflow: auto;
 }
 </style>
