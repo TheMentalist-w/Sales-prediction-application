@@ -3,6 +3,7 @@ import { AssortmentItem } from "./entities/assortment-item";
 import { Document } from "./entities/document";
 import { 
     generateAssortmentGroups, 
+    generateDocuments, 
     generateItems, 
     generateShops, 
     generateTraits 
@@ -24,10 +25,18 @@ export class Application {
     }
 
     private generateData() {
+        // done
         const shops = generateShops();
+        // done
         const traits = generateTraits();
+        
+        // done
         const groups = generateAssortmentGroups();
+
+        // done
         const items = generateItems(groups, traits);
+
+        const documents = generateDocuments(shops, items);
     }
 
     private async saveData() {

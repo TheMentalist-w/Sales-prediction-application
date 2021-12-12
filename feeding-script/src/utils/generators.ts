@@ -1,9 +1,11 @@
 import { AssortmentGroup } from "../entities/assortment-group";
 import { AssortmentItem } from "../entities/assortment-item";
 import { Document } from "../entities/document";
-import { Shop } from "../entities/shop";
+import { DocumentItem } from "../entities/document-item";
+import { Shop, ShopSize } from "../entities/shop";
 import { Trait } from "../entities/trait";
 import { stubItems, stubShops, stubTraits } from "./stub-data";
+import { getEnumValueRange } from "./utilfuncs";
 
 const getRandomNumber = (lo: number, hi: number): number => {
     return Math.round((Math.random() * (hi - lo)) + lo) 
@@ -37,7 +39,8 @@ export const generateShops = (): Shop[] => {
     return stubShops.map((value, index) => ({
         id: index,
         name: value,
-        symbol: value.substring(0, 3).toUpperCase()
+        symbol: value.substring(0, 3).toUpperCase(),
+        size: getRandomArrayElement(getEnumValueRange(ShopSize))
     }));
 }
 
@@ -73,34 +76,60 @@ export const generateItems = (groups: AssortmentGroup[], traits: Trait[]): Assor
     return items;
 }
 
-export const generateDocuments = (shops: Shop[], ): Document[] => {
-    const documentNumber = 50000;
+export const generateDocuments = (shops: Shop[], items: AssortmentItem[]): Document[] => {
+    const documentAmount = 50000;
     const documents: Document[] = [];
     const availableDocumentTypes = [9,36,14,10,12,11,13,35];
 
-    for(let i = 1; i < documentNumber; i++) {
+    for(let i = 1; i < documentAmount; i++) {
+        const documentType = getRandomArrayElement(availableDocumentTypes);
+        const warehouses = getRandomElementsFromArray(shops, 2);
+
         documents.push({
             id: i,
-            shop: shops[getRandomNumber(0, shops.length - 1)],
-            documentType: availableDocumentTypes[getRandomNumber(0, shops.length - 1)],
+            shop: warehouses[0],
+            sender: documentType === 9 ? warehouses[1] : undefined,
+            documentType,
             date: getRandomDate(),
-            items: [],
+            items: generateItemsForDocument(items),
         });
     }
     return documents;
 }
 
+const generateItemsForDocument = (items: AssortmentItem[]): DocumentItem[] => {
+    const itemAmount = getRandomNumber(2, 6);
+    const selectedItems = getRandomElementsFromArray(items, itemAmount);
+    const documentItems = selectedItems.map((item, index) => ({
+        id: index,
+        item,
+        quantity: getRandomNumber(1, 5),
+    }));
+
+    return documentItems;
+}
+
 const getRandomDate = (): Date => {
     const date = new Date();
-    date.setDate(date.getDate() + getRandomNumber(-3650, -1)); 
+    date.setDate(date.getDate() + getRandomNumber(-3650, -1)); // roughly 10year range
     return date;
+}
+
+// low is included, high is excluded (range(0, 5) => [0, 1, 2, 3, 4]) 
+const range = (lo: number, hi: number) => {
+    return Array.from(Array(hi - lo).keys()).map(val => val + lo);
 }
 
 const getRandomElementsFromArray = <T>(array: T[], amount: number): T[] => {
     if(amount >= array.length) return array;
+    const availableIndexes = range(0, array.length);
+    const selectedIndexes = [];
+    for(const i of range(0, amount)) {
+        const selectedIndex = availableIndexes.splice(getRandomNumber(0, availableIndexes.length - 1), 1);
+        selectedIndexes.push(...selectedIndex);
+    }
 
-    const selectedElementsIdxs = Array(amount).fill(0).map(() => Math.floor(Math.random() * array.length))
-    return selectedElementsIdxs.map(idx => array[idx]);
+    return selectedIndexes.map(index => array[index]);
 }
 
 const updateSalesProbability = (item: AssortmentItem): number[] => {

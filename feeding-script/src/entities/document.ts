@@ -6,6 +6,6 @@ export interface Document {
     documentType: number,
     date: Date,
     shop: Shop,
-    senderId?: number,
+    sender?: Shop,
     items: DocumentItem[];
 }
