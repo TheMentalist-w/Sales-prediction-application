@@ -91,10 +91,6 @@ def get_product_prediction_history(request):
     product = get_object_or_404(Product, id=prod_id)
     place = get_object_or_404(Place, id=palce_id)
 
-#     predictions = [{pred.date.strftime('%Y-%m-%d'): pred.value} for pred in Prediction.objects.filter(product=product, place=place)]
-    predictions = [{'2017-05-01': 2, '2017-05-02': 5, '2017-05-03': 2, '2017-05-04': 5, '2017-05-05': 2, '2017-05-06': 5, '2017-05-07': 2,
-                    '2017-05-08': 5, '2017-05-09': 2, '2017-05-10': 5, '2017-05-11': 2, '2017-05-12': 5, '2017-05-13': 2, '2017-05-14': 5,
-                    '2017-05-15': 2, '2017-05-16': 5, '2017-05-17': 2, '2017-05-18': 5, '2017-05-19': 2, '2017-05-20': 5, '2017-05-21': 2,
-                    '2017-05-22': 5, '2017-05-23': 2, '2017-05-24': 5, '2017-05-25': 2, '2017-05-26': 5, '2017-05-27': 2, '2017-05-28': 5,
-                    '2017-05-29': 2, '2017-05-30': 5, '2017-05-31': 2}]
+    predictions = [[pred.date.strftime('%Y-%m-%d'), pred.value] for pred in Prediction.objects.filter(product=product, place=place)]
+
     return JsonResponse({'history': predictions})

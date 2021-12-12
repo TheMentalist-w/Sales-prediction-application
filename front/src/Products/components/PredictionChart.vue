@@ -48,7 +48,7 @@ export default {
       axios.get('/stock_management/product/prediction_history/', {params: params})
       .then(response => {
         //assign data to chart
-        this.chartData = response.data.history[0]
+        this.chartData = response.data.history
         this.chartKey += 1
       })
     },
