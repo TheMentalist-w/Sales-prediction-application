@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 
-from ..models import Product, Group, Feature, Prediction, Place
+from ..models import Product, Group, Feature, Prediction, Warehouse
 
 
 @api_view(['GET'])
@@ -62,9 +62,9 @@ def get_available_features(request):
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
-def get_available_places(request):
+def get_available_warehouses(request):
 
-    shops = [ {'id': place.id, 'name': place.name} for place in Place.objects.all()]
+    shops = [{'id': wh.id, 'name': wh.name, 'symbol': wh.symbol} for wh in Warehouse.objects.all()]
 
     return JsonResponse({'shops': shops})
 
@@ -86,11 +86,13 @@ def get_product_details(request, id):
 @permission_classes((IsAuthenticated, ))
 def get_product_prediction_history(request):
     prod_id = request.GET.get('productId', -1)
-    palce_id = request.GET.get('shopId', -1)
+    warehouse_id = request.GET.get('shopId', -1)
 
     product = get_object_or_404(Product, id=prod_id)
-    place = get_object_or_404(Place, id=palce_id)
+    warehouse = get_object_or_404(Warehouse, id=warehouse_id)
 
-    predictions = [[pred.date.strftime('%Y-%m-%d'), pred.value] for pred in Prediction.objects.filter(product=product, place=place)]
+    predictions = [[pred.date.strftime('%Y-%m-%d'), pred.value] for pred in Prediction.objects.filter(product=product, warehouse=warehouse)]
 
     return JsonResponse({'history': predictions})
+
+

@@ -19,7 +19,9 @@ class Feature(models.Model):
     name = models.CharField(max_length=50)
 
 
-class Place(models.Model):
+class Warehouse(models.Model):
+    id = models.IntegerField(primary_key=True)
+    symbol = models.CharField(max_length=40)
     name = models.CharField(max_length=40)
     # population = models.IntegerField(default=None, blank=True)
     # avg_salary = models.FloatField(default=None, blank=True)
@@ -39,7 +41,7 @@ class Prediction(models.Model):
     id = models.AutoField(primary_key=True)
     date = models.DateTimeField() #auto_now_add=True, blank=True
     value = models.IntegerField()
-    place = models.ForeignKey(Place, on_delete=models.DO_NOTHING)
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.DO_NOTHING)
     product = models.ForeignKey(Product,on_delete=models.DO_NOTHING)
 
 
@@ -52,6 +54,6 @@ class Item(models.Model):
 class Document(models.Model):
     id = models.IntegerField(primary_key=True)
     type = models.IntegerField()
-    place = models.ForeignKey(Place, default=None, on_delete=models.DO_NOTHING)
+    warehouse = models.ForeignKey(Warehouse, default=None, on_delete=models.DO_NOTHING)
     datetime = models.DateTimeField(blank=True)
     items = models.ManyToManyField(Item, default=None)

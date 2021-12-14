@@ -2,7 +2,8 @@ import pyodbc
 from django.http import HttpResponse
 from ..models import *
 import environ
-from random import randint
+from random import randint,randrange
+from datetime import timedelta, datetime
 
 env = environ.Env()
 environ.Env.read_env()
@@ -74,15 +75,10 @@ def fetch_documents(request):
     with pyodbc.connect(conn_string) as conn:
 
         with conn.cursor() as cursor:
-            cursor.execute("SELECT dok_Id, dok_Typ, dok_MscWyst, dok_DataWyst  FROM dok__Dokument;")
+            cursor.execute("SELECT dok_Id, dok_Typ, dok_MagId, dok_DataWyst  FROM dok__Dokument;")
             for row in cursor.fetchall():
-
-                if not Place.objects.filter(name=row[2]).exists():
-                    place = Place.objects.update_or_create(name=row[2])
-                else:
-                    place = Place.objects.get(name=row[2])
-
-                Document.objects.update_or_create(id=int(row[0]), type=int(row[1]), place=place, datetime=row[3])
+                warehouse = Warehouse.objects.get(id=int(row[2]))
+                Document.objects.update_or_create(id=int(row[0]), type=int(row[1]), warehouse=warehouse, datetime=row[3])
 
     return HttpResponse("Documents fetched!")
 
@@ -103,26 +99,29 @@ def fetch_documents_items(request):
 
     return HttpResponse("Documents items fetched!")
 
-# # # # from stackoverflow, just for development purposes
-
-from random import randrange
-from datetime import timedelta, datetime
-
 
 def random_date():
-    return datetime.strptime('1/1/2020 1:30 PM', '%m/%d/%Y %I:%M %p') + timedelta(seconds=randrange(10**5,10**10))
-
-# # # #
+    return datetime.strptime('1/1/2020', '%m/%d/%Y') + timedelta(seconds=randrange(10**5,10**6))
 
 
 # invoked while fetching all data or manually ("stock_management/populate/predictions/"), just for development purposes
 def populate_predictions(request):
 
     for pr in Product.objects.all():
-        for pl in Place.objects.all():
-            Prediction.objects.create(product=pr, value=randint(1, 100), place=pl, date=random_date())
+        for wh in Warehouse.objects.all():
+            Prediction.objects.create(product=pr, value=randint(1, 100), warehouse=wh, date=random_date())
 
     return HttpResponse("Predictions table populated!")
+
+
+def fetch_warehouses(request):
+    with pyodbc.connect(conn_string) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT mag_Id, mag_Symbol, mag_Nazwa FROM sl_Magazyn;")
+            for row in cursor.fetchall():
+                Warehouse.objects.update_or_create(id=int(row[0]), symbol=row[1], name=row[2])
+
+    return HttpResponse("Warehouses fetched!")
 
 
 def fetch_all_data(request):
@@ -132,6 +131,7 @@ def fetch_all_data(request):
     fetch_product_features_dependencies(request)
     fetch_documents(request)
     fetch_documents_items(request)
+    fetch_warehouses(request)
     populate_predictions(request)
 
     return HttpResponse("All data fetched! Predictions were also made.")
