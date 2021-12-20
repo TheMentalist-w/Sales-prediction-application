@@ -1,5 +1,6 @@
 import { mount, createLocalVue } from "@vue/test-utils"
 import Index from '@/Products/Index'
+import FeatureFilter from '@/Products/components/FeatureFilter'
 import Vuetify from 'vuetify'
 import VueRouter from "vue-router"
 import Cookies from 'js-cookie';
@@ -26,6 +27,11 @@ describe('Index.vue', () => {
         vuetify,
         router,
         attachTo: '#root'
+      })
+      wrapper2 = mount(FeatureFilter, {
+        localVue,
+        vuetify,
+        router
       })
     })
     
@@ -74,12 +80,13 @@ describe('Index.vue', () => {
   })
 
   it('Checks search feature',  async () => {
+    
     const group=[{
       id:1,
       name: "Podstawowa"
     }]
     await wrapper.setData({group: group})
-    await wrapper.find('[data-test="group_feature"]').trigger('checked')
+    await wrapper.find('[data-test="group_feature"]').setValue('gaz')
     //await wrapper.find('[data-test="group_feature"]').setChecked()
   })
 })

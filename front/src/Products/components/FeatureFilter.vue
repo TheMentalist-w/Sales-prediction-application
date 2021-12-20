@@ -23,6 +23,7 @@
           <v-list-item-content>
             <v-text-field
               dense
+              data-test="group_feature_t"
               placeholder="Search"
               v-model="filterSearch"
               @input="searchFeatures"
