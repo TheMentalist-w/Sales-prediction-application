@@ -3,4 +3,5 @@ export interface ColumnData {
     type: string;
     isPrimaryKey?: boolean;
     isNullable?: boolean;
+    autoIncrement?: boolean;
 }

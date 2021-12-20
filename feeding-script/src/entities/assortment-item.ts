@@ -9,3 +9,15 @@ export interface AssortmentItem {
     traits: Trait[],
     saleProbability: number[]
 }
+
+export const getItemAsDBQuery = (item: AssortmentItem): string[] => {
+    return [`
+        INSERT INTO t_Towar (tw_Id, tw_Rodzaj, tw_Symbol, tw_Nazwa) 
+        VALUES (${item.id}, ${item.type.id}, '${item.symbol}', '${item.name}');
+    `.trim(),
+        ...item.traits.map(trait => `
+            INSERT INTO t_CechaTw(cht_IdTowar, cht_IdCecha)
+            VALUES (${item.id}, ${trait.id});
+        `.trim())
+    ]
+}

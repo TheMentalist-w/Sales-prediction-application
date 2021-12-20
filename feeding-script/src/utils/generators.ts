@@ -58,7 +58,7 @@ export const generateItems = (groups: AssortmentGroup[], traits: Trait[]): Assor
         
         const combinedVariants = getEveryPossibleCombination(variants);
         const firstItems = combinedVariants.map((variant, index) => ({
-            id: index,
+            id: 0,
             name: `${item.name} ${variant}`,
             type: groups.find(e => e.name === item.name) || groups[0],
             traits: [],
@@ -70,10 +70,11 @@ export const generateItems = (groups: AssortmentGroup[], traits: Trait[]): Assor
             const selectedTraits = getRandomElementsFromArray(traits, getRandomNumber(1, 2)); 
             return {...item, traits: selectedTraits, saleProbability: updateSalesProbability(item)};
         });
+
         return items;
     });
-
-    return items;
+    
+    return items.map((item, index) => ({...item, id: index}));
 }
 
 export const generateDocuments = (shops: Shop[], items: AssortmentItem[]): Document[] => {
@@ -81,14 +82,14 @@ export const generateDocuments = (shops: Shop[], items: AssortmentItem[]): Docum
     const documents: Document[] = [];
     const availableDocumentTypes = [9,36,14,10,12,11,13,35];
 
-    for(let i = 1; i < documentAmount; i++) {
+    for(let i = 1; i <= documentAmount; i++) {
         const documentType = getRandomArrayElement(availableDocumentTypes);
         const warehouses = getRandomElementsFromArray(shops, 2);
 
         documents.push({
             id: i,
             shop: warehouses[0],
-            sender: documentType === 9 ? warehouses[1] : undefined,
+            receiver: documentType === 9 ? warehouses[1] : undefined,
             documentType,
             date: getRandomDate(),
             items: generateItemsForDocument(items),
