@@ -43,6 +43,7 @@ class Prediction(models.Model):
     value = models.IntegerField()
     warehouse = models.ForeignKey(Warehouse, on_delete=models.DO_NOTHING)
     product = models.ForeignKey(Product,on_delete=models.DO_NOTHING)
+    curr_warehouse_state = models.IntegerField(default=None, blank=True, null=True)
 
 
 class Item(models.Model):
@@ -57,3 +58,9 @@ class Document(models.Model):
     warehouse = models.ForeignKey(Warehouse, default=None, on_delete=models.DO_NOTHING)
     datetime = models.DateTimeField(blank=True)
     items = models.ManyToManyField(Item, default=None)
+
+
+class NeuralNetworkInputArray(models.Model):
+    id = models.IntegerField(primary_key=True)
+    x = models.JSONField()
+    y = models.JSONField()
