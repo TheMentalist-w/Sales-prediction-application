@@ -38,7 +38,7 @@ services:
     container_name: pitbull-frontend
     build: ../front
     ports:
-      - "80:80"
+      - "8080:8080"
 
 
 
