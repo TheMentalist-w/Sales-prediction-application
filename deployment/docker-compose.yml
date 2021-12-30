@@ -27,11 +27,11 @@ services:
       - DATABASE_PASSWORD=admin
       - DATABASE_HOST=pitbull-database
       - DATABASE_PORT=5432
-      - PB_SERVER=150.254.30.116,80
-      - PB_DATABASE=BOZYDAR
-      - PB_USERNAME=SA
-      - PB_PASSWORD=Pitbull2021!
-      - PB_DRIVER="{ODBC Driver 17 for SQL Server}"
+      - PB_SERVER=
+      - PB_DATABASE=
+      - PB_USERNAME=
+      - PB_PASSWORD=
+      - PB_DRIVER=
   pitbull-frontend:
     depends_on:
       - pitbull-backend
