@@ -41,14 +41,14 @@ class Prediction(models.Model):
     id = models.AutoField(primary_key=True)
     date = models.DateTimeField() #auto_now_add=True, blank=True
     value = models.IntegerField()
-    warehouse = models.ForeignKey(Warehouse, on_delete=models.DO_NOTHING)
-    product = models.ForeignKey(Product,on_delete=models.DO_NOTHING)
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.DO_NOTHING, default=None)
+    product = models.ForeignKey(Product,on_delete=models.DO_NOTHING, default=None)
 
 
 class Item(models.Model):
     product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
     amount = models.IntegerField()
-    sign = models.IntegerField()
+    sign = models.IntegerField(default=None)
 
 
 class Document(models.Model):
