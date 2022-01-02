@@ -35,10 +35,10 @@ export class Application {
     private async startup() {
         console.log("Connecting to the database...");
         await this.databaseService.setupDb();
-        console.log("Creating necessary tables...");
+        console.log("Removing old tables and data...");
+        await this.databaseService.removeTables();
+        console.log("Creating new tables...");
         await this.databaseService.setupTables();
-        console.log("Removing old data...");
-        await this.databaseService.purgeDatabase();
         console.log("Old data removed.")
     }
 

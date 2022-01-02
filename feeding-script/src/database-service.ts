@@ -41,10 +41,21 @@ export class DatabaseService {
             for(const tableName of tables) {
                 await this.query(`DELETE FROM ${tableName}`);
             }
-            console.log('Tables purged');
+            console.log('Tables cleared');
         } catch (error) {
             console.error(error);
         }
+    }
+
+    async removeTables() {
+        await this.removeTable('t_Towar');
+        await this.removeTable('t_CechaTw');
+        await this.removeTable('s_CechaTw');
+        await this.removeTable('s_GrupaTw');
+        await this.removeTable('d_Dokument');
+        await this.removeTable('d_Pozycja');
+        await this.removeTable('t_Stan');
+        await this.removeTable('s_Magazyn');
     }
 
     async setupTables() {
@@ -52,7 +63,8 @@ export class DatabaseService {
             {name: 'tw_Id', type: 'int', isPrimaryKey: true},
             {name: 'tw_Rodzaj', type: 'int'},
             {name: 'tw_Symbol', type: 'varchar(20)'},
-            {name: 'tw_Nazwa', type: 'varchar(50)'}
+            {name: 'tw_Nazwa', type: 'varchar(50)'},
+            {name: 'tw_IdGrupa', type: 'int'},
         ]);
         await this.createTable('t_CechaTw', [
             {name: 'cht_Id', type: 'int', isPrimaryKey: true, autoIncrement: true},
@@ -103,6 +115,10 @@ export class DatabaseService {
         });
         query += "\n);"
         return await this.query(query);
+    }
+
+    private async removeTable(name: string) {
+        return await this.query(`DROP TABLE ${name};`)
     }
 
     async disconnect() {

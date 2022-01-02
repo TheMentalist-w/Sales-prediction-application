@@ -12,8 +12,8 @@ export interface AssortmentItem {
 
 export const getItemAsDBQuery = (item: AssortmentItem): string[] => {
     return [`
-        INSERT INTO t_Towar (tw_Id, tw_Rodzaj, tw_Symbol, tw_Nazwa) 
-        VALUES (${item.id}, ${item.type.id}, '${item.symbol}', '${item.name}');
+        INSERT INTO t_Towar (tw_Id, tw_IdGrupa, tw_Symbol, tw_Nazwa, tw_Rodzaj) 
+        VALUES (${item.id}, ${item.type.id}, '${item.symbol}', '${item.name}', 1);
     `.trim(),
         ...item.traits.map(trait => `
             INSERT INTO t_CechaTw(cht_IdTowar, cht_IdCecha)
