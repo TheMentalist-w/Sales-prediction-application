@@ -62,5 +62,7 @@ class Document(models.Model):
 
 class NeuralNetworkInputArray(models.Model):
     id = models.IntegerField(primary_key=True)
-    x = models.JSONField()
-    y = models.JSONField()
+    x_train = models.JSONField()
+    y_train = models.JSONField()
+    x_val = models.JSONField()
+    y_val = models.JSONField()

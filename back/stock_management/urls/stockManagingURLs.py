@@ -9,6 +9,7 @@ stock_managing_urlpatterns = [
     path('shops/', views.get_available_warehouses, name='getAvailableWarehouses'),
     path('product/<int:id>/', views.get_product_details, name='getProductDetails'),
     path('product/prediction_history/', views.get_product_prediction_history, name='getProductPredictionHistory'),
-    path('make_predictions/', views.train_model, name='makePredictions'),
-    path('update_prediction_data/', views.update_prediction_data, name='updatePredictionData'),
+    path('AI/update/', views.update_prediction_data, name='updatePredictionData'),
+    path('AI/train/', views.train_model, name='trainModel'),
+    path('AI/predict/', views.make_predictions, name='makePredictions'),
 ]
