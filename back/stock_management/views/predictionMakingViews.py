@@ -95,7 +95,13 @@ def train_model(request):
 
     # load input data
 
-    arr= NeuralNetworkInputArray.objects.get(id=1)
+    arr= NeuralNetworkInputArray.objects.filter(id=1)
+
+    if not arr.exists():
+        return HttpResponse("Can't train model, because AI input array does not exist!", 404)
+    else:
+        arr = arr.first()
+
     x_train, y_train = arr.x, arr.y
 
     for i, j in zip(x_train, y_train):
@@ -120,6 +126,9 @@ def train_model(request):
 
     # train model
     model.fit(x_train, y_train, epochs=250)
+
+    model.summary()
+    model.save('pitbull-AI')
 
     # TODO validate model
 
