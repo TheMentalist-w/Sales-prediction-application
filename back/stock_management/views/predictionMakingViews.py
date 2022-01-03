@@ -1,19 +1,19 @@
-from django.http import HttpResponse
-from statsmodels.tools.eval_measures import rmse
+from datetime import datetime
+from random import sample
+
+import matplotlib.pyplot as plt
 import numpy as np
+from django.http import HttpResponse
+from sklearn.externals import joblib
+from sklearn.preprocessing import MinMaxScaler
+from statsmodels.tools.eval_measures import rmse
+from tensorflow.keras import Sequential
+from tensorflow.keras import backend as K
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.models import load_model
+from tensorflow.keras.optimizers import Adam
 
 from ..models import *
-from datetime import datetime
-
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Dense, BatchNormalization
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import backend as K
-from tensorflow.keras.models import load_model
-import matplotlib.pyplot as plt
-
-from sklearn.preprocessing import normalize
-from random import sample
 
 
 # from stackoverflow
@@ -107,7 +107,7 @@ def update_prediction_data(request):
 
     # create training and validation sets
     chosen_ids = sample(range(len(x)), int(0.3 * len(x)))  # generate (30% * num_of_input_rows) indexes
-    # to add them to validation set
+                                                            # to add them to validation set
 
     for i in range(len(x)):
         if i in chosen_ids:
@@ -136,11 +136,12 @@ def train_model(request):
     else:
         arr = arr.first()
 
-    x_train, y_train, x_val, y_val = arr.x_train, arr.y_train, arr.x_val, arr.y_val
+    x_train, y_train, x_val, y_val = np.asarray(arr.x_train), np.asarray(arr.y_train), \
+                                     np.asarray(arr.x_val), np.asarray(arr.y_val)
 
     print(f"Size of training set:{len(x_train)}, of validation set:{len(x_val)}")
 
-    """
+
     
     # print input data
     print("Training set:")
@@ -151,13 +152,23 @@ def train_model(request):
     for i, j in zip(x_val, y_val):
         print(i, j)
         
-    """
+
 
     # normalize data and convert to numpy array
-    x_train, y_train, x_val, y_val = normalize(x_train, axis=0, norm='max'), np.asarray(y_train), \
-                                     normalize(x_val, axis=0, norm='max'), np.asarray(y_val)
+    # x_train, y_train, x_val, y_val = normalize(x_train, axis=0, norm='max'), np.asarray(y_train), \
+    #                                  normalize(x_val, axis=0, norm='max'), np.asarray(y_val)
 
-    """
+    scaler = MinMaxScaler()
+    scaler.fit(x_train)
+
+    #save scaler to file
+    joblib.dump(scaler, "scaler.save")
+
+
+    x_train = scaler.transform(x_train)
+    x_val = scaler.transform(x_val)
+
+
     
     # print normalized data
     print("Normalized training set:")
@@ -168,14 +179,14 @@ def train_model(request):
     for i, j in zip(x_val, y_val):
         print(i, j)
 
-    """
+
 
     # create model
     model = Sequential()
 
-    model.add(Dense((len(x_train[0])), activation='relu'))  # input layer
-    model.add(Dense(32, activation='relu'))  # hidden layer
-    model.add(Dense(1, activation='relu'))  # output layer
+    model.add(Dense(20, input_dim=(len(x_train[0])), activation='relu'))  # input layer
+    model.add(Dense(64, activation='relu'))  # hidden layer
+    model.add(Dense(1, activation='linear'))  # output layer
 
     # compile model
     model.compile(
@@ -185,7 +196,7 @@ def train_model(request):
     )
 
     # train model
-    model.fit(x_train, y_train, epochs=75, verbose=0)
+    model.fit(x_train, y_train, epochs=10**4) # ,verbose=0
 
     # validate model
 
@@ -193,6 +204,8 @@ def train_model(request):
                   [510, 0, 0, 50, 2, 1, 1, 1, 1, 1, 0, 1, 0]]
 
     y_validate = [7.0, 7.0]
+
+    x_validate, y_validate = scaler.transform(x_validate), np.asarray(y_validate)
 
     predictions = np.ravel(model.predict(x_validate))
 
@@ -213,8 +226,12 @@ def make_predictions(request):
 
     # make predictions and calculate error
 
-    x_test = np.array([[510.0, 0, 0, 50, 2, 1, 1, 1, 1, 1, 0, 1, 0]])
+    x_test = np.array([[510, 0, 0, 50, 2, 1, 1, 1, 1, 1, 0, 1, 0]])
     y_test = [7.0]
+
+    # normalize input data
+    scaler = joblib.load("scaler.save")
+    x_test = scaler.transform(x_test)
 
     predictions = np.ravel(model.predict(x_test))
 
