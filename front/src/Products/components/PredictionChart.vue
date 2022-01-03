@@ -38,6 +38,16 @@ export default {
         this.shopKey += 1
         this.getPredictionHistory()
       })
+      .catch(error => {
+        if (error.response.status === 500) {
+          this.$notify({
+            group: 'notifications-bottom-left',
+            title: 'Error',
+            text: 'Server error. Try later',
+            type: 'error text-white'
+          })
+        }
+      })
     },
 
     getPredictionHistory() {
@@ -50,6 +60,16 @@ export default {
         //assign data to chart
         this.chartData = response.data.history
         this.chartKey += 1
+      })
+      .catch(error => {
+        if (error.response.status === 500) {
+          this.$notify({
+            group: 'notifications-bottom-left',
+            title: 'Error',
+            text: 'Server error. Try later',
+            type: 'error text-white'
+          })
+        }
       })
     },
 
