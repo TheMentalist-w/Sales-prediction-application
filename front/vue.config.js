@@ -9,9 +9,10 @@ module.exports = {
         target: 'http://localhost:8000',
         changeOrigin: true
       },
-    }
+    },
   },
   transpileDependencies: [
     'vuetify'
-  ]
+  ],
+  productionSourceMap: false,
 }

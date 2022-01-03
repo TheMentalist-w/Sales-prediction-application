@@ -129,9 +129,9 @@ def fetch_all_data(request):
     fetch_features_dict(request)
     fetch_products(request)
     fetch_product_features_dependencies(request)
+    fetch_warehouses(request)
     fetch_documents(request)
     fetch_documents_items(request)
-    fetch_warehouses(request)
     populate_predictions(request)
 
     return HttpResponse("All data fetched! Predictions were also made.")

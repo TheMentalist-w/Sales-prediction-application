@@ -153,3 +153,4 @@ yarn-error.log*
 
 .idea/
 .vs/
+/deployment/postgres-data/
