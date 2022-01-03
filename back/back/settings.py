@@ -57,7 +57,6 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
     'user_auth',
     'stock_management',
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
