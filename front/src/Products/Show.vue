@@ -1,7 +1,13 @@
 <template>
     <div :key="cardKey" v-if="show">
       <v-card width="80%" class="mx-auto mt-16">
-        <v-card-title style="justify-content: left">{{product.name}}</v-card-title>
+        <v-card-title style="justify-content: left">{{product.name}} <v-spacer/>
+          <v-btn
+            @click="goBack"
+          >
+            <v-icon>mdi-arrow-left </v-icon> Back
+          </v-btn>
+        </v-card-title>
         <v-card-text>
           <v-divider></v-divider>
           <v-container>
@@ -117,6 +123,10 @@ export default {
           }
         })
       },
+
+      goBack() {
+        this.$router.push('/')
+      }
     }
 
 }
