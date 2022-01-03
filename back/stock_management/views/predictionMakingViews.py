@@ -1,7 +1,6 @@
 from datetime import datetime
 from random import sample
 
-import matplotlib.pyplot as plt
 import numpy as np
 from django.http import HttpResponse
 from sklearn.externals import joblib
@@ -14,20 +13,6 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.optimizers import Adam
 
 from ..models import *
-
-
-# from stackoverflow
-def plot_preds(traindata,
-               trainlabels,
-               testdata,
-               testlabels,
-               predictions):
-    plt.figure(figsize=(12, 6))
-    plt.scatter(traindata, trainlabels, c="b", label="Training data")
-    plt.scatter(testdata, testlabels, c="g", label="Testing data")
-    plt.scatter(testdata, predictions, c="r", label="Predictions")
-    plt.legend()
-
 
 def rmse(y_true, y_pred):
     return K.sqrt(K.mean(K.square(y_pred - y_true)))
@@ -46,9 +31,6 @@ def get_historical_sales(prod_id, target_date):
                     res['last_two_weeks'] += item.amount
                 if days_passed <= 30:
                     res['last_month'] += item.amount
-
-                # if 360 <= days_passed <= 360:
-                #    res['last_month'] += item.amount
 
     return res
 
@@ -184,9 +166,9 @@ def train_model(request):
     # create model
     model = Sequential()
 
-    model.add(Dense(20, input_dim=(len(x_train[0])), activation='relu'))  # input layer
-    model.add(Dense(64, activation='relu'))  # hidden layer
-    model.add(Dense(1, activation='linear'))  # output layer
+    model.add(Dense(128, input_dim=(len(x_train[0])), activation='relu'))
+    model.add(Dense(256, activation='relu')) 
+    model.add(Dense(1, activation='linear'))
 
     # compile model
     model.compile(
@@ -196,7 +178,7 @@ def train_model(request):
     )
 
     # train model
-    model.fit(x_train, y_train, epochs=10**4) # ,verbose=0
+    model.fit(x_train, y_train, epochs=10**3) # ,verbose=0
 
     # validate model
 
