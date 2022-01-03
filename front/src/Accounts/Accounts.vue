@@ -298,8 +298,18 @@ export default {
           this.loading = false
           this.tableKey += 1
         })
-        .catch(() => {
-          this.$router.push('/')
+        .catch(error => {
+          if (error.response.status === 500) {
+            this.$notify({
+              group: 'notifications-bottom-left',
+              title: 'Error',
+              text: 'Server error. Try later',
+              type: 'error text-white'
+            })
+          }
+          else {
+            this.$router.push('/')
+          }
         })
     },
 
