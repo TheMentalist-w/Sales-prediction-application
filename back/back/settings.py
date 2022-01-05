@@ -95,9 +95,11 @@ LOGGING = {
         },
         'file': {
             'level': 'WARN',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': 'logs/pitbull.log',
-            'formatter': 'verbose'
+            'formatter': 'verbose',
+            'backupCount': 5,
+            'maxBytes': 5242880,  # 5MB
         },
     },
     'loggers': {
