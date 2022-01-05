@@ -53,6 +53,7 @@ CORS_ORIGIN_ALLOW_ALL=True   # CORS_ORIGIN_WHITELIST = ["http://localhost:8080"]
 
 INSTALLED_APPS = [
     'corsheaders',
+    'django_crontab',
     'rest_framework',
     'rest_framework_swagger',
     'user_auth',
@@ -134,6 +135,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+CRONJOBS = [
+     # ('* 2 * * *', 'stock_management.views.predictionMakingViews.make_predictions')
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
