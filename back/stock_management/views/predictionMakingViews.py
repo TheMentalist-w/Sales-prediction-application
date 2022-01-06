@@ -1,11 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from random import sample
 
 import numpy as np
 from django.http import HttpResponse
-from sklearn.externals import joblib
+import joblib
 from sklearn.preprocessing import MinMaxScaler
-from statsmodels.tools.eval_measures import rmse
+
 from tensorflow.keras import Sequential
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Dense
@@ -19,18 +19,21 @@ def rmse(y_true, y_pred):
 
 
 def get_historical_sales(prod_id, target_date):
-    res = {'last_week': 0, 'last_two_weeks': 0, 'last_month': 0}
+    res = {'last_week': 0, 'last_two_weeks': 0, 'last_month': 0, 'last_year': 0}
 
     for doc in Document.objects.filter(type__in=[11, 13, 35]):  # doc types: 36+, 14+, 10+, 12+, 11-, 13-, 35-, 9
         for item in doc.items.all():
             if item.product.id == prod_id:
                 days_passed = (target_date - doc.datetime).days
+                print(doc, days_passed)
                 if days_passed <= 7:
                     res['last_week'] += item.amount
                 if days_passed <= 14:
                     res['last_two_weeks'] += item.amount
                 if days_passed <= 30:
                     res['last_month'] += item.amount
+                if days_passed <= 365:
+                    res['last_year'] += item.amount
 
     return res
 
@@ -60,11 +63,14 @@ def get_boolean_item_features(item):
 
 def update_prediction_data(request):
     # HEADERS:
-    # x = [['curr_inventory', 'last_week_sales', 'last_two_weeks_sales', 'last_month_sales', 'month', 'mag_id'] + \
+    # x = [['curr_inventory', 'last_week_sales', 'last_two_weeks_sales', 'last_month_sales', 'last_year_sales', 'month', 'mag_id'] + \
     #     [feature.name for feature in Feature.objects.order_by('id')]]
     # y = [['expected_output']]
 
     x, y = [], []
+
+    stop_after = 100
+    i=0
 
     for doc in Document.objects.filter(type__in=[36, 14, 10]):  # doc types: 36+, 14+, 10+, 12+, 11-, 13-, 35-
         print(f"Processing doc id={doc.id}")
@@ -76,14 +82,19 @@ def update_prediction_data(request):
 
                 y.append(sales_days)
 
-                x.append(
-                    [item.product.inventory] +
-                    list(get_historical_sales(prod_id=item.product.id,
-                                              target_date=datetime.fromisoformat(
-                                                  '2021-09-11T04:16:13-04:00')).values()) +
-                    [int(doc.datetime.strftime('%m')), doc.warehouse.id] +
-                    get_boolean_item_features(item)
-                )
+                var = [item.product.inventory] + \
+                list(get_historical_sales(prod_id=item.product.id,
+                                          target_date=datetime.now(timezone.utc)).values()) + \
+                [int(doc.datetime.strftime('%m')), doc.warehouse.id] + \
+                get_boolean_item_features(item)
+
+                print(var)
+                x.append(var)
+
+                if i == stop_after:
+                    break
+                else:
+                    i += 1
 
     x_train, y_train, x_val, y_val = [], [], [], []
 
@@ -182,16 +193,9 @@ def train_model(request):
 
     # validate model
 
-    x_validate = [[508, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 0, 0],
-                  [510, 0, 0, 50, 2, 1, 1, 1, 1, 1, 0, 1, 0]]
+    predictions = np.ravel(model.predict(x_val))
 
-    y_validate = [7.0, 7.0]
-
-    x_validate, y_validate = scaler.transform(x_validate), np.asarray(y_validate)
-
-    predictions = np.ravel(model.predict(x_validate))
-
-    err = rmse(y_validate, predictions).numpy()
+    err = rmse(y_val, predictions).numpy()
 
     print(predictions, err)
 
