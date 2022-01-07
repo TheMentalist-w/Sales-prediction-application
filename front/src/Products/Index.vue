@@ -122,7 +122,7 @@ export default {
       stockTable: true,
       page: 1,
       totalPages: 1,
-      pageSize: 10,
+      pageSize: 25,
       pageSizes: [10, 25, 50, 100],
       layoutStyle: 'height: 100%',
       search: '',
