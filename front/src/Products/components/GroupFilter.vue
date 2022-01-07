@@ -74,7 +74,7 @@ export default {
           this.filteredGroups = []
           this.filterProducts()
         } else {
-          this.filteredGroups = this.groups.slice()
+          this.filteredGroups = this.groups.slice().map(x => x.id)
           this.filterProducts()
         }
       })

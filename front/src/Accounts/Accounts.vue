@@ -127,7 +127,7 @@ export default {
       search: '',
       page: 1,
       totalPages: 0,
-      pageSize: 10,
+      pageSize: 25,
       pageSizes: [10, 25, 50, 100],
       dialogDelete: false,
       adminTable: false,
