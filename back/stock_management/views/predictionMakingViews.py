@@ -249,7 +249,7 @@ def make_predictions(request):
                                           warehouse_id=w.id,
                                           target_date=datetime.now(timezone.utc)).values()) + \
                   [int(datetime.now().strftime('%m')), w.id] + \
-                  [0 if f in p.features.all() else 1 for f in Feature.objects.all()]
+                  [1 if f in p.features.all() else 0 for f in Feature.objects.all()]
                 ]
 
             # normalize input data
