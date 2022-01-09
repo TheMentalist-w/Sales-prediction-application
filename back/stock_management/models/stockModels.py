@@ -40,7 +40,7 @@ class Product(models.Model):
 class Prediction(models.Model):
     id = models.AutoField(primary_key=True)
     date = models.DateTimeField() #auto_now_add=True, blank=True
-    value = models.IntegerField()
+    value = models.IntegerField(null=True, blank=True, default=None)
     warehouse = models.ForeignKey(Warehouse, on_delete=models.DO_NOTHING, default=None)
     product = models.ForeignKey(Product,on_delete=models.DO_NOTHING, default=None)
 
@@ -56,11 +56,10 @@ class Document(models.Model):
     warehouse = models.ForeignKey(Warehouse, default=None, on_delete=models.DO_NOTHING)
     datetime = models.DateTimeField(blank=True)
     items = models.ManyToManyField(Item, default=None)
+    receiver = models.IntegerField(null=True, blank=True, default=None)
 
 
 class NeuralNetworkInputArray(models.Model):
     id = models.IntegerField(primary_key=True)
-    x_train = models.JSONField()
-    y_train = models.JSONField()
-    x_val = models.JSONField()
-    y_val = models.JSONField()
+    x = models.JSONField()
+    y = models.JSONField()

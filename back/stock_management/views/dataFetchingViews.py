@@ -75,10 +75,11 @@ def fetch_documents(request):
     with pyodbc.connect(conn_string) as conn:
 
         with conn.cursor() as cursor:
-            cursor.execute("SELECT dok_Id, dok_Typ, dok_MagId, dok_DataWyst  FROM d_Dokument;")
+            cursor.execute("SELECT dok_Id, dok_Typ, dok_MagId, dok_DataWyst, dok_OdbiorcaId  FROM d_Dokument;")
             for row in cursor.fetchall():
+                print(f"Fetching docs: {int(row[0])*100/50000}%")
                 warehouse = Warehouse.objects.get(id=int(row[2]))
-                Document.objects.update_or_create(id=int(row[0]), type=int(row[1]), warehouse=warehouse, datetime=row[3])
+                Document.objects.update_or_create(id=int(row[0]), type=int(row[1]), warehouse=warehouse, datetime=row[3], receiver=row[4])
 
     return HttpResponse("Documents fetched!")
 
@@ -88,14 +89,13 @@ def fetch_documents_items(request):
         with conn.cursor() as cursor:
             cursor.execute("SELECT ob_Id, ob_TowId, ob_Ilosc, ob_DokMagId FROM d_Pozycja;")
             for row in cursor.fetchall():
-                print(row)
+                if int(row[0]) % 1000 == 0: print(f"Fetching doc items: {int(row[0])*100/200000}%")
                 product = Product.objects.get(id=int(row[1]))
                 Item.objects.update_or_create(id=int(row[0]), product=product, amount=int(row[2]))
 
-                if row[3]:
-                    doc_items = Document.objects.get(id=int(row[3])).items
-                    if not doc_items.filter(id=int(row[3])).exists():
-                        doc_items.add(int(row[0]))
+                doc_items = Document.objects.get(id=int(row[3])).items
+                if not doc_items.filter(id=int(row[0])).exists():
+                    doc_items.add(int(row[0]))
 
     return HttpResponse("Documents items fetched!")
 
@@ -133,7 +133,5 @@ def fetch_all_data(request):
     fetch_warehouses(request)
     fetch_documents(request)
     fetch_documents_items(request)
-    populate_predictions(request)
 
-    return HttpResponse("All data fetched! Predictions were also made.")
-
+    return HttpResponse("All data fetched!")

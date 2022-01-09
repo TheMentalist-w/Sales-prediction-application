@@ -1,8 +1,10 @@
-from datetime import datetime, timezone
+import random
+from datetime import datetime, timezone, timedelta
 from random import sample
 
 import numpy as np
 from django.http import HttpResponse
+from django.db.models import Max
 import joblib
 from sklearn.preprocessing import MinMaxScaler
 
@@ -18,103 +20,114 @@ def rmse(y_true, y_pred):
     return K.sqrt(K.mean(K.square(y_pred - y_true)))
 
 
-def get_historical_sales(prod_id, target_date):
-    res = {'last_week': 0, 'last_two_weeks': 0, 'last_month': 0, 'last_year': 0}
+MAX_SEARCH_DAYS = 180  # must be used for optimization purposes
 
-    for doc in Document.objects.filter(type__in=[11, 13, 35]):  # doc types: 36+, 14+, 10+, 12+, 11-, 13-, 35-, 9
+
+def get_historical_sales(prod_id, warehouse_id, target_date):
+    res = {'last_week': 0, 'last_two_weeks': 0, 'last_month': 0, 'last_three_months': 0, 'last_six_months': 0}
+
+    for doc in Document.objects.filter(type__in=[11, 13, 35]).filter(warehouse=warehouse_id,
+                                        datetime__gte=target_date-timedelta(days=MAX_SEARCH_DAYS),
+                                        datetime__lt=target_date).order_by('datetime'):  # doc types: 36+, 14+, 10+, 12+, 11-, 13-, 35-, 9
+        days_passed = (target_date - doc.datetime).days
         for item in doc.items.all():
             if item.product.id == prod_id:
-                days_passed = (target_date - doc.datetime).days
-                print(doc, days_passed)
                 if days_passed <= 7:
                     res['last_week'] += item.amount
                 if days_passed <= 14:
                     res['last_two_weeks'] += item.amount
                 if days_passed <= 30:
                     res['last_month'] += item.amount
-                if days_passed <= 365:
-                    res['last_year'] += item.amount
+                if days_passed <= 90:
+                    res['last_three_months'] += item.amount
+                if days_passed <= MAX_SEARCH_DAYS:
+                    res['last_six_months'] += item.amount
 
     return res
 
 
-def get_sales_days(prod_id, start_amount, start_date):
-    for doc in Document.objects.filter(type__in=[11, 13, 35], datetime__gt=start_date).order_by(
-            'datetime'):  # doc types: 36+, 14+, 10+, 12+, 11-, 13-, 35-
+def get_sales_days(prod_id, warehouse_id, start_amount, start_date):
+
+    for doc in Document.objects.filter(type__in=[11, 13, 35, 9], datetime__gt=start_date, warehouse=warehouse_id).order_by('datetime'):  # doc types: 36+, 14+, 10+, 12+, 11-, 13-, 35-
         for item in doc.items.all():
             if item.product.id == prod_id:
-                start_amount -= item.amount
+
+                if doc.type == 9:       # stock transfer between warehouses
+                    if doc.warehouse.id == warehouse_id:    # outgoing transfer
+                        start_amount += item.amount
+                    if doc.receiver == warehouse_id:   # incoming transfer
+                        start_amount -= item.amount
+
+                else:                   # 'ordinary' sales
+                    start_amount -= item.amount
+
                 if start_amount <= 0:
                     return float((doc.datetime - start_date).days)
     return None
 
-
-def get_boolean_item_features(item):
-    features_boolean = []
-
-    for feature in Feature.objects.order_by('id'):
-        if feature in item.product.features.all():
-            features_boolean.append(0)
-        else:
-            features_boolean.append(1)
-
-    return features_boolean
-
-
-def update_prediction_data(request):
-    # HEADERS:
-    # x = [['curr_inventory', 'last_week_sales', 'last_two_weeks_sales', 'last_month_sales', 'last_year_sales', 'month', 'mag_id'] + \
-    #     [feature.name for feature in Feature.objects.order_by('id')]]
-    # y = [['expected_output']]
-
-    x, y = [], []
-
-    stop_after = 100
-    i=0
-
-    for doc in Document.objects.filter(type__in=[36, 14, 10]):  # doc types: 36+, 14+, 10+, 12+, 11-, 13-, 35-
-        print(f"Processing doc id={doc.id}")
-        for item in doc.items.all():
-
-            sales_days = get_sales_days(prod_id=item.product.id, start_amount=item.amount, start_date=doc.datetime)
-
-            if sales_days is not None:  # skip items that have not given out yet
-
-                y.append(sales_days)
-
-                var = [item.product.inventory] + \
-                list(get_historical_sales(prod_id=item.product.id,
-                                          target_date=datetime.now(timezone.utc)).values()) + \
-                [int(doc.datetime.strftime('%m')), doc.warehouse.id] + \
-                get_boolean_item_features(item)
-
-                print(var)
-                x.append(var)
-
-                if i == stop_after:
-                    break
-                else:
-                    i += 1
-
-    x_train, y_train, x_val, y_val = [], [], [], []
-
-    # create training and validation sets
-    chosen_ids = sample(range(len(x)), int(0.3 * len(x)))  # generate (30% * num_of_input_rows) indexes
-                                                            # to add them to validation set
-
-    for i in range(len(x)):
-        if i in chosen_ids:
-            x_val.append(x[i])
-            y_val.append(y[i])
-        else:
-            x_train.append(x[i])
-            y_train.append(y[i])
+def append_to_ai_array(append_x, append_y):
 
     arr = NeuralNetworkInputArray.objects.filter(id=1)
+
     if arr.exists():
-        arr.update(x_train=x_train, y_train=y_train, x_val=x_val, y_val=y_val)
+        arr = arr.first()
+        arr.x.append(append_x)
+        arr.y.append(append_y)
+        arr.save()
     else:
-        NeuralNetworkInputArray.objects.create(id=1, x_train=x_train, y_train=y_train, x_val=x_val, y_val=y_val)
+        NeuralNetworkInputArray.objects.create(id=1, x=[append_x], y=[append_y])
+
+
+def reset_ai_array():
+    NeuralNetworkInputArray.objects.filter(id=1).delete()
+
+
+# mode = 0 deletes existing NN input array and create new based on ALL documents
+# mode = 1 updates existing NN input array, creating entries based on docs from last 24h
+def prepare_prediction_data(mode):
+
+    # HEADERS:
+    # x = [['delivery_amount', 'last_week_sales', 'last_two_weeks_sales', 'last_month_sales', 'last_three_months_sales','last_six_months_sales', 'month', 'mag_id'] + \
+    #     [feature.id for feature in Feature.objects.order_by('id')]]
+    # y = [['expected_output']]
+
+    if mode not in [0, 1]:
+        raise ValueError(f"Please enter valid NN array preparing mode (0 for INIT/ 1 for UPDATE) [mode given={mode}]")
+
+    if mode == 0:
+        reset_ai_array()
+
+    docs_to_process = Document.objects.filter(type__in=[36, 14, 10, 12])    # doc types: 36+, 14+, 10+, 12+, 11-, 13-, 35-
+
+    if mode == 1:
+        docs_to_process = docs_to_process.filter(datetime__gt=datetime.now(timezone.utc)-timedelta(hours=24))  # if in 1 (UPDATE) mode,
+                                                                                                               # process only docs from last 24h
+
+    num_of_docs = docs_to_process.count()
+    print(f"Num of docs to process: {num_of_docs}")
+
+    i = 0
+    for doc in docs_to_process:   # use .order_by('?')[:num_of samples] if in 0 (INIT) mode and execution time is too long
+
+        print(f"Processing doc {i} out of {num_of_docs}")
+
+        for item in doc.items.all():
+            sales_days = get_sales_days(prod_id=item.product.id, warehouse_id=doc.warehouse,    # expected output (y1, y2, y3...)
+                                        start_amount=item.amount, start_date=doc.datetime)
+
+            if sales_days is not None:  # skip items that have not been given out yet
+
+                neural_variables = [item.amount] + \
+                list(get_historical_sales(prod_id=item.product.id,
+                                          warehouse_id=doc.warehouse,
+                                          target_date=doc.datetime).values()) + \
+                [int(doc.datetime.strftime('%m')), doc.warehouse.id] + \
+                [1 if fea in item.product.features.all() else 0 for fea in Feature.objects.all()]  # BUG! 0 -> 1, # variables for neural network (x1, x2, x3...)
+
+                append_to_ai_array(append_x=neural_variables, append_y=sales_days)      # save partial result to DB
+                print(neural_variables, sales_days)                    # and print it
+
+        i += 1
 
     return HttpResponse("Input prediction array updated!")
 
@@ -129,13 +142,29 @@ def train_model(request):
     else:
         arr = arr.first()
 
-    x_train, y_train, x_val, y_val = np.asarray(arr.x_train), np.asarray(arr.y_train), \
-                                     np.asarray(arr.x_val), np.asarray(arr.y_val)
+    x, y = arr.x, arr.y
+
+    x_train, y_train, x_val, y_val = [], [], [], []
+
+    # create training and validation sets
+    chosen_ids = sample(range(len(x)), int(0.1 * len(x)))   # generate (30% * num_of_input_rows) indexes
+                                                            # to add them to validation set
+
+    for i in range(len(x)):
+        if i in chosen_ids:
+            x_val.append(x[i])
+            y_val.append(y[i])
+        else:
+            x_train.append(x[i])
+            y_train.append(y[i])
+
+    x_train, y_train, x_val, y_val = np.asarray(x_train), np.asarray(y_train), \
+                                     np.asarray(x_val), np.asarray(y_val)
 
     print(f"Size of training set:{len(x_train)}, of validation set:{len(x_val)}")
 
 
-    
+    """
     # print input data
     print("Training set:")
     for i, j in zip(x_train, y_train):
@@ -144,12 +173,9 @@ def train_model(request):
     print("Validation set:")
     for i, j in zip(x_val, y_val):
         print(i, j)
-        
+    """
 
-
-    # normalize data and convert to numpy array
-    # x_train, y_train, x_val, y_val = normalize(x_train, axis=0, norm='max'), np.asarray(y_train), \
-    #                                  normalize(x_val, axis=0, norm='max'), np.asarray(y_val)
+    print(x_train[0],y_train[0])
 
     scaler = MinMaxScaler()
     scaler.fit(x_train)
@@ -157,12 +183,10 @@ def train_model(request):
     #save scaler to file
     joblib.dump(scaler, "scaler.save")
 
-
     x_train = scaler.transform(x_train)
     x_val = scaler.transform(x_val)
 
-
-    
+    """
     # print normalized data
     print("Normalized training set:")
     for i, j in zip(x_train, y_train):
@@ -171,15 +195,17 @@ def train_model(request):
     print("Normalized validation set:")
     for i, j in zip(x_val, y_val):
         print(i, j)
+    """
 
-
+    print(x_train[0], y_train[0])
 
     # create model
     model = Sequential()
 
-    model.add(Dense(128, input_dim=(len(x_train[0])), activation='relu'))
-    model.add(Dense(256, activation='relu')) 
-    model.add(Dense(1, activation='linear'))
+    model.add(Dense(256, input_dim=(len(x_train[0])), activation='relu'))
+    model.add(Dense(256, activation='relu'))
+    model.add(Dense(128, activation='relu'))
+    model.add(Dense(1, activation='relu'))
 
     # compile model
     model.compile(
@@ -189,12 +215,11 @@ def train_model(request):
     )
 
     # train model
-    model.fit(x_train, y_train, epochs=10**3) # ,verbose=0
+    model.fit(x_train, y_train, validation_data=(x_val, y_val), epochs=10**3) # ,verbose=0
 
     # validate model
 
     predictions = np.ravel(model.predict(x_val))
-
     err = rmse(y_val, predictions).numpy()
 
     print(predictions, err)
@@ -209,20 +234,61 @@ def train_model(request):
 def make_predictions(request):
     # load model
     model = load_model('pitbull_ai_model.h5', compile=False)
-
-    # make predictions and calculate error
-
-    x_test = np.array([[510, 0, 0, 50, 2, 1, 1, 1, 1, 1, 0, 1, 0]])
-    y_test = [7.0]
-
-    # normalize input data
     scaler = joblib.load("scaler.save")
-    x_test = scaler.transform(x_test)
 
-    predictions = np.ravel(model.predict(x_test))
+    # calculate 'inventory' normalization rate
+    inventory_norm_rate = max([el[0] for el in NeuralNetworkInputArray.objects.filter(id=1).first().x]) \
+                / Product.objects.aggregate(Max('inventory'))['inventory__max']
 
-    err = rmse(y_test, predictions).numpy()
+    for p in Product.objects.all():
+        for w in Warehouse.objects.all():
 
-    print(predictions, err)
+            arr = [
+                [p.inventory*inventory_norm_rate] + \
+                list(get_historical_sales(prod_id=p.id,
+                                          warehouse_id=w.id,
+                                          target_date=datetime.now(timezone.utc)).values()) + \
+                  [int(datetime.now().strftime('%m')), w.id] + \
+                  [0 if f in p.features.all() else 1 for f in Feature.objects.all()]
+                ]
+
+            # normalize input data
+            scaled_arr = scaler.transform(arr)
+
+            # make prediction, print and save it
+            prediction = int(np.ravel(model.predict(scaled_arr))[0])
+            print(f"{p.name}, warehouse {w.name}, neural network result: {prediction} days")
+
+            if not 0 < prediction < 1200:
+                print("Unexpected output, changing prediction's value to None!")
+                prediction = None
+
+            Prediction.objects.create(product=p, value=prediction, warehouse=w, date=datetime.now(timezone.utc))
+
+    return HttpResponse("Done!")
+
+
+def update_nn_array(request):
+    prepare_prediction_data(mode=1)
+    return HttpResponse("Done!")
+
+
+# mode = 0 deletes existing NN input array and create new based on ALL documents
+# mode = 1 updates existing NN input array, creating entries based on docs from last 24h
+
+def update_train_predict(request):
+
+    prepare_prediction_data(mode=1)
+    train_model(request)
+    make_predictions(request)
+
+    return HttpResponse("Done!")
+
+
+def init_train_predict(request):
+
+    prepare_prediction_data(mode=0)
+    train_model(request)
+    make_predictions(request)
 
     return HttpResponse("Done!")
