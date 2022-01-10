@@ -39,7 +39,7 @@ export class Application {
         console.log("Connecting to the database...");
         await this.databaseService.setupDb();
         console.log("Removing old tables and data...");
-        // await this.databaseService.removeTables();
+        await this.databaseService.removeTables();
         console.log("Creating new tables...");
         await this.databaseService.setupTables();
         console.log("Old data removed.")
