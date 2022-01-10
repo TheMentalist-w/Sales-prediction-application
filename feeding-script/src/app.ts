@@ -2,6 +2,7 @@ import { DatabaseService } from "./database-service";
 import { AssortmentGroup, getGroupAsQuery } from "./entities/assortment-group";
 import { AssortmentItem, getItemAsDBQuery } from "./entities/assortment-item";
 import { Document, getDocumentAsQuery } from "./entities/document";
+import { getItemStateAsQuery, ItemState } from "./entities/item-state";
 import { getShopAsQuery, Shop } from "./entities/shop";
 import { getTraitAsQuery, Trait } from "./entities/trait";
 import { 
@@ -9,6 +10,7 @@ import {
     generateDocuments, 
     generateItems, 
     generateShops, 
+    generateStates, 
     generateTraits 
 } from "./utils/generators";
 
@@ -17,7 +19,8 @@ type ApplicationData = {
     traits: Trait[],
     groups: AssortmentGroup[],
     items: AssortmentItem[],
-    documents: Document[]
+    documents: Document[],
+    states: ItemState[]
 }
 
 
@@ -36,7 +39,7 @@ export class Application {
         console.log("Connecting to the database...");
         await this.databaseService.setupDb();
         console.log("Removing old tables and data...");
-        await this.databaseService.removeTables();
+        // await this.databaseService.removeTables();
         console.log("Creating new tables...");
         await this.databaseService.setupTables();
         console.log("Old data removed.")
@@ -54,12 +57,13 @@ export class Application {
         console.log(`Generated ${items.length} assortment items`);
         const documents = generateDocuments(shops, items);
         console.log(`Generated ${documents.length} documents`);
-
-        return {shops, traits, groups, items, documents};
+        const states = generateStates(items, shops, documents);
+        console.log(`Generated ${states.length} states`);
+        return {shops, traits, groups, items, documents, states};
     }
 
     private async saveData(
-        {shops, traits, groups, items, documents}: ApplicationData
+        {shops, traits, groups, items, documents, states}: ApplicationData
     ) {
         const queries: string[] = [
             ...shops.map(getShopAsQuery),
@@ -67,6 +71,7 @@ export class Application {
             ...groups.map(getGroupAsQuery),
             ...items.flatMap(getItemAsDBQuery),
             ...documents.flatMap(getDocumentAsQuery),
+            ...states.map(getItemStateAsQuery),
         ]
 
         console.log(`Executing ${queries.length} queries`);

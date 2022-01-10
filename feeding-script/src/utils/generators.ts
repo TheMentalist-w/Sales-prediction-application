@@ -2,13 +2,14 @@ import { AssortmentGroup } from "../entities/assortment-group";
 import { AssortmentItem } from "../entities/assortment-item";
 import { Document } from "../entities/document";
 import { DocumentItem } from "../entities/document-item";
+import { ItemState } from "../entities/item-state";
 import { Shop, ShopSize } from "../entities/shop";
 import { Trait } from "../entities/trait";
 import { stubItems, stubShops, stubTraits } from "./stub-data";
 import { getEnumValueRange } from "./utilfuncs";
 
 const getRandomNumber = (lo: number, hi: number): number => {
-    return Math.round((Math.random() * (hi - lo)) + lo) 
+    return Math.round((Math.random() * (hi - lo)) + lo)
 }
 
 const getRandomArrayElement = <T>(array: T[]): T => {
@@ -16,11 +17,11 @@ const getRandomArrayElement = <T>(array: T[]): T => {
 }
 
 const combineTwoArrays = (arr1: string[], arr2: string[]): string[] => {
-    if(arr1.length && arr2.length) {
+    if (arr1.length && arr2.length) {
         return arr1.flatMap(el1 => arr2.map(el2 => `${el1} ${el2}`));
     }
-    
-    if(!arr1.length && !arr2.length) {
+
+    if (!arr1.length && !arr2.length) {
         return [];
     }
 
@@ -29,7 +30,7 @@ const combineTwoArrays = (arr1: string[], arr2: string[]): string[] => {
 
 const getEveryPossibleCombination = (array2d: string[][]): string[] => {
     let combinedArray: string[] = [];
-    for(const arr of array2d) {
+    for (const arr of array2d) {
         combinedArray = combineTwoArrays(combinedArray, arr);
     }
     return combinedArray;
@@ -45,17 +46,17 @@ export const generateShops = (): Shop[] => {
 }
 
 export const generateTraits = (): Trait[] => {
-    return stubTraits.map((name, id) => ({name, id}));
+    return stubTraits.map((name, id) => ({ name, id }));
 }
 
 export const generateAssortmentGroups = (): AssortmentGroup[] => {
-    return stubItems.map((item, index) => ({id: index, name: item.name}));
+    return stubItems.map((item, index) => ({ id: index, name: item.name }));
 }
 
 export const generateItems = (groups: AssortmentGroup[], traits: Trait[]): AssortmentItem[] => {
     const items = stubItems.flatMap(item => {
         const variants = item.variants.map(variant => variant.split("|"));
-        
+
         const combinedVariants = getEveryPossibleCombination(variants);
         const firstItems = combinedVariants.map((variant, index) => ({
             id: 0,
@@ -67,22 +68,22 @@ export const generateItems = (groups: AssortmentGroup[], traits: Trait[]): Assor
         }));
 
         const items = firstItems.map(item => {
-            const selectedTraits = getRandomElementsFromArray(traits, getRandomNumber(1, 2)); 
-            return {...item, traits: selectedTraits, saleProbability: updateSalesProbability(item)};
+            const selectedTraits = getRandomElementsFromArray(traits, getRandomNumber(1, 2));
+            return { ...item, traits: selectedTraits, saleProbability: updateSalesProbability(item) };
         });
 
         return items;
     });
-    
-    return items.map((item, index) => ({...item, id: index}));
+
+    return items.map((item, index) => ({ ...item, id: index }));
 }
 
 export const generateDocuments = (shops: Shop[], items: AssortmentItem[]): Document[] => {
     const documentAmount = 50000;
     const documents: Document[] = [];
-    const availableDocumentTypes = [9,36,14,10,12,11,13,35];
+    const availableDocumentTypes = [9, 36, 14, 10, 12, 11, 13, 35];
 
-    for(let i = 1; i <= documentAmount; i++) {
+    for (let i = 1; i <= documentAmount; i++) {
         const documentType = getRandomArrayElement(availableDocumentTypes);
         const warehouses = getRandomElementsFromArray(shops, 2);
 
@@ -122,10 +123,10 @@ const range = (lo: number, hi: number) => {
 }
 
 const getRandomElementsFromArray = <T>(array: T[], amount: number): T[] => {
-    if(amount >= array.length) return array;
+    if (amount >= array.length) return array;
     const availableIndexes = range(0, array.length);
     const selectedIndexes = [];
-    for(const i of range(0, amount)) {
+    for (const _ of range(0, amount)) {
         const selectedIndex = availableIndexes.splice(getRandomNumber(0, availableIndexes.length - 1), 1);
         selectedIndexes.push(...selectedIndex);
     }
@@ -134,7 +135,7 @@ const getRandomElementsFromArray = <T>(array: T[], amount: number): T[] => {
 }
 
 const updateSalesProbability = (item: AssortmentItem): number[] => {
-    let modifiedArray = [0,0,0,0,0,0,0,0,0,0,0,0];
+    let modifiedArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     item.traits.forEach(trait => {
         modifiedArray = modifiedArray.map((el, idx) => {
             return el + getTraitModifier(trait)[idx];
@@ -144,23 +145,64 @@ const updateSalesProbability = (item: AssortmentItem): number[] => {
     return item.saleProbability.map((prob, idx) => prob + modifiedArray[idx]);
 }
 
+
+const isAddingStockDocument = (document: Document, shop: Shop) => {
+    const isProperTypeDoc = [36, 14, 10, 12].includes(document.id);
+    const isAssortmentMoveDoc = document.id === 9 && document.receiver?.id === shop.id;
+    return isProperTypeDoc || isAssortmentMoveDoc;
+}
+
+const getRelevantDocItems = (documents: Document[], item: AssortmentItem) => {
+    return documents.flatMap(doc => doc.items).filter(docItem => docItem.id === item.id);
+}
+
+const generateStateForItemPerShop = (item: AssortmentItem, documents: Document[], shop: Shop): ItemState => {
+    const relevantDocuments = documents.filter(doc => doc.shop.id === shop.id || doc.receiver?.id === shop.id);
+    const addingDocuments = relevantDocuments.filter(doc => isAddingStockDocument(doc, shop));
+    const subtractingDocuments = relevantDocuments.filter(doc => !isAddingStockDocument(doc, shop));
+
+    const addingDocItems = getRelevantDocItems(addingDocuments, item);
+    const subtractingDocItems = getRelevantDocItems(subtractingDocuments, item);
+
+    const addingAmount = addingDocItems.map(docItem => docItem.quantity).reduce((prev, curr) => prev + curr, 0);
+    const subtractingAmount = subtractingDocItems.map(docItem => docItem.quantity).reduce((prev, curr) => prev + curr, 0);
+
+    return { 
+        itemId: item.id, 
+        warehouseId: shop.id, 
+        amount: addingAmount - subtractingAmount + getRandomNumber(10, 500) 
+    }
+}
+
+export const generateStates = (items: AssortmentItem[], shops: Shop[], documents: Document[]): ItemState[] => {
+    const states: ItemState[] = [];
+
+    items.forEach(item => {
+        shops.forEach(shop => {
+            states.push(generateStateForItemPerShop(item, documents, shop));
+        })
+    });
+
+    return states;
+}
+
 const getTraitModifier = (trait: Trait): number[] => {
-    switch(trait.name) {
+    switch (trait.name) {
         case "Na zimę":
-            return [2,1,0,-1,-1,-2,-2,-1,0,0,1,2];
+            return [2, 1, 0, -1, -1, -2, -2, -1, 0, 0, 1, 2];
         case "Na jesień":
-            return [1,2,2,1,1,0,-1,0,1,2,2,1];
+            return [1, 2, 2, 1, 1, 0, -1, 0, 1, 2, 2, 1];
         case "Nieprzemakalna":
-            return [0,0,1,1,0,1,0,1,1,2,2,1];
+            return [0, 0, 1, 1, 0, 1, 0, 1, 1, 2, 2, 1];
         case "Polar":
-            return [1,1,1,0,0,-1,-1,-1,0,1,1,1];
+            return [1, 1, 1, 0, 0, -1, -1, -1, 0, 1, 1, 1];
         case "Dres":
-            return [1,1,0,0,0,0,-1,0,1,1,1,1];
+            return [1, 1, 0, 0, 0, 0, -1, 0, 1, 1, 1, 1];
         case "Odzież sportowa":
-            return [2,0,0,1,1,1,2,1,0,-1,0,1];
+            return [2, 0, 0, 1, 1, 1, 2, 1, 0, -1, 0, 1];
         case "Oddychające":
-            return [1,2,1,0,0,1,2,2,1,0,-1,0];
+            return [1, 2, 1, 0, 0, 1, 2, 2, 1, 0, -1, 0];
         default:
             return Array(12).fill(0);
-        };
+    };
 }
