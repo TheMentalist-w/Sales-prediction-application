@@ -75,9 +75,9 @@ def fetch_documents(request):
     with pyodbc.connect(conn_string) as conn:
 
         with conn.cursor() as cursor:
-            cursor.execute("SELECT dok_Id, dok_Typ, dok_MagId, dok_DataWyst, dok_OdbiorcaId  FROM d_Dokument;")
-            for row in cursor.fetchall():
-                print(f"Fetching docs: {int(row[0])*100/50000}%")
+            num_of_rows = cursor.execute("SELECT dok_Id, dok_Typ, dok_MagId, dok_DataWyst, dok_OdbiorcaId  FROM d_Dokument;")
+            for i, row in enumerate(cursor.fetchall()):
+                print(f"Fetching docs: {i}/{num_of_rows}")
                 warehouse = Warehouse.objects.get(id=int(row[2]))
                 Document.objects.update_or_create(id=int(row[0]), type=int(row[1]), warehouse=warehouse, datetime=row[3], receiver=row[4])
 
@@ -87,9 +87,12 @@ def fetch_documents(request):
 def fetch_documents_items(request):
     with pyodbc.connect(conn_string) as conn:
         with conn.cursor() as cursor:
-            cursor.execute("SELECT ob_Id, ob_TowId, ob_Ilosc, ob_DokMagId FROM d_Pozycja;")
-            for row in cursor.fetchall():
-                if int(row[0]) % 1000 == 0: print(f"Fetching doc items: {int(row[0])*100/200000}%")
+            num_of_rows = cursor.execute("SELECT ob_Id, ob_TowId, ob_Ilosc, ob_DokMagId FROM d_Pozycja;")
+
+            for i, row in enumerate(cursor.fetchall()):
+
+                print(f"Fetching document items: {i}/{num_of_rows}")
+
                 product = Product.objects.get(id=int(row[1]))
                 Item.objects.update_or_create(id=int(row[0]), product=product, amount=int(row[2]))
 
@@ -98,20 +101,6 @@ def fetch_documents_items(request):
                     doc_items.add(int(row[0]))
 
     return HttpResponse("Documents items fetched!")
-
-
-def random_date():
-    return datetime.strptime('1/1/2020', '%m/%d/%Y') + timedelta(seconds=randrange(10**5,10**6))
-
-
-# invoked while fetching all data or manually ("stock_management/populate/predictions/"), just for development purposes
-def populate_predictions(request):
-
-    for pr in Product.objects.all():
-        for wh in Warehouse.objects.all():
-            Prediction.objects.create(product=pr, value=randint(1, 100), warehouse=wh, date=random_date())
-
-    return HttpResponse("Predictions table populated!")
 
 
 def fetch_warehouses(request):
