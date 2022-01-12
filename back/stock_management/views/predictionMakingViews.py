@@ -20,7 +20,7 @@ def rmse(y_true, y_pred):
     return K.sqrt(K.mean(K.square(y_pred - y_true)))
 
 
-MAX_SEARCH_DAYS = 180  # must be used for optimization purposes
+MAX_SEARCH_DAYS = 180  # for optimization purposes
 
 
 def get_historical_sales(prod_id, warehouse_id, target_date):
@@ -107,7 +107,7 @@ def prepare_prediction_data(mode):
     print(f"Num of docs to process: {num_of_docs}")
 
     i = 0
-    for doc in docs_to_process:   # use .order_by('?')[:num_of samples] if in 0 (INIT) mode and execution time is too long
+    for doc in docs_to_process.order_by('?')[:500]:   # use .order_by('?')[:num_of samples] if in 0 (INIT) mode and execution time is too long
 
         print(f"Processing doc {i} out of {num_of_docs}")
 
@@ -122,10 +122,10 @@ def prepare_prediction_data(mode):
                                           warehouse_id=doc.warehouse,
                                           target_date=doc.datetime).values()) + \
                 [int(doc.datetime.strftime('%m')), doc.warehouse.id] + \
-                [1 if fea in item.product.features.all() else 0 for fea in Feature.objects.all()]  # BUG! 0 -> 1, # variables for neural network (x1, x2, x3...)
+                [1 if fea in item.product.features.all() else 0 for fea in Feature.objects.all()] # variables of neural network (x1, x2, x3...)
 
                 append_to_ai_array(append_x=neural_variables, append_y=sales_days)      # save partial result to DB
-                print(neural_variables, sales_days)                    # and print it
+                print(neural_variables, sales_days)                                     # and print it
 
         i += 1
 
@@ -278,8 +278,8 @@ def update_nn_array(request):
 
 def update_train_predict(request):
 
-    prepare_prediction_data(mode=1)
-    train_model(request)
+    # prepare_prediction_data(mode=1)
+    # train_model(request)
     make_predictions(request)
 
     return HttpResponse("Done!")
