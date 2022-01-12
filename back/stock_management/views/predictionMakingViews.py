@@ -16,6 +16,7 @@ from tensorflow.keras.optimizers import Adam
 
 from ..models import *
 
+
 def rmse(y_true, y_pred):
     return K.sqrt(K.mean(K.square(y_pred - y_true)))
 
@@ -58,12 +59,13 @@ def get_sales_days(prod_id, warehouse_id, start_amount, start_date):
                     if doc.receiver == warehouse_id:   # incoming transfer
                         start_amount -= item.amount
 
-                else:                   # 'ordinary' sales
+                else:                    # 'ordinary' sales
                     start_amount -= item.amount
 
                 if start_amount <= 0:
                     return float((doc.datetime - start_date).days)
     return None
+
 
 def append_to_ai_array(append_x, append_y):
 
@@ -82,32 +84,22 @@ def reset_ai_array():
     NeuralNetworkInputArray.objects.filter(id=1).delete()
 
 
-# mode = 0 deletes existing NN input array and create new based on ALL documents
-# mode = 1 updates existing NN input array, creating entries based on docs from last 24h
-def prepare_prediction_data(mode):
+def prepare_prediction_data():
 
     # HEADERS:
     # x = [['delivery_amount', 'last_week_sales', 'last_two_weeks_sales', 'last_month_sales', 'last_three_months_sales','last_six_months_sales', 'month', 'mag_id'] + \
     #     [feature.id for feature in Feature.objects.order_by('id')]]
     # y = [['expected_output']]
 
-    if mode not in [0, 1]:
-        raise ValueError(f"Please enter valid NN array preparing mode (0 for INIT/ 1 for UPDATE) [mode given={mode}]")
-
-    if mode == 0:
-        reset_ai_array()
+    reset_ai_array()
 
     docs_to_process = Document.objects.filter(type__in=[36, 14, 10, 12])    # doc types: 36+, 14+, 10+, 12+, 11-, 13-, 35-
-
-    if mode == 1:
-        docs_to_process = docs_to_process.filter(datetime__gt=datetime.now(timezone.utc)-timedelta(hours=24))  # if in 1 (UPDATE) mode,
-                                                                                                               # process only docs from last 24h
 
     num_of_docs = docs_to_process.count()
     print(f"Num of docs to process: {num_of_docs}")
 
     i = 0
-    for doc in docs_to_process.order_by('?')[:500]:   # use .order_by('?')[:num_of samples] if in 0 (INIT) mode and execution time is too long
+    for doc in docs_to_process.order_by('?')[:5]:   # use .order_by('?')[:num_of samples] if execution time is too long
 
         print(f"Processing doc {i} out of {num_of_docs}")
 
@@ -129,10 +121,10 @@ def prepare_prediction_data(mode):
 
         i += 1
 
-    return HttpResponse("Input prediction array updated!")
+    return True
 
 
-def train_model(request):
+def train_model():
     # load input data
 
     arr = NeuralNetworkInputArray.objects.filter(id=1)
@@ -228,7 +220,7 @@ def train_model(request):
     model.summary()
     model.save('pitbull_ai_model.h5')
 
-    return HttpResponse("Done!")
+    return True
 
 
 def make_predictions(request):
@@ -265,30 +257,13 @@ def make_predictions(request):
 
             Prediction.objects.create(product=p, value=prediction, warehouse=w, date=datetime.now(timezone.utc))
 
-    return HttpResponse("Done!")
+    return HttpResponse("All predictions done!")
 
 
-def update_nn_array(request):
-    prepare_prediction_data(mode=1)
-    return HttpResponse("Done!")
+def init_neural_network(request):
 
-
-# mode = 0 deletes existing NN input array and create new based on ALL documents
-# mode = 1 updates existing NN input array, creating entries based on docs from last 24h
-
-def update_train_predict(request):
-
-    # prepare_prediction_data(mode=1)
-    # train_model(request)
+    prepare_prediction_data()
+    train_model()
     make_predictions(request)
 
-    return HttpResponse("Done!")
-
-
-def init_train_predict(request):
-
-    prepare_prediction_data(mode=0)
-    train_model(request)
-    make_predictions(request)
-
-    return HttpResponse("Done!")
+    return HttpResponse("Neural network initialized!")
