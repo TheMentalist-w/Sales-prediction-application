@@ -48,7 +48,6 @@ class Prediction(models.Model):
 class Item(models.Model):
     product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
     amount = models.IntegerField()
-    sign = models.IntegerField(default=None)
 
 
 class Document(models.Model):

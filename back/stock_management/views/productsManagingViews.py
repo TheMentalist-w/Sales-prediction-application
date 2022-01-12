@@ -64,7 +64,7 @@ def get_available_features(request):
 @permission_classes((IsAuthenticated, ))
 def get_available_warehouses(request):
 
-    shops = [{'id': wh.id, 'name': wh.name + "-" + wh.symbol} for wh in Warehouse.objects.all()]
+    shops = [{'id': wh.id, 'name': wh.name + " (" + wh.symbol + ")"} for wh in Warehouse.objects.all()]
 
     return JsonResponse({'shops': shops})
 
