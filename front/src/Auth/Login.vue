@@ -92,13 +92,24 @@ export default {
         this.$cookies.set('refresh', response.data.refresh, 60 * 1439)
         this.$router.push('/')
       })
-      .catch(() => this.$notify({
-        group: 'notifications-bottom-left',
-        title: 'Error',
-        text: 'Invalid credentials',
-        type: 'error text-white'
-        })
-      )
+      .catch(error => {
+        if (error.response.status === 500) {
+          this.$notify({
+            group: 'notifications-bottom-left',
+            title: 'Error',
+            text: 'Server error. Try later',
+            type: 'error text-white'
+          })
+        }
+        else {
+          this.$notify({
+            group: 'notifications-bottom-left',
+            title: 'Error',
+            text: 'Invalid credentials',
+            type: 'error text-white'
+          })
+        }
+      })
     }
   }
 }

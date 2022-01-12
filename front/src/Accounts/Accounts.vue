@@ -127,7 +127,7 @@ export default {
       search: '',
       page: 1,
       totalPages: 0,
-      pageSize: 10,
+      pageSize: 25,
       pageSizes: [10, 25, 50, 100],
       dialogDelete: false,
       adminTable: false,
@@ -298,8 +298,18 @@ export default {
           this.loading = false
           this.tableKey += 1
         })
-        .catch(() => {
-          this.$router.push('/')
+        .catch(error => {
+          if (error.response.status === 500) {
+            this.$notify({
+              group: 'notifications-bottom-left',
+              title: 'Error',
+              text: 'Server error. Try later',
+              type: 'error text-white'
+            })
+          }
+          else {
+            this.$router.push('/')
+          }
         })
     },
 

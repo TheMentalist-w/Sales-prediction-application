@@ -1,7 +1,13 @@
 <template>
     <div :key="cardKey" v-if="show">
       <v-card width="80%" class="mx-auto mt-16">
-        <v-card-title style="justify-content: left">{{product.name}}</v-card-title>
+        <v-card-title style="justify-content: left">{{product.name}} <v-spacer/>
+          <v-btn
+            @click="goBack"
+          >
+            <v-icon>mdi-arrow-left </v-icon> Back
+          </v-btn>
+        </v-card-title>
         <v-card-text>
           <v-divider></v-divider>
           <v-container>
@@ -106,7 +112,21 @@ export default {
           this.show = true
           this.cardKey += 1
         })
+        .catch(error => {
+          if (error.response.status === 500) {
+            this.$notify({
+              group: 'notifications-bottom-left',
+              title: 'Error',
+              text: 'Server error. Try later',
+              type: 'error text-white'
+            })
+          }
+        })
       },
+
+      goBack() {
+        this.$router.push('/')
+      }
     }
 
 }

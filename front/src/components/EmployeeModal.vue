@@ -235,6 +235,13 @@ export default {
                   text: error.response.data,
                   type: 'error text-white'
                 })
+              } else if (error.response.status === 500) {
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Error',
+                  text: 'Server error.Try later',
+                  type: 'error text-white'
+                })
               } else {
                 this.$notify({
                   group: 'notifications-bottom-left',
@@ -260,12 +267,18 @@ export default {
                 this.close()
               })
               .catch((error) => {
-                console.log(error)
                 if (error.response.status === 409) {
                   this.$notify({
                     group: 'notifications-bottom-left',
                     title: 'Error',
                     text: error.response.data,
+                    type: 'error text-white'
+                  })
+                } else if (error.response.status === 500) {
+                  this.$notify({
+                    group: 'notifications-bottom-left',
+                    title: 'Error',
+                    text: 'Server error.Try later',
                     type: 'error text-white'
                   })
                 } else {
@@ -292,12 +305,18 @@ export default {
                 this.close()
               })
               .catch((error) => {
-                console.log(error.response.status)
                 if (error.response.status === 409) {
                   this.$notify({
                     group: 'notifications-bottom-left',
                     title: 'Error',
                     text: error.response.data,
+                    type: 'error text-white'
+                  })
+                } else if (error.response.status === 500) {
+                  this.$notify({
+                    group: 'notifications-bottom-left',
+                    title: 'Error',
+                    text: 'Server error.Try later',
                     type: 'error text-white'
                   })
                 } else {

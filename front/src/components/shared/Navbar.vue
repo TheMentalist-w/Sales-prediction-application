@@ -68,6 +68,16 @@ export default {
           this.adminLoggedIn = true
         }
       })
+      .catch(error => {
+        if (error.response.status === 500) {
+          this.$notify({
+            group: 'notifications-bottom-left',
+            title: 'Error',
+            text: 'Server error.Try later',
+            type: 'error text-white'
+          })
+        }
+      })
   },
   methods: {
     logOut() {
@@ -76,6 +86,16 @@ export default {
           this.$cookies.remove('access')
           this.$cookies.remove('refresh')
           this.$router.push('/login')
+        })
+        .catch(error => {
+          if (error.response.status === 500) {
+            this.$notify({
+              group: 'notifications-bottom-left',
+              title: 'Error',
+              text: 'Server error.Try later',
+              type: 'error text-white'
+            })
+          }
         })
     },
     changeTheme() {

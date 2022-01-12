@@ -122,7 +122,7 @@ export default {
       stockTable: true,
       page: 1,
       totalPages: 1,
-      pageSize: 10,
+      pageSize: 25,
       pageSizes: [10, 25, 50, 100],
       layoutStyle: 'height: 100%',
       search: '',
@@ -227,6 +227,16 @@ export default {
           this.groups = response.data.groups
           this.filterKey += 1
         })
+        .catch(error => {
+          if (error.response.status === 500) {
+            this.$notify({
+              group: 'notifications-bottom-left',
+              title: 'Error',
+              text: 'Server error. Try later',
+              type: 'error text-white'
+            })
+          }
+        })
     },
 
     getFeatures() {
@@ -234,6 +244,16 @@ export default {
         .then(response => {
           this.features = response.data.features
           this.featureKey += 1
+        })
+        .catch(error => {
+          if (error.response.status === 500) {
+            this.$notify({
+              group: 'notifications-bottom-left',
+              title: 'Error',
+              text: 'Server error. Try later',
+              type: 'error text-white'
+            })
+          }
         })
     },
 
@@ -256,8 +276,18 @@ export default {
           this.loading = false
           this.stockKey += 1
         })
-        .catch(() => {
-          this.$router.push('/login')
+        .catch(error => {
+          if (error.response.status === 500) {
+            this.$notify({
+              group: 'notifications-bottom-left',
+              title: 'Error',
+              text: 'Server error. Try later',
+              type: 'error text-white'
+            })
+          }
+          else {
+            this.$router.push('/login')
+          }
         })
     },
 
