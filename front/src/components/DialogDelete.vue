@@ -27,7 +27,7 @@ export default {
     deleteItemConfirm () {
       let username = this.username
       let index = this.editedIndex
-      axios.delete('/user_auth/user/delete/'+this.deleteId.toString())
+      axios.delete('/user_authorization/user/delete/'+this.deleteId.toString())
         .then(() => {
                 this.$emit('deleteFromArray', index)
                 this.$notify({

@@ -28,7 +28,7 @@ SECRET_KEY = 't1^+qpb0!4yg3s#%$%!l1ss3!bh9*&p7^g1jct=r48^_brmd7@'
 DEBUG = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
-AUTH_USER_MODEL = 'user_auth.User'
+AUTH_USER_MODEL = 'user_authorization.User'
 
 ALLOWED_HOSTS = []
 
@@ -40,7 +40,7 @@ REST_FRAMEWORK = {
          ],
     }
 
-AUTHENTICATION_BACKENDS = ('user_auth.custom_modules.customauth.CustomAuthBackend',)
+AUTHENTICATION_BACKENDS = ('user_authorization.custom_modules.customauth.CustomAuthBackend',)
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework_swagger',
-    'user_auth',
+    'user_authorization',
     'stock_management',
     'django.contrib.admin',
     'django.contrib.auth',

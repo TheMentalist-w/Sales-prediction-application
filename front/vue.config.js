@@ -1,7 +1,7 @@
 module.exports = {
   devServer: {
     proxy: {
-      '^/user_auth': {
+      '^/user_authorization': {
         target: 'http://localhost:8000',
         changeOrigin: true
       },

@@ -33,7 +33,7 @@ def fetch_products():
             for removed_id in existing_ids:
                 Product.objects.get(id=removed_id).is_archived = True
 
-    return HttpResponse("Products fetched!")
+    return True
 
 
 def fetch_groups():
@@ -44,7 +44,7 @@ def fetch_groups():
             for row in cursor.fetchall():
                 Group.objects.update_or_create(id=int(row[0]), defaults={'id': int(row[0]), 'name': row[1]})
 
-    return HttpResponse("Groups fetched!")
+    return True
 
 
 def fetch_features_dict():
@@ -55,7 +55,7 @@ def fetch_features_dict():
             for row in cursor.fetchall():
                 Feature.objects.update_or_create(id=int(row[0]), defaults={'id': int(row[0]), 'name': row[1]})
 
-    return HttpResponse("Features dict fetched!")
+    return True
 
 
 def fetch_product_features_dependencies():
@@ -68,7 +68,7 @@ def fetch_product_features_dependencies():
                 feature = Feature.objects.get(id=int(row[2]))
                 ProductFeature.objects.update_or_create(id=int(row[0]), defaults={'id':int(row[0]), 'product': product, 'feature': feature})
 
-    return HttpResponse("Product-features dependencies fetched!")
+    return True
 
 
 def fetch_documents():
@@ -81,7 +81,7 @@ def fetch_documents():
                 warehouse = Warehouse.objects.get(id=int(row[2]))
                 Document.objects.update_or_create(id=int(row[0]), type=int(row[1]), warehouse=warehouse, datetime=make_aware(row[3]), receiver=row[4])
 
-    return HttpResponse("Documents fetched!")
+    return True
 
 
 def fetch_documents_items():
@@ -101,7 +101,7 @@ def fetch_documents_items():
                 if not doc_items.filter(id=int(row[0])).exists():
                     doc_items.add(int(row[0]))
 
-    return HttpResponse("Documents items fetched!")
+    return True
 
 
 def fetch_warehouses():
@@ -111,7 +111,7 @@ def fetch_warehouses():
             for row in cursor.fetchall():
                 Warehouse.objects.update_or_create(id=int(row[0]), defaults={'id': int(row[0]), 'symbol': row[1], 'name': row[2]})
 
-    return HttpResponse("Warehouses fetched!")
+    return True
 
 
 def fetch_all_data(request):
