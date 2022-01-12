@@ -53,11 +53,11 @@ CORS_ORIGIN_ALLOW_ALL=True   # CORS_ORIGIN_WHITELIST = ["http://localhost:8080"]
 
 INSTALLED_APPS = [
     'corsheaders',
+    'django_crontab',
     'rest_framework',
     'rest_framework_swagger',
     'user_authorization',
     'stock_management',
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -76,6 +76,41 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+LOGGING = {
+    'version': 1,
+    'formatters': {
+            'verbose': {
+                'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+        },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'file': {
+            'level': 'WARN',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'logs/pitbull.log',
+            'formatter': 'verbose',
+            'backupCount': 5,
+            'maxBytes': 5242880,  # 5MB
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    }
+}
+
 
 ROOT_URLCONF = 'back.urls'
 
@@ -135,6 +170,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+CRONJOBS = [
+     # ('* 2 * * *', 'stock_management.views.predictionMakingViews.make_predictions')
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
