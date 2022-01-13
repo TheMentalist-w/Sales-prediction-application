@@ -1,15 +1,15 @@
 <template>
   <v-container fluid>
     <v-select
-      style="margin-top: 25px"
+      ref="selectComponent"
       v-model="filteredGroups"
+      label="Group"
+      style="margin-top: 25px"
       :items="groups"
       item-text="name"
       item-value="id"
-      @change="filterProducts"
-      label="Filter"
       multiple
-      ref="selectComponent"
+      @change="filterProducts"
     >
       <template v-slot:prepend-item>
         <v-list-item
@@ -27,7 +27,7 @@
             </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-divider class="mt-2"></v-divider>
+        <v-divider class="mt-2" />
       </template>
     </v-select>
   </v-container>
@@ -35,52 +35,54 @@
 
 <script>
 export default {
-  name: "GroupFilter",
-  data() {
+  name: 'GroupFilter',
+  props: {
+    // eslint-disable-next-line vue/require-default-prop
+    filters: Array,
+    // eslint-disable-next-line vue/require-default-prop
+    filtered: Array
+  },
+  data () {
     return {
       groups: [],
-      filteredGroups: [],
-    }
-  },
-  props: {
-    filters: Array,
-    filtered: Array,
-  },
-  mounted() {
-    this.groups = this.filters.map(x => x)
-    this.filteredGroups = this.filtered.map(x => x)
+      filteredGroups: []
+    };
   },
   computed: {
-    checkAllFilters() {
-      return this.filteredGroups.length === this.groups.length
+    checkAllFilters () {
+      return this.filteredGroups.length === this.groups.length;
     },
-    checkSomeFilters() {
-      return this.filteredGroups.length > 0 && !this.checkAllFilters
+    checkSomeFilters () {
+      return this.filteredGroups.length > 0 && !this.checkAllFilters;
     },
-    icon() {
-      if (this.checkAllFilters) return 'mdi-close-box'
-      if (this.checkSomeFilters) return 'mdi-minus-box'
-      return 'mdi-checkbox-blank-outline'
-    },
+    icon () {
+      if (this.checkAllFilters) return 'mdi-close-box';
+      if (this.checkSomeFilters) return 'mdi-minus-box';
+      return 'mdi-checkbox-blank-outline';
+    }
+  },
+  mounted () {
+    this.groups = this.filters.map(x => x);
+    this.filteredGroups = this.filtered.map(x => x);
   },
   methods: {
-    filterProducts() {
-      this.$emit('filterProducts', this.filteredGroups)
+    filterProducts () {
+      this.$emit('filterProducts', this.filteredGroups);
     },
 
     toggle () {
       this.$nextTick(() => {
         if (this.checkAllFilters) {
-          this.filteredGroups = []
-          this.filterProducts()
+          this.filteredGroups = [];
+          this.filterProducts();
         } else {
-          this.filteredGroups = this.groups.slice()
-          this.filterProducts()
+          this.filteredGroups = this.groups.slice().map(x => x.id);
+          this.filterProducts();
         }
-      })
-    },
+      });
+    }
   }
-}
+};
 </script>
 
 <style>

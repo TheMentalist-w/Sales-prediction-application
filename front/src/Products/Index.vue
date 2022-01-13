@@ -1,111 +1,138 @@
 <template>
-  <div>
-    <v-data-table
-      style="width: 90%"
-      :headers="headers"
-      :items="products"
-      :hide-default-footer="true"
-      loading-text="Loading... Please wait"
-      class="elevation-1 mx-auto mt-16 stockTable"
-      :key="stockKey"
-      v-if="stockTable"
-      :loading="loading"
+  <div style="display: flex; flex-direction: column; height: 100%">
+    <v-container
+      fluid
+      :style="layoutStyle"
     >
-      <template v-slot:top>
-        <v-toolbar
-          flat
-        >
-          <v-text-field
-            v-model="search"
-            append-icon="mdi-magnify"
-            label="Search"
-            data-test="search_product"
-            @click:append="searchProducts"
-            @keyup.enter="searchProducts"
-            single-line
-            hide-details
-          ></v-text-field>
-          <v-spacer></v-spacer>
-          <v-col
-            cols="2"
+      <v-layout column>
+        <v-flex>
+          <v-data-table
+            v-if="stockTable"
+            :key="stockKey"
+            style="width: 90%"
+            :headers="headers"
+            :items="products"
+            :hide-default-footer="true"
+            :disable-pagination="true"
+            loading-text="Loading... Please wait"
+            class="elevation-1 mx-auto mt-16 stockTable"
+            :loading="loading"
           >
-            <FeatureFilter
-              :key="featureKey"
-              :filters="features"
-              :filtered="filteredFeatures"
-              @filterProducts="filterFeatures"
-              data-test="filer_feature"
-            />
-          </v-col>
-          <v-col
-            cols="2"
-          >
-            <GroupFilter
-              :key="filterKey"
-              :filters="groups"
-              :filtered="filteredGroups"
-              @filterProducts="filterProducts"
-              data-test="filer_group"
-            />
-          </v-col>
-        </v-toolbar>
-      </template>
-      <template v-slot:header.prediction="{ header }">
-        {{ header.text }}<v-btn x-small text @click="sortByDesc"><v-icon>{{arrow}}</v-icon></v-btn>
-      </template>
-      <template v-slot:item.group_name="{ item }">
-        <v-btn
-          class="mr-2"
-          color="primary"
-          rounded
-        >
-          {{ item.group_name }}
-        </v-btn>
-      </template>
-      <template v-slot:item.actions="{ item }">
-        <v-icon
-          class="mr-2"
-          color="secondary"
-          @click="productDetails(item)"
-        >
-          mdi-magnify
-        </v-icon>
-      </template>
-    </v-data-table>
+            <template v-slot:top>
+              <v-toolbar
+                flat
+              >
+                <v-text-field
+                  v-model="search"
+                  style="margin-top: 3px;"
+                  append-icon="mdi-magnify"
+                  label="Search"
+                  single-line
+                  hide-details
+                  @click:append="searchProducts"
+                  @keyup.enter="searchProducts"
+                />
+                <v-col
+                  cols="2"
+                >
+                  <FeatureFilter
+                    :key="featureKey"
+                    :filters="features"
+                    :filtered="filteredFeatures"
+                    @filterProducts="filterFeatures"
+                  />
+                </v-col>
+                <v-col
+                  cols="2"
+                >
+                  <GroupFilter
+                    :key="filterKey"
+                    :filters="groups"
+                    :filtered="filteredGroups"
+                    @filterProducts="filterProducts"
+                  />
+                </v-col>
+                <v-spacer />
+                <v-spacer />
+                <v-spacer />
+                <v-select
+                  v-model="pageSize"
+                  style="margin-top: 25px; width: 1%"
+                  :items="pageSizes"
+                  label="Items on page"
+                  @change="changePageSize"
+                />
+              </v-toolbar>
+            </template>
+            <template v-slot:header.prediction="{ header }">
+              {{ header.text }}<v-btn
+                x-small
+                text
+                @click="sortByDesc"
+              >
+                <v-icon>{{ arrow }}</v-icon>
+              </v-btn>
+            </template>
+            <template v-slot:item.group_name="{ item }">
+              <v-btn
+                class="mr-2"
+                color="primary"
+                rounded
+              >
+                {{ item.group_name }}
+              </v-btn>
+            </template>
+            <template v-slot:item.actions="{ item }">
+              <v-icon
+                class="mr-2"
+                color="secondary"
+                @click="productDetails(item)"
+              >
+                mdi-magnify
+              </v-icon>
+            </template>
+          </v-data-table>
+        </v-flex>
+      </v-layout>
+    </v-container>
     <v-pagination
-      class="pagination"
       v-model="page"
+      style="align-items: flex-end"
       :length="totalPages"
-      @input="pageChange"
       circle
       total-visible="7"
       next-icon="mdi-menu-right"
       prev-icon="mdi-menu-left"
-    >
-    </v-pagination>
+      @input="pageChange"
+    />
   </div>
 </template>
 
 <script>
-import Vue from 'vue'
-import Vuetify from 'vuetify'
-import VueCookies from "vue-cookies"
-import axios from 'axios'
-import GroupFilter from "./components/GroupFilter"
-import FeatureFilter from "./components/FeatureFilter"
+import Vue from 'vue';
+import Vuetify from 'vuetify';
+import VueCookies from 'vue-cookies';
+import axios from 'axios';
+import GroupFilter from './components/GroupFilter';
+import FeatureFilter from './components/FeatureFilter';
 
-Vue.use(Vuetify)
-Vue.use(VueCookies)
+Vue.use(Vuetify);
+Vue.use(VueCookies);
 
 export default {
   name: 'Index',
-  data() {
+  components: {
+    GroupFilter, FeatureFilter
+  },
+  data () {
     return {
       stockKey: 0,
       stockTable: true,
       page: 1,
       totalPages: 1,
-      pageSize: 8,
+      pageSize: 25,
+      pageSizes: [10, 25, 50, 100],
+      layoutStyle: 'height: 100%',
       search: '',
       products: [],
       groups: [],
@@ -158,68 +185,83 @@ export default {
           align: 'end',
           sortable: false,
           width: '10%'
-        },
-      ],
-
-    }
-  },
-  async mounted () {
-    let access = this.$cookies.get('access')
-    let refresh = this.$cookies.get('refresh')
-    if(access || refresh){
-      await this.getGroups()
-      await this.getFeatures()
-      await this.getProducts()
-    }
-    else {
-      this.$router.push('/login')
-    }
-  },
-  components: {
-    GroupFilter, FeatureFilter
+        }
+      ]
+    };
   },
   computed: {
-    arrow() {
+    arrow () {
       if (this.sort === 1) {
-        return 'mdi-sort-numeric-ascending-variant'
+        return 'mdi-sort-numeric-ascending-variant';
       } else if (this.sort === 0) {
-        return 'mdi-sort-numeric-descending-variant'
+        return 'mdi-sort-numeric-descending-variant';
       } else {
-        return 'mdi-sort-numeric-variant'
+        return 'mdi-sort-numeric-variant';
       }
     }
   },
+  async mounted () {
+    const access = this.$cookies.get('access');
+    const refresh = this.$cookies.get('refresh');
+    if (access || refresh) {
+      await this.getGroups();
+      await this.getFeatures();
+      await this.getProducts();
+    } else {
+      this.$router.push('/login');
+    }
+  },
   methods: {
-    getRequestParams(search, page, pageSize, filteredGroups, filteredFeatures, sort) {
-      let params = {}
-      if (search) params["search"] = search
-      if (page) params["page"] = page
-      if (pageSize) params["size"] = pageSize
-      if (filteredGroups) params["filteredGroups"] = filteredGroups
-      if (filteredFeatures) params["filteredFeatures"] = filteredFeatures
-      params["sort"] = sort
+    getRequestParams (search, page, pageSize, filteredGroups, filteredFeatures, sort) {
+      const params = {};
+      if (search) params.search = search;
+      if (page) params.page = page;
+      if (pageSize) params.size = pageSize;
+      if (filteredGroups) params.filteredGroups = filteredGroups;
+      if (filteredFeatures) params.filteredFeatures = filteredFeatures;
+      params.sort = sort;
 
-      return params
+      return params;
     },
 
-    getGroups() {
-      axios.get('/pitbull/products/groups/')
+    getGroups () {
+      axios.get('/stock_management/products/groups/')
         .then(response => {
-          this.groups = response.data.groups
-          this.filterKey += 1
+          this.groups = response.data.groups;
+          this.filterKey += 1;
         })
+        .catch(error => {
+          if (error.response.status === 500) {
+            this.$notify({
+              group: 'notifications-bottom-left',
+              title: 'Error',
+              text: 'Server error. Try later',
+              type: 'error text-white'
+            });
+          }
+        });
     },
 
-    getFeatures() {
-      axios.get('/pitbull/products/features/')
+    getFeatures () {
+      axios.get('/stock_management/products/features/')
         .then(response => {
-          this.features = response.data.features
-          this.featureKey += 1
+          this.features = response.data.features;
+          this.featureKey += 1;
         })
+        .catch(error => {
+          if (error.response.status === 500) {
+            this.$notify({
+              group: 'notifications-bottom-left',
+              title: 'Error',
+              text: 'Server error. Try later',
+              type: 'error text-white'
+            });
+          }
+        });
     },
 
-    getProducts() {
-      this.loading = true
+    getProducts () {
+      this.loading = true;
       const params = this.getRequestParams(
         this.search,
         this.page,
@@ -227,64 +269,81 @@ export default {
         this.filteredGroups,
         this.filteredFeatures,
         this.sort
-      )
-      axios.get('/pitbull/products/', {params: params})
+      );
+      axios.get('/stock_management/products/', { params: params })
         .then(response => {
-          this.products = response.data.products
-          this.totalPages = response.data.totalPages
-          this.page = parseInt(response.data.page)
-          this.stockTable = true
-          this.loading = false
-          this.stockKey += 1
+          this.products = response.data.products;
+          this.totalPages = response.data.totalPages;
+          this.page = parseInt(response.data.page);
+          this.stockTable = true;
+          this.loading = false;
+          this.stockKey += 1;
         })
-        .catch(() => {
-          this.$router.push('/login')
-        })
+        .catch(error => {
+          if (error.response.status === 500) {
+            this.$notify({
+              group: 'notifications-bottom-left',
+              title: 'Error',
+              text: 'Server error. Try later',
+              type: 'error text-white'
+            });
+          } else {
+            this.$router.push('/login');
+          }
+        });
     },
 
-    searchProducts() {
-      this.page = 1
-      this.getProducts()
+    searchProducts () {
+      this.page = 1;
+      this.getProducts();
     },
 
-    pageChange(value) {
-      this.page = value
-      this.getProducts()
+    pageChange (value) {
+      this.page = value;
+      this.getProducts();
     },
 
-    productDetails(item) {
-      this.$router.push('/product/' + item.id)
+    productDetails (item) {
+      this.$router.push('/product/' + item.id);
     },
 
-    filterProducts(item) {
-      this.page = 1
-      this.filteredGroups = item
-      this.getProducts()
+    filterProducts (item) {
+      this.page = 1;
+      this.filteredGroups = item;
+      this.getProducts();
     },
 
-    filterFeatures(item) {
-      this.page = 1
-      this.filteredFeatures = item
-      this.getProducts()
+    filterFeatures (item) {
+      this.page = 1;
+      this.filteredFeatures = item;
+      this.getProducts();
     },
 
-    sortByDesc() {
-      //none - (-1), asc - 0, desc - 1
-      if(this.sort === -1) {
-        this.sort = 0
-      } else if(this.sort === 0) {
-        this.sort = 1
+    sortByDesc () {
+      // none - (-1), asc - 0, desc - 1
+      if (this.sort === -1) {
+        this.sort = 0;
+      } else if (this.sort === 0) {
+        this.sort = 1;
       } else {
-        this.sort = -1
+        this.sort = -1;
       }
-      this.getProducts()
+      this.getProducts();
     },
-  },
-}
+
+    changePageSize () {
+      this.getProducts();
+    }
+  }
+};
 </script>
 
 <style>
 .v-select__selections {
   display: contents;
+}
+
+#data {
+  overflow: auto;
 }
 </style>

@@ -4,40 +4,41 @@
     color="primary"
     dark
   >
-      <v-toolbar-title style="font-size: 150%">PITBULL</v-toolbar-title>
-
-    <v-spacer></v-spacer>
+    <v-toolbar-title style="font-size: 150%">
+      PITBULL
+    </v-toolbar-title>
+    <v-spacer />
     <v-btn
+      v-if="adminLoggedIn"
       href="/accounts"
       text
       rounded
-      v-if="adminLoggedIn"
       data-test="accounts"
     >
       <span class="mr-2">Accounts</span>
     </v-btn>
     <v-btn
+      v-if="loggedIn"
       href="/"
       text
       rounded
-      v-if="loggedIn"
       data-test="logout"
     >
       <span class="mr-2">Stock</span>
     </v-btn>
     <v-btn
+      v-if="loggedIn"
+      data-test="logout"
       text
       rounded
       @click="logOut"
-      v-if="loggedIn"
-      data-test="logout"
     >
       <span class="mr-2">Logout</span>
     </v-btn>
     <v-btn
-      @click="changeTheme"
       text
       rounded
+      @click="changeTheme"
     >
       <v-icon>mdi-brightness-6</v-icon>
     </v-btn>
@@ -52,50 +53,71 @@
 </template>
 
 <script>
-import VueCookies from 'vue-cookies'
-import Vuetify from 'vuetify'
-import Vue from 'vue'
-import axios from 'axios'
-Vue.use(VueCookies)
-Vue.use(Vuetify)
+import VueCookies from 'vue-cookies';
+import Vuetify from 'vuetify';
+import Vue from 'vue';
+import axios from 'axios';
+
+Vue.use(VueCookies);
+Vue.use(Vuetify);
 
 export default {
   name: 'Navbar',
-  data() {
+  data () {
     return {
       loggedIn: false,
-      adminLoggedIn: false,
-    }
+      adminLoggedIn: false
+    };
   },
-  beforeMount() {
-    axios.get('/pitbull/user/current/')
+  beforeMount () {
+    axios.get('/user_authorization/current/')
       .then(response => {
-        this.loggedIn = true
-        if(response.data.is_superuser) {
-          this.adminLoggedIn = true
+        this.loggedIn = true;
+        if (response.data.is_superuser) {
+          this.adminLoggedIn = true;
         }
       })
+      .catch(error => {
+        if (error.response.status === 500) {
+          this.$notify({
+            group: 'notifications-bottom-left',
+            title: 'Error',
+            text: 'Server error.Try later',
+            type: 'error text-white'
+          });
+        }
+      });
   },
   methods: {
-    logOut() {
-      axios.post('/pitbull/user/logout/')
+    logOut () {
+      axios.post('/user_authorization/logout/')
         .then(() => {
-          this.$cookies.remove('access')
-          this.$cookies.remove('refresh')
-          this.$router.push('/login')
+          this.$cookies.remove('access');
+          this.$cookies.remove('refresh');
+          this.$router.push('/login');
         })
+        .catch(error => {
+          if (error.response.status === 500) {
+            this.$notify({
+              group: 'notifications-bottom-left',
+              title: 'Error',
+              text: 'Server error.Try later',
+              type: 'error text-white'
+            });
+          }
+        });
     },
-    changeTheme() {
-      let theme = sessionStorage.getItem('pit_theme')
-      if(theme) {
-        theme === "true" ? sessionStorage.setItem('pit_theme', "false") : sessionStorage.setItem('pit_theme', "true")
-        this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === "true"
-      }
-      else {
-        sessionStorage.setItem('pit_theme', (!this.$vuetify.theme.dark).toString())
-        this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === "true"
+
+    changeTheme () {
+      const theme = sessionStorage.getItem('pit_theme');
+      if (theme) {
+        theme === 'true' ? sessionStorage.setItem('pit_theme', 'false') : sessionStorage.setItem('pit_theme', 'true');
+        this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === 'true';
+      } else {
+        sessionStorage.setItem('pit_theme', (!this.$vuetify.theme.dark).toString());
+        this.$vuetify.theme.dark = sessionStorage.getItem('pit_theme') === 'true';
       }
     }
   }
-}
+};
 </script>

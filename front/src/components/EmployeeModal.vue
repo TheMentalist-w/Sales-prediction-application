@@ -3,7 +3,6 @@
     <v-card-title>
       <span class="text-h5">{{ formTitle }}</span>
     </v-card-title>
-
     <v-card-text>
       <v-container>
         <v-row>
@@ -14,7 +13,7 @@
             <v-text-field
               v-model="editedItem.first_name"
               label="Name"
-            ></v-text-field>
+            />
           </v-col>
           <v-col
             cols="12"
@@ -23,7 +22,7 @@
             <v-text-field
               v-model="editedItem.last_name"
               label="Surname"
-            ></v-text-field>
+            />
           </v-col>
         </v-row>
         <v-row>
@@ -32,33 +31,33 @@
             md="6"
           >
             <v-text-field
-              class="emailField"
               v-model="editedItem.email"
+              class="emailField"
               type="email"
               label="Email"
               :rules="[rules.email]"
-            ></v-text-field>
+            />
           </v-col>
           <v-col
             cols="12"
             md="6"
           >
             <v-text-field
+              v-model="editedItem.username"
               class="usernameField"
               :items="type"
-              v-model="editedItem.username"
               label="Username"
-            ></v-text-field>
+            />
           </v-col>
           <v-col
             cols="12"
             md="6"
           >
             <v-select
-              :items="type"
               v-model="editedItem.type"
+              :items="type"
               label="Type"
-            ></v-select>
+            />
           </v-col>
           <v-col
             cols="12"
@@ -70,20 +69,20 @@
               label="Reset password"
               color="primary"
               hide-details
-            ></v-checkbox>
+            />
           </v-col>
           <v-col
             cols="12"
             md="6"
           >
             <v-text-field
-              class="passwordField"
               v-if="showPasswordModal"
               v-model="editedItem.password"
+              class="passwordField"
               type="password"
               :rules="[rules.newUser]"
               label="Password"
-            ></v-text-field>
+            />
           </v-col>
           <v-col
             cols="12"
@@ -95,14 +94,14 @@
               type="password"
               :rules="[rules.password]"
               label="Confirm password"
-            ></v-text-field>
+            />
           </v-col>
         </v-row>
       </v-container>
     </v-card-text>
 
     <v-card-actions>
-      <v-spacer></v-spacer>
+      <v-spacer />
       <v-btn
         color="red darken-1"
         text
@@ -124,214 +123,234 @@
 </template>
 
 <script>
-import axios from "axios";
+import axios from 'axios';
 
 export default {
-  name: "EmployeeModal",
-  data() {
+  name: 'EmployeeModal',
+  props: {
+    // eslint-disable-next-line vue/require-default-prop
+    formTitle: String,
+    // eslint-disable-next-line vue/require-default-prop
+    editedItem: Object,
+    // eslint-disable-next-line vue/require-default-prop
+    editedIndex: Number
+  },
+  data () {
     return {
       checkbox: false,
       type: ['Normal', 'Admin'],
       rules: {
         password: () => {
-          let result = this.editedItem.password === this.editedItem.confirmPassword
-          return result || "Password and Confirm Password don't match"
+          const result = this.editedItem.password === this.editedItem.confirmPassword;
+          return result || "Password and Confirm Password don't match";
         },
         email: value => {
-          let pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-          return pattern.test(value) || 'Invalid e-mail'
+          const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          return pattern.test(value) || 'Invalid e-mail';
         },
         newUser: value => {
-          let result = (value === null || value === '')
-          return !((this.editedIndex < 0 && result) || (this.checkbox && result)) || "Password required"
+          const result = (value === null || value === '');
+          return !((this.editedIndex < 0 && result) || (this.checkbox && result)) || 'Password required';
         }
-      },
-    }
-  },
-  props: {
-    formTitle: String,
-    editedItem: Object,
-    editedIndex: Number,
+      }
+    };
   },
   computed: {
     showPasswordModal () {
-      return (!this.isEdited || this.checkbox)
+      return (!this.isEdited || this.checkbox);
     },
     isEdited () {
-      return this.editedIndex !== -1
-    },
+      return this.editedIndex !== -1;
+    }
   },
   methods: {
-    createForm() {
-      let data = new FormData()
-      data.append("first_name", this.editedItem.first_name)
-      data.append("email",this.editedItem.email)
-      data.append("last_name", this.editedItem.last_name)
-      data.append("username",this.editedItem.username)
-      data.append("password", this.editedItem.password ? this.editedItem.password : '')
-      data.append("confirmPassword", this.editedItem.confirmPassword ? this.editedItem.password : '')
-      return data
+    createForm () {
+      const data = new FormData();
+      data.append('first_name', this.editedItem.first_name);
+      data.append('email', this.editedItem.email);
+      data.append('last_name', this.editedItem.last_name);
+      data.append('username', this.editedItem.username);
+      data.append('password', this.editedItem.password ? this.editedItem.password : '');
+      data.append('confirmPassword', this.editedItem.confirmPassword ? this.editedItem.password : '');
+      return data;
     },
 
-    validateModal() {
-      let result
+    validateModal () {
+      let result;
       if (this.editedIndex > -1) {
-        //edit
-        let validate = Object.values(this.editedItem).every(field => {
+        // edit
+        const validate = Object.values(this.editedItem).every(field => {
           if (field === 'Normal' || field === 'Admin') {
-            return true
+            return true;
           } else {
-            return (field === null || field === '')
+            return (field === null || field === '');
           }
-        })
-        result = validate ? {result: false, errorMsg: "All fields are empty"} :
-          ((this.editedItem.password !== this.editedItem.confirmPassword) ? {result: false, errorMsg: "Password and Confirm Password are different"} :
-            {result: true, errorMsg: ""})
-        if(this.rules.email(this.editedItem.email) !== true) {
-          result = {result: false, errorMsg: "Invalid email"}
+        });
+        result = validate ? { result: false, errorMsg: 'All fields are empty' }
+          : ((this.editedItem.password !== this.editedItem.confirmPassword) ? { result: false, errorMsg: 'Password and Confirm Password are different' }
+            : { result: true, errorMsg: '' });
+        if (this.rules.email(this.editedItem.email) !== true) {
+          result = { result: false, errorMsg: 'Invalid email' };
         }
-        if(this.editedItem.password === '' && this.checkbox) {
-          result = {result: false, errorMsg: "Password required"}
+        if (this.editedItem.password === '' && this.checkbox) {
+          result = { result: false, errorMsg: 'Password required' };
+        }
+      } else {
+        // create
+        const validate = Object.values(this.editedItem).every(field => (field === null || field === ''));
+        const validateAny = Object.values(this.editedItem).some(field => field === '');
+        result = validate ? { result: false, errorMsg: 'All fields are empty' }
+          : (validateAny ? { result: false, errorMsg: 'Some fields are empty' }
+            : ((this.editedItem.password !== this.editedItem.confirmPassword) ? { result: false, errorMsg: 'Password and Confirm Password are different' }
+              : { result: true, errorMsg: '' }));
+        if (this.rules.email(this.editedItem.email) !== true) {
+          result = { result: false, errorMsg: 'Invalid email' };
         }
       }
-      else {
-        //create
-        let validate = Object.values(this.editedItem).every(field => (field === null || field === ''))
-        let validateAny = Object.values(this.editedItem).some(field => field === '')
-        result = validate ? {result: false, errorMsg: "All fields are empty"} :
-          (validateAny ? {result: false, errorMsg: "Some fields are empty"} :
-            ((this.editedItem.password !== this.editedItem.confirmPassword) ? {result: false, errorMsg: "Password and Confirm Password are different"} :
-              {result: true, errorMsg: ""} ))
-        if(this.rules.email(this.editedItem.email) !== true) {
-          result = {result: false, errorMsg: "Invalid email"}
-        }
-      }
-      return result
+      return result;
     },
 
     save () {
-      let validate = this.validateModal()
-      if(validate.result) {
-        let data = this.createForm()
+      const validate = this.validateModal();
+      if (validate.result) {
+        const data = this.createForm();
         if (this.editedIndex > -1) {
-          data.append("id", this.editedItem.id)
-          data.append("is_superuser", this.editedItem.type === "Admin")
-          axios.post('/pitbull/user/edit/', data)
+          data.append('id', this.editedItem.id);
+          data.append('is_superuser', this.editedItem.type === 'Admin');
+          axios.patch('/user_authorization/edit/', data)
             .then(() => {
-              this.$emit("editEmployee", this.editedItem)
+              this.$emit('editEmployee', this.editedItem);
               this.$notify({
                 group: 'notifications-bottom-left',
                 title: 'Success',
                 text: 'Employee edited',
                 type: 'success text-white'
-              })
-              this.close()
+              });
+              this.close();
             })
             .catch((error) => {
-              if(error.response.status === 409) {
+              if (error.response.status === 409) {
                 this.$notify({
                   group: 'notifications-bottom-left',
                   title: 'Error',
                   text: error.response.data,
                   type: 'error text-white'
-                })
+                });
+              } else if (error.response.status === 500) {
+                this.$notify({
+                  group: 'notifications-bottom-left',
+                  title: 'Error',
+                  text: 'Server error.Try later',
+                  type: 'error text-white'
+                });
               } else {
                 this.$notify({
                   group: 'notifications-bottom-left',
                   title: 'Error',
                   text: 'Employee edit error',
                   type: 'error text-white'
-                })
-                this.close()
+                });
+                this.close();
               }
-            })
+            });
         } else {
-          if (this.editedItem.type === "Admin") {
-            axios.post('/pitbull/superuser/create/', data)
+          if (this.editedItem.type === 'Admin') {
+            axios.post('/user_authorization/superuser/create/', data)
               .then((response) => {
-                this.editedItem['id'] = response.data.new_user_id
-                this.addEmployee()
+                this.editedItem.id = response.data.new_user_id;
+                this.addEmployee();
                 this.$notify({
                   group: 'notifications-bottom-left',
                   title: 'Success',
                   text: 'Employee added',
                   type: 'success text-white'
-                })
-                this.close()
+                });
+                this.close();
               })
               .catch((error) => {
-                console.log(error)
                 if (error.response.status === 409) {
                   this.$notify({
                     group: 'notifications-bottom-left',
                     title: 'Error',
                     text: error.response.data,
                     type: 'error text-white'
-                  })
+                  });
+                } else if (error.response.status === 500) {
+                  this.$notify({
+                    group: 'notifications-bottom-left',
+                    title: 'Error',
+                    text: 'Server error.Try later',
+                    type: 'error text-white'
+                  });
                 } else {
                   this.$notify({
                     group: 'notifications-bottom-left',
                     title: 'Error',
                     text: 'Employee addition error',
                     type: 'error text-white'
-                  })
-                  this.close()
+                  });
+                  this.close();
                 }
-              })
+              });
           } else {
-            axios.post('/pitbull/user/create/', data)
+            axios.post('/user_authorization/create/', data)
               .then((response) => {
-                this.editedItem['id'] = response.data.new_user_id
-                this.addEmployee()
+                this.editedItem.id = response.data.new_user_id;
+                this.addEmployee();
                 this.$notify({
                   group: 'notifications-bottom-left',
                   title: 'Success',
                   text: 'Employee added',
                   type: 'success text-white'
-                })
-                this.close()
+                });
+                this.close();
               })
               .catch((error) => {
-                console.log(error.response.status)
                 if (error.response.status === 409) {
                   this.$notify({
                     group: 'notifications-bottom-left',
                     title: 'Error',
                     text: error.response.data,
                     type: 'error text-white'
-                  })
+                  });
+                } else if (error.response.status === 500) {
+                  this.$notify({
+                    group: 'notifications-bottom-left',
+                    title: 'Error',
+                    text: 'Server error.Try later',
+                    type: 'error text-white'
+                  });
                 } else {
                   this.$notify({
                     group: 'notifications-bottom-left',
                     title: 'Error',
                     text: 'Employee addition error',
                     type: 'error text-white'
-                  })
-                  this.close()
+                  });
+                  this.close();
                 }
-              })
+              });
           }
         }
-      }
-      else {
+      } else {
         this.$notify({
           group: 'notifications-bottom-left',
           title: 'Error',
           text: validate.errorMsg,
           type: 'error text-white'
-        })
+        });
       }
     },
 
-    close() {
-      this.$emit('closeModal')
+    close () {
+      this.$emit('closeModal');
     },
 
-    addEmployee() {
-      this.$emit("addEmployee", this.editedItem)
-    },
-  },
-}
+    addEmployee () {
+      this.$emit('addEmployee', this.editedItem);
+    }
+  }
+};
 </script>
 
 <style scoped>

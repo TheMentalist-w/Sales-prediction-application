@@ -1,15 +1,15 @@
 <template>
   <v-container fluid>
     <v-select
-      style="margin-top: 25px"
+      ref="selectComponent"
       v-model="filteredFeatures"
+      label="Feature"
+      style="margin-top: 25px"
       :items="features"
       item-text="name"
       item-value="id"
-      @change="filterProducts"
-      label="Filter"
       multiple
-      ref="selectComponent"
+      @change="filterProducts"
     >
       <template v-slot:prepend-item>
         <v-list-item
@@ -22,15 +22,15 @@
           </v-list-item-action>
           <v-list-item-content>
             <v-text-field
+              v-model="filterSearch"
               dense
               data-test="group_feature_t"
               placeholder="Search"
-              v-model="filterSearch"
               @input="searchFeatures"
             />
           </v-list-item-content>
         </v-list-item>
-        <v-divider class="mt-2"></v-divider>
+        <v-divider class="mt-2" />
       </template>
     </v-select>
   </v-container>
@@ -38,32 +38,34 @@
 
 <script>
 export default {
-  name: "FeatureFilter",
-  data() {
+  name: 'FeatureFilter',
+  props: {
+    // eslint-disable-next-line vue/require-default-prop
+    filters: Array,
+    // eslint-disable-next-line vue/require-default-prop
+    filtered: Array
+  },
+  data () {
     return {
       features: [],
       filteredFeatures: [],
-      filterSearch: null,
-    }
+      filterSearch: null
+    };
   },
-  props: {
-    filters: Array,
-    filtered: Array
-  },
-  mounted() {
-    this.features = this.filters.map(x => x)
-    this.filteredFeatures = this.filtered.map(x => x)
+  mounted () {
+    this.features = this.filters.map(x => x);
+    this.filteredFeatures = this.filtered.map(x => x);
   },
   methods: {
-    filterProducts() {
-      this.$emit('filterProducts', this.filteredFeatures)
+    filterProducts () {
+      this.$emit('filterProducts', this.filteredFeatures);
     },
 
-    searchFeatures() {
-      this.features = this.filters.filter(x => x.name.toUpperCase().includes(this.filterSearch.toUpperCase()))
+    searchFeatures () {
+      this.features = this.filters.filter(x => x.name.toUpperCase().includes(this.filterSearch.toUpperCase()));
     }
   }
-}
+};
 </script>
 
 <style scoped>

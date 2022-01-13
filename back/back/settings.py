@@ -28,7 +28,7 @@ SECRET_KEY = 't1^+qpb0!4yg3s#%$%!l1ss3!bh9*&p7^g1jct=r48^_brmd7@'
 DEBUG = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
-AUTH_USER_MODEL = 'pitbull.User'
+AUTH_USER_MODEL = 'user_authorization.User'
 
 ALLOWED_HOSTS = []
 
@@ -40,7 +40,7 @@ REST_FRAMEWORK = {
          ],
     }
 
-AUTHENTICATION_BACKENDS = ('pitbull.custom_modules.customauth.CustomAuthBackend',)
+AUTHENTICATION_BACKENDS = ('user_authorization.custom_modules.customauth.CustomAuthBackend',)
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
@@ -53,10 +53,11 @@ CORS_ORIGIN_ALLOW_ALL=True   # CORS_ORIGIN_WHITELIST = ["http://localhost:8080"]
 
 INSTALLED_APPS = [
     'corsheaders',
+    'django_crontab',
     'rest_framework',
     'rest_framework_swagger',
-    'pitbull',
-    'django.contrib.admin',
+    'user_authorization',
+    'stock_management',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -75,6 +76,41 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+LOGGING = {
+    'version': 1,
+    'formatters': {
+            'verbose': {
+                'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+        },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'file': {
+            'level': 'WARN',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'logs/pitbull.log',
+            'formatter': 'verbose',
+            'backupCount': 5,
+            'maxBytes': 5242880,  # 5MB
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    }
+}
+
 
 ROOT_URLCONF = 'back.urls'
 
@@ -134,6 +170,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+CRONJOBS = [
+     # ('* 2 * * *', 'stock_management.views.predictionMakingViews.make_predictions')
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/

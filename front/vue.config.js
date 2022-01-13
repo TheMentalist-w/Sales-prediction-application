@@ -1,7 +1,11 @@
 module.exports = {
   devServer: {
     proxy: {
-      '^/pitbull': {
+      '^/user_authorization': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '^/stock_management': {
         target: 'http://localhost:8000',
         changeOrigin: true
       }
@@ -9,5 +13,6 @@ module.exports = {
   },
   transpileDependencies: [
     'vuetify'
-  ]
-}
+  ],
+  productionSourceMap: false
+};
