@@ -1,14 +1,14 @@
 <template>
   <v-container fluid>
     <v-select
-      style="margin-top: 25px"
+      ref="selectComponent"
       v-model="shop"
+      label="Shop"
+      style="margin-top: 25px"
       :items="shops"
       item-text="name"
       item-value="id"
       @change="changeShop"
-      label="Shop"
-      ref="selectComponent"
     >
       <template v-slot:prepend-item>
         <v-list-item
@@ -21,14 +21,14 @@
           </v-list-item-action>
           <v-list-item-content>
             <v-text-field
+              v-model="filterSearch"
               dense
               placeholder="Search"
-              v-model="filterSearch"
               @input="searchShops"
             />
           </v-list-item-content>
         </v-list-item>
-        <v-divider class="mt-2"></v-divider>
+        <v-divider class="mt-2" />
       </template>
     </v-select>
   </v-container>
@@ -36,32 +36,34 @@
 
 <script>
 export default {
-  name: "ShopFilter",
-  data() {
+  name: 'ShopFilter',
+  props: {
+    // eslint-disable-next-line vue/require-default-prop
+    filters: Array,
+    // eslint-disable-next-line vue/require-default-prop
+    filtered: Number
+  },
+  data () {
     return {
       shops: [],
       shop: null,
-      filterSearch: null,
-    }
+      filterSearch: null
+    };
   },
-  props: {
-    filters: Array,
-    filtered: Number
-  },
-  mounted() {
-    this.shops = this.filters.map(x => x)
-    this.shop = this.filtered
+  mounted () {
+    this.shops = this.filters.map(x => x);
+    this.shop = this.filtered;
   },
   methods: {
-    changeShop() {
-      this.$emit('changeShop', this.shop)
+    changeShop () {
+      this.$emit('changeShop', this.shop);
     },
 
-    searchShops() {
-      this.shops = this.filters.filter(x => x.name.toUpperCase().includes(this.filterSearch.toUpperCase()))
+    searchShops () {
+      this.shops = this.filters.filter(x => x.name.toUpperCase().includes(this.filterSearch.toUpperCase()));
     }
   }
-}
+};
 </script>
 
 <style scoped>
