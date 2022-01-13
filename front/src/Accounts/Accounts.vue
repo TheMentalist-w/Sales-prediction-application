@@ -292,7 +292,7 @@ export default {
         this.pageSize
       );
 
-      axios.get('/user_auth/', { params: params })
+      axios.get('/user_authorization/', { params: params })
         .then(response => {
           this.employees = response.data.users;
           this.totalPages = response.data.totalPages;
