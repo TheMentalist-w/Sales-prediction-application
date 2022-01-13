@@ -63,7 +63,7 @@ export default {
     };
   },
   beforeMount () {
-    axios.get('/user_auth/current/')
+    axios.get('/user_authorization/current/')
       .then(response => {
         this.loggedIn = true;
         if (response.data.is_superuser) {
@@ -83,7 +83,7 @@ export default {
   },
   methods: {
     logOut () {
-      axios.post('/user_auth/logout/')
+      axios.post('/user_authorization/logout/')
         .then(() => {
           this.$cookies.remove('access');
           this.$cookies.remove('refresh');

@@ -6,4 +6,8 @@ djangorestframework-simplejwt==5.0.0
 django-environ==0.8.1
 psycopg2-binary==2.9.2
 pyodbc==4.0.30
+tensorflow==2.7.0
+numpy==1.22.0
+joblib==1.1.0
+scikit-learn==1.0.2
 django-crontab==0.7.1

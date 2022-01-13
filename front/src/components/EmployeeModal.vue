@@ -217,7 +217,7 @@ export default {
         if (this.editedIndex > -1) {
           data.append('id', this.editedItem.id);
           data.append('is_superuser', this.editedItem.type === 'Admin');
-          axios.patch('/user_auth/edit/', data)
+          axios.patch('/user_authorization/edit/', data)
             .then(() => {
               this.$emit('editEmployee', this.editedItem);
               this.$notify({
@@ -255,7 +255,7 @@ export default {
             });
         } else {
           if (this.editedItem.type === 'Admin') {
-            axios.post('/user_auth/superuser/create/', data)
+            axios.post('/user_authorization/superuser/create/', data)
               .then((response) => {
                 this.editedItem.id = response.data.new_user_id;
                 this.addEmployee();
@@ -293,7 +293,7 @@ export default {
                 }
               });
           } else {
-            axios.post('/user_auth/create/', data)
+            axios.post('/user_authorization/create/', data)
               .then((response) => {
                 this.editedItem.id = response.data.new_user_id;
                 this.addEmployee();
