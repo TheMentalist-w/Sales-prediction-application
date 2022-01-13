@@ -1,9 +1,14 @@
 <template>
   <div style="display: flex; flex-direction: column; height: 100%">
-    <v-container fluid style="height: 100%">
+    <v-container
+      fluid
+      style="height: 100%"
+    >
       <v-layout column>
         <v-flex>
           <v-data-table
+            v-if="adminTable"
+            :key="tableKey"
             style="width: 70%"
             :headers="headers"
             :items="employees"
@@ -11,29 +16,27 @@
             loading-text="Loading... Please wait"
             :hide-default-footer="true"
             :loading="loading"
-            :key="tableKey"
-            v-if="adminTable"
           >
             <template v-slot:top>
               <v-toolbar
                 flat
               >
                 <v-text-field
-                  style="padding-right: 20px"
                   v-model="search"
+                  style="padding-right: 20px"
                   append-icon="mdi-magnify"
+                  single-line
                   label="Search"
+                  hide-details
                   @click:append="searchEmployees"
                   @keyup.enter="searchEmployees"
-                  single-line
-                  hide-details
-                ></v-text-field>
+                />
 
                 <v-dialog
+                  :key="dialogKey"
                   v-model="dialog"
                   max-width="500px"
                   @click:outside="close"
-                  :key="dialogKey"
                 >
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn
@@ -49,31 +52,32 @@
                     </v-btn>
                   </template>
                   <employee-modal
-                    :formTitle="formTitle"
-                    :editedItem="editedItem"
-                    :editedIndex="editedIndex"
+                    :form-title="formTitle"
+                    :edited-item="editedItem"
+                    :edited-index="editedIndex"
                     @closeModal="close"
                     @addEmployee="addEmployee"
-                    @editEmployee="editEmployee" />
+                    @editEmployee="editEmployee"
+                  />
                 </v-dialog>
                 <dialog-delete
-                  :dialogDelete="dialogDelete"
-                  :deleteId="deleteId"
-                  :editedIndex="editedIndex"
+                  :dialog-delete="dialogDelete"
+                  :delete-id="deleteId"
+                  :edited-index="editedIndex"
                   :username="editedItem.username"
                   @deleteFromArray="deleteFromArray"
-                  @closeDelete="closeDelete" />
-                <v-spacer></v-spacer>
-                <v-spacer></v-spacer>
-                <v-spacer></v-spacer>
+                  @closeDelete="closeDelete"
+                />
+                <v-spacer />
+                <v-spacer />
+                <v-spacer />
                 <v-select
-                  style="margin-top: 25px; width: 1%"
                   v-model="pageSize"
+                  style="margin-top: 25px; width: 1%"
                   :items="pageSizes"
-                  @change="changePageSize"
                   label="Items on page"
-                >
-                </v-select>
+                  @change="changePageSize"
+                />
               </v-toolbar>
             </template>
             <template v-slot:item.actions="{ item }">
@@ -96,31 +100,36 @@
       </v-layout>
     </v-container>
     <v-pagination
-      style="align-items: flex-end"
       v-model="page"
+      style="align-items: flex-end"
       :length="totalPages"
-      @input="pageChange"
       circle
       total-visible="7"
       next-icon="mdi-menu-right"
       prev-icon="mdi-menu-left"
-    ></v-pagination>
+      @input="pageChange"
+    />
   </div>
 </template>
 
 <script>
-import axios from "axios"
-import Vue from 'vue'
-import Vuetify from 'vuetify'
-import DialogDelete from "../components/DialogDelete"
-import EmployeeModal from "../components/EmployeeModal"
-import VueCookies from 'vue-cookies'
-Vue.use(Vuetify)
-Vue.use(VueCookies)
+import axios from 'axios';
+import Vue from 'vue';
+import Vuetify from 'vuetify';
+import DialogDelete from '../components/DialogDelete';
+import EmployeeModal from '../components/EmployeeModal';
+import VueCookies from 'vue-cookies';
+
+Vue.use(Vuetify);
+Vue.use(VueCookies);
 
 export default {
-  name: "Accounts",
-  data() {
+  name: 'Accounts',
+  components: {
+    DialogDelete,
+    EmployeeModal
+  },
+  data () {
     return {
       dialog: false,
       dialogKey: 0,
@@ -166,7 +175,7 @@ export default {
           align: 'end',
           sortable: false,
           width: '10%'
-        },
+        }
       ],
       employees: [],
       editedIndex: -1,
@@ -177,7 +186,7 @@ export default {
         username: '',
         type: '',
         confirmPassword: '',
-        password: '',
+        password: ''
       },
       defaultItem: {
         first_name: '',
@@ -186,117 +195,111 @@ export default {
         username: '',
         type: '',
         confirmPassword: '',
-        password: '',
+        password: ''
       },
-      deleteId: null,
-
-    }
-  },
-  components: {
-    DialogDelete,
-    EmployeeModal
-  },
-  mounted() {
-    let access = this.$cookies.get('access')
-    let refresh = this.$cookies.get('refresh')
-    if(access || refresh){
-      this.getEmployees()
-    }
-    else {
-      this.$router.push('/login')
-    }
+      deleteId: null
+    };
   },
   computed: {
     formTitle () {
-      return this.editedIndex === -1 ? 'New Employee' : 'Edit Employee'
-    },
+      return this.editedIndex === -1 ? 'New Employee' : 'Edit Employee';
+    }
   },
   watch: {
     dialog (val) {
-      val || this.close()
+      val || this.close();
     },
     dialogDelete (val) {
-      val || this.closeDelete()
+      val || this.closeDelete();
     },
     checkbox () {
-      this.editedItem.password = ''
-      this.editedItem.confirmPassword = ''
+      this.editedItem.password = '';
+      this.editedItem.confirmPassword = '';
+    }
+  },
+  mounted () {
+    const access = this.$cookies.get('access');
+    const refresh = this.$cookies.get('refresh');
+    if (access || refresh) {
+      this.getEmployees();
+    } else {
+      this.$router.push('/login');
     }
   },
   methods: {
     editItem (item) {
-      this.editedIndex = this.employees.indexOf(item)
-      this.editedItem = Object.assign({}, item)
-      this.dialog = true
+      this.editedIndex = this.employees.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialog = true;
     },
 
     deleteItem (item) {
-      this.editedIndex = this.employees.indexOf(item)
-      this.deleteId = item.id
-      this.editedItem = Object.assign({}, item)
-      this.dialogDelete = true
+      this.editedIndex = this.employees.indexOf(item);
+      this.deleteId = item.id;
+      this.editedItem = Object.assign({}, item);
+      this.dialogDelete = true;
     },
 
-    deleteFromArray (item) {
-      this.getEmployees()
+    deleteFromArray () {
+      this.getEmployees();
     },
 
-    addEmployee (item) {
-      this.getEmployees()
+    addEmployee () {
+      this.getEmployees();
     },
 
-    editEmployee (item) {
-      this.getEmployees()
+    editEmployee () {
+      this.getEmployees();
     },
 
     close () {
-      this.dialog = false
+      this.dialog = false;
       this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem)
-        this.editedIndex = -1
-        this.checkbox = false
-        this.dialogKey += 1
-      })
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+        this.checkbox = false;
+        this.dialogKey += 1;
+      });
     },
 
     closeDelete () {
-      this.dialogDelete = false
+      this.dialogDelete = false;
       this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem)
-        this.editedIndex = -1
-      })
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
     },
 
-    pageChange(value) {
-      this.page = value
-      this.getEmployees()
+    pageChange (value) {
+      this.page = value;
+      this.getEmployees();
     },
 
-    getRequestParams(search, page, pageSize) {
-      let params = {}
-      if (search) params["search"] = search
-      if (page) params["page"] = page
-      if (pageSize) params["size"] = pageSize
+    getRequestParams (search, page, pageSize) {
+      const params = {};
+      if (search) params.search = search;
+      if (page) params.page = page;
+      if (pageSize) params.size = pageSize;
 
-      return params
+      return params;
     },
 
-    getEmployees() {
-      this.loading = true
+    getEmployees () {
+      this.loading = true;
       const params = this.getRequestParams(
         this.search,
         this.page,
         this.pageSize
-      )
+      );
 
-      axios.get('/user_auth/', {params: params})
+      axios.get('/user_auth/', { params: params })
         .then(response => {
-          this.employees = response.data.users
-          this.totalPages = response.data.totalPages
-          this.page = parseInt(response.data.page)
-          this.adminTable = true
-          this.loading = false
-          this.tableKey += 1
+          this.employees = response.data.users;
+          this.totalPages = response.data.totalPages;
+          this.page = parseInt(response.data.page);
+          this.adminTable = true;
+          this.loading = false;
+          this.tableKey += 1;
         })
         .catch(error => {
           if (error.response.status === 500) {
@@ -305,24 +308,23 @@ export default {
               title: 'Error',
               text: 'Server error. Try later',
               type: 'error text-white'
-            })
+            });
+          } else {
+            this.$router.push('/');
           }
-          else {
-            this.$router.push('/')
-          }
-        })
+        });
     },
 
-    searchEmployees() {
-      this.page = 1
-      this.getEmployees()
+    searchEmployees () {
+      this.page = 1;
+      this.getEmployees();
     },
 
-    changePageSize() {
-      this.getEmployees()
+    changePageSize () {
+      this.getEmployees();
     }
-  },
-}
+  }
+};
 </script>
 
 <style>

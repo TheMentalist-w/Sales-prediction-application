@@ -1,5 +1,9 @@
 <template>
-  <v-footer padless dark color="primary">
+  <v-footer
+    padless
+    dark
+    color="primary"
+  >
     <v-col
       class="text-center"
       cols="12"
@@ -11,8 +15,8 @@
 
 <script>
 export default {
-  name: "Footer"
-}
+  name: 'Footer'
+};
 </script>
 
 <style scoped>
