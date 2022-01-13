@@ -8,11 +8,11 @@ module.exports = {
       '^/stock_management': {
         target: 'http://localhost:8000',
         changeOrigin: true
-      },
-    },
+      }
+    }
   },
   transpileDependencies: [
     'vuetify'
   ],
-  productionSourceMap: false,
-}
+  productionSourceMap: false
+};

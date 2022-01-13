@@ -1,10 +1,14 @@
 <template>
   <div style="display: flex; flex-direction: column; height: 100%">
-    <v-container fluid :style="layoutStyle">
+    <v-container
+      fluid
+      :style="layoutStyle"
+    >
       <v-layout column>
         <v-flex>
           <v-data-table
-
+            v-if="stockTable"
+            :key="stockKey"
             style="width: 90%"
             :headers="headers"
             :items="products"
@@ -12,8 +16,6 @@
             :disable-pagination="true"
             loading-text="Loading... Please wait"
             class="elevation-1 mx-auto mt-16 stockTable"
-            :key="stockKey"
-            v-if="stockTable"
             :loading="loading"
           >
             <template v-slot:top>
@@ -21,15 +23,15 @@
                 flat
               >
                 <v-text-field
-                  style="margin-top: 3px;"
                   v-model="search"
+                  style="margin-top: 3px;"
                   append-icon="mdi-magnify"
                   label="Search"
-                  @click:append="searchProducts"
-                  @keyup.enter="searchProducts"
                   single-line
                   hide-details
-                ></v-text-field>
+                  @click:append="searchProducts"
+                  @keyup.enter="searchProducts"
+                />
                 <v-col
                   cols="2"
                 >
@@ -50,22 +52,26 @@
                     @filterProducts="filterProducts"
                   />
                 </v-col>
-                <v-spacer></v-spacer>
-                <v-spacer></v-spacer>
-                <v-spacer></v-spacer>
-
+                <v-spacer />
+                <v-spacer />
+                <v-spacer />
                 <v-select
-                  style="margin-top: 25px; width: 1%"
                   v-model="pageSize"
+                  style="margin-top: 25px; width: 1%"
                   :items="pageSizes"
-                  @change="changePageSize"
                   label="Items on page"
-                >
-                </v-select>
+                  @change="changePageSize"
+                />
               </v-toolbar>
             </template>
             <template v-slot:header.prediction="{ header }">
-              {{ header.text }}<v-btn x-small text @click="sortByDesc"><v-icon>{{arrow}}</v-icon></v-btn>
+              {{ header.text }}<v-btn
+                x-small
+                text
+                @click="sortByDesc"
+              >
+                <v-icon>{{ arrow }}</v-icon>
+              </v-btn>
             </template>
             <template v-slot:item.group_name="{ item }">
               <v-btn
@@ -90,33 +96,35 @@
       </v-layout>
     </v-container>
     <v-pagination
-      style="align-items: flex-end"
       v-model="page"
+      style="align-items: flex-end"
       :length="totalPages"
-      @input="pageChange"
       circle
       total-visible="7"
       next-icon="mdi-menu-right"
       prev-icon="mdi-menu-left"
-    >
-    </v-pagination>
+      @input="pageChange"
+    />
   </div>
 </template>
 
 <script>
-import Vue from 'vue'
-import Vuetify from 'vuetify'
-import VueCookies from "vue-cookies"
-import axios from 'axios'
-import GroupFilter from "./components/GroupFilter"
-import FeatureFilter from "./components/FeatureFilter"
+import Vue from 'vue';
+import Vuetify from 'vuetify';
+import VueCookies from 'vue-cookies';
+import axios from 'axios';
+import GroupFilter from './components/GroupFilter';
+import FeatureFilter from './components/FeatureFilter';
 
-Vue.use(Vuetify)
-Vue.use(VueCookies)
+Vue.use(Vuetify);
+Vue.use(VueCookies);
 
 export default {
   name: 'Index',
-  data() {
+  components: {
+    GroupFilter, FeatureFilter
+  },
+  data () {
     return {
       stockKey: 0,
       stockTable: true,
@@ -177,55 +185,50 @@ export default {
           align: 'end',
           sortable: false,
           width: '10%'
-        },
-      ],
-
-    }
-  },
-  async mounted () {
-    let access = this.$cookies.get('access')
-    let refresh = this.$cookies.get('refresh')
-    if(access || refresh){
-      await this.getGroups()
-      await this.getFeatures()
-      await this.getProducts()
-    }
-    else {
-      this.$router.push('/login')
-    }
-  },
-  components: {
-    GroupFilter, FeatureFilter
+        }
+      ]
+    };
   },
   computed: {
-    arrow() {
+    arrow () {
       if (this.sort === 1) {
-        return 'mdi-sort-numeric-ascending-variant'
+        return 'mdi-sort-numeric-ascending-variant';
       } else if (this.sort === 0) {
-        return 'mdi-sort-numeric-descending-variant'
+        return 'mdi-sort-numeric-descending-variant';
       } else {
-        return 'mdi-sort-numeric-variant'
+        return 'mdi-sort-numeric-variant';
       }
     }
   },
+  async mounted () {
+    const access = this.$cookies.get('access');
+    const refresh = this.$cookies.get('refresh');
+    if (access || refresh) {
+      await this.getGroups();
+      await this.getFeatures();
+      await this.getProducts();
+    } else {
+      this.$router.push('/login');
+    }
+  },
   methods: {
-    getRequestParams(search, page, pageSize, filteredGroups, filteredFeatures, sort) {
-      let params = {}
-      if (search) params["search"] = search
-      if (page) params["page"] = page
-      if (pageSize) params["size"] = pageSize
-      if (filteredGroups) params["filteredGroups"] = filteredGroups
-      if (filteredFeatures) params["filteredFeatures"] = filteredFeatures
-      params["sort"] = sort
+    getRequestParams (search, page, pageSize, filteredGroups, filteredFeatures, sort) {
+      const params = {};
+      if (search) params.search = search;
+      if (page) params.page = page;
+      if (pageSize) params.size = pageSize;
+      if (filteredGroups) params.filteredGroups = filteredGroups;
+      if (filteredFeatures) params.filteredFeatures = filteredFeatures;
+      params.sort = sort;
 
-      return params
+      return params;
     },
 
-    getGroups() {
+    getGroups () {
       axios.get('/stock_management/products/groups/')
         .then(response => {
-          this.groups = response.data.groups
-          this.filterKey += 1
+          this.groups = response.data.groups;
+          this.filterKey += 1;
         })
         .catch(error => {
           if (error.response.status === 500) {
@@ -234,16 +237,16 @@ export default {
               title: 'Error',
               text: 'Server error. Try later',
               type: 'error text-white'
-            })
+            });
           }
-        })
+        });
     },
 
-    getFeatures() {
+    getFeatures () {
       axios.get('/stock_management/products/features/')
         .then(response => {
-          this.features = response.data.features
-          this.featureKey += 1
+          this.features = response.data.features;
+          this.featureKey += 1;
         })
         .catch(error => {
           if (error.response.status === 500) {
@@ -252,13 +255,13 @@ export default {
               title: 'Error',
               text: 'Server error. Try later',
               type: 'error text-white'
-            })
+            });
           }
-        })
+        });
     },
 
-    getProducts() {
-      this.loading = true
+    getProducts () {
+      this.loading = true;
       const params = this.getRequestParams(
         this.search,
         this.page,
@@ -266,15 +269,15 @@ export default {
         this.filteredGroups,
         this.filteredFeatures,
         this.sort
-      )
-      axios.get('/stock_management/products/', {params: params})
+      );
+      axios.get('/stock_management/products/', { params: params })
         .then(response => {
-          this.products = response.data.products
-          this.totalPages = response.data.totalPages
-          this.page = parseInt(response.data.page)
-          this.stockTable = true
-          this.loading = false
-          this.stockKey += 1
+          this.products = response.data.products;
+          this.totalPages = response.data.totalPages;
+          this.page = parseInt(response.data.page);
+          this.stockTable = true;
+          this.loading = false;
+          this.stockKey += 1;
         })
         .catch(error => {
           if (error.response.status === 500) {
@@ -283,57 +286,56 @@ export default {
               title: 'Error',
               text: 'Server error. Try later',
               type: 'error text-white'
-            })
+            });
+          } else {
+            this.$router.push('/login');
           }
-          else {
-            this.$router.push('/login')
-          }
-        })
+        });
     },
 
-    searchProducts() {
-      this.page = 1
-      this.getProducts()
+    searchProducts () {
+      this.page = 1;
+      this.getProducts();
     },
 
-    pageChange(value) {
-      this.page = value
-      this.getProducts()
+    pageChange (value) {
+      this.page = value;
+      this.getProducts();
     },
 
-    productDetails(item) {
-      this.$router.push('/product/' + item.id)
+    productDetails (item) {
+      this.$router.push('/product/' + item.id);
     },
 
-    filterProducts(item) {
-      this.page = 1
-      this.filteredGroups = item
-      this.getProducts()
+    filterProducts (item) {
+      this.page = 1;
+      this.filteredGroups = item;
+      this.getProducts();
     },
 
-    filterFeatures(item) {
-      this.page = 1
-      this.filteredFeatures = item
-      this.getProducts()
+    filterFeatures (item) {
+      this.page = 1;
+      this.filteredFeatures = item;
+      this.getProducts();
     },
 
-    sortByDesc() {
-      //none - (-1), asc - 0, desc - 1
-      if(this.sort === -1) {
-        this.sort = 0
-      } else if(this.sort === 0) {
-        this.sort = 1
+    sortByDesc () {
+      // none - (-1), asc - 0, desc - 1
+      if (this.sort === -1) {
+        this.sort = 0;
+      } else if (this.sort === 0) {
+        this.sort = 1;
       } else {
-        this.sort = -1
+        this.sort = -1;
       }
-      this.getProducts()
+      this.getProducts();
     },
 
-    changePageSize() {
-      this.getProducts()
+    changePageSize () {
+      this.getProducts();
     }
-  },
-}
+  }
+};
 </script>
 
 <style>
