@@ -29,6 +29,7 @@
                   label="Search"
                   single-line
                   hide-details
+                  data-test="search_product"
                   @click:append="searchProducts"
                   @keyup.enter="searchProducts"
                 />
