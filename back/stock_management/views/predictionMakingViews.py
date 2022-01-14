@@ -99,7 +99,7 @@ def prepare_prediction_data():
     print(f"Num of docs to process: {num_of_docs}")
 
     i = 0
-    for doc in docs_to_process.order_by('?')[:5]:   # use .order_by('?')[:num_of samples] if execution time is too long
+    for doc in docs_to_process:   # use .order_by('?')[:num_of samples] if execution time is too long
 
         print(f"Processing doc {i} out of {num_of_docs}")
 
