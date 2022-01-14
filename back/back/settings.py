@@ -30,7 +30,7 @@ DEBUG = True
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 AUTH_USER_MODEL = 'user_authorization.User'
 
-ALLOWED_HOSTS = ["150.254.30.118","localhost"]
+ALLOWED_HOSTS = ["150.254.30.118","localhost","pitbull-test.eastus.cloudapp.azure.com"]
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS':'rest_framework.schemas.coreapi.AutoSchema' ,
