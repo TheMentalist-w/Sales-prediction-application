@@ -116,8 +116,8 @@
 import axios from 'axios';
 import Vue from 'vue';
 import Vuetify from 'vuetify';
-import DialogDelete from '../components/DialogDelete';
-import EmployeeModal from '../components/EmployeeModal';
+import DialogDelete from './components/DialogDelete';
+import EmployeeModal from './components/EmployeeModal';
 import VueCookies from 'vue-cookies';
 
 Vue.use(Vuetify);

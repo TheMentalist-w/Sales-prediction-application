@@ -1,5 +1,5 @@
 import { mount, createLocalVue } from '@vue/test-utils';
-import EmployeeModal from '@/components/EmployeeModal';
+import EmployeeModal from '@/Accounts/components/EmployeeModal';
 import Vuetify from 'vuetify';
 
 describe('EmployeeModal.vue New User Modal', () => {

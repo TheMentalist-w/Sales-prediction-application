@@ -24,6 +24,7 @@
             <v-text-field
               v-model="filterSearch"
               dense
+              data-test="group_feature_t"
               placeholder="Search"
               @input="searchFeatures"
             />
