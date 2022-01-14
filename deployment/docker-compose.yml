@@ -33,7 +33,7 @@ services:
       - PB_DATABASE=BOZYDAR
       - PB_USERNAME=SA
       - PB_PASSWORD=Pitbull2021!
-      - PB_DRIVER="{ODBC Driver 17 for SQL Server}"
+      - PB_DRIVER={ODBC Driver 17 for SQL Server}
   pitbull-frontend:
     depends_on:
       - pitbull-backend
