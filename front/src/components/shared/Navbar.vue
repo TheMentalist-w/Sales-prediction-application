@@ -42,13 +42,6 @@
     >
       <v-icon>mdi-brightness-6</v-icon>
     </v-btn>
-    <v-btn
-      @click="changeFont"
-      text
-      rounded
-    >
-      <v-icon>mdi-format-font-size-increase</v-icon>
-    </v-btn>
   </v-app-bar>
 </template>
 
