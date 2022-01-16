@@ -130,7 +130,7 @@ def prepare_prediction_data():
     num_of_docs = docs_to_process.count()
     print(f"Num of docs to process: {num_of_docs}")
 
-    pool = mp.Pool(mp.cpu_count())
+    pool = mp.Pool(mp.cpu_count())  # use mp.Pool(1) for sequential processing
     pool.map(process_single_doc, docs_to_process)
     pool.close()
     pool.join()
