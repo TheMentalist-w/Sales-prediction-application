@@ -10,6 +10,10 @@
       :key="chartKey"
       :data="chartData"
       :colors="['#4CAF50']"
+      :curve="false"
+      :messages="{empty: 'No data'}"
+      xtitle="Date"
+      ytitle="Prediction"
     />
   </div>
 </template>
