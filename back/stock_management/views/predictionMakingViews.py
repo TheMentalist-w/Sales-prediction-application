@@ -17,7 +17,7 @@ import multiprocessing as mp
 from ..models import *
 from django.db import connection
 
-lock = mp.Lock()  # mutex used while saving partial NN_input_array preparing results to DB
+lock = mp.Lock()  # mutex used while saving partial NN_input_array preparing result to DB
 
 def rmse(y_true, y_pred):
     return K.sqrt(K.mean(K.square(y_pred - y_true)))
