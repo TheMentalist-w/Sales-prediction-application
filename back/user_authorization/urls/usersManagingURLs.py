@@ -8,6 +8,6 @@ users_managing_urlpatterns = [
     path('delete/<int:id>/',views.delete_user, name='deleteUser'),
     path('edit/',views.edit_user, name='editUser'),
     path('superuser/create/',views.create_superuser, name='createSuperuser'),
-    path('init/superuser/', views.create_initial_superuser, name='createInitialSuperuser'),
+    path('superuser/init/', views.create_initial_superuser, name='createInitialSuperuser'),
 ]
 
