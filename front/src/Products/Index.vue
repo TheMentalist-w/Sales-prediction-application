@@ -65,7 +65,7 @@
                 />
               </v-toolbar>
             </template>
-            <template v-slot:header.prediction="{ header }">
+            <template v-slot:header.latest_prediction="{ header }">
               {{ header.text }}<v-btn
                 x-small
                 text
@@ -169,7 +169,7 @@ export default {
         {
           text: 'Predicted',
           align: 'start',
-          value: 'prediction',
+          value: 'latest_prediction',
           sortable: false,
           width: '40%'
         },
@@ -193,11 +193,11 @@ export default {
   computed: {
     arrow () {
       if (this.sort === 1) {
-        return 'mdi-sort-numeric-ascending-variant';
-      } else if (this.sort === 0) {
-        return 'mdi-sort-numeric-descending-variant';
-      } else {
         return 'mdi-sort-numeric-variant';
+      } else if (this.sort === 0) {
+        return 'mdi-sort-numeric-ascending-variant';
+      } else {
+        return 'mdi-sort-numeric-descending-variant';
       }
     }
   },

@@ -38,7 +38,9 @@ def get_products_list(request):
     if sort == "0":
         products = products.order_by("latest_prediction")
     elif sort == "-1":
-        products = products.order_by("-latest_prediction")
+        products = products.order_by(F("latest_prediction").desc(nulls_last=True))
+    else:
+        products = products.order_by("name")
 
     products_processed = list(products.values())
 

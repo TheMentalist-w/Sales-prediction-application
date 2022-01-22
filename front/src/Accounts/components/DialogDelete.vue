@@ -48,7 +48,7 @@ export default {
   methods: {
     deleteItemConfirm () {
       const index = this.editedIndex;
-      axios.delete('/user_authorization/user/delete/' + this.deleteId.toString())
+      axios.delete('/user_authorization/delete/' + this.deleteId.toString() + '/')
         .then(() => {
           this.$emit('deleteFromArray', index);
           this.$notify({

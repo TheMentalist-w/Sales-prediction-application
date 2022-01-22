@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAdminUser
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 def create_initial_superuser(request):
 
     get_user_model().objects.create_superuser('admin', 'admin', 'admin@example.com', 'admin_f', 'admin_l')
@@ -52,11 +52,13 @@ def get_users_list(request):
 
 @api_view(['DELETE'])
 @permission_classes((IsAdminUser,))
-def delete_user(request, given_id):
-    if request.user.id == given_id:
+def delete_user(request, id):
+    if request.user.id == id:
         return HttpResponse("You can't delete your own account!", status=409)
+    elif request.user.id == 1:
+        return HttpResponse("You can't delete initial superuser account!", status=409)
 
-    user = get_object_or_404(get_user_model(), pk=given_id)
+    user = get_object_or_404(get_user_model(), pk=id)
     user.delete()
 
     return HttpResponse("User account deleted!")

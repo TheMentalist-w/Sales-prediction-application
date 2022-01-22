@@ -13,9 +13,11 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import load_model
 from tensorflow.keras.optimizers import Adam
-
+import multiprocessing as mp
 from ..models import *
+from django.db import connection
 
+lock = mp.Lock()  # mutex used while saving partial NN_input_array preparing result to DB
 
 def rmse(y_true, y_pred):
     return K.sqrt(K.mean(K.square(y_pred - y_true)))
@@ -84,6 +86,36 @@ def reset_ai_array():
     NeuralNetworkInputArray.objects.filter(id=1).delete()
 
 
+def process_single_doc(doc):
+
+    connection.connect()  # multithreading requires manual connections handling
+
+    print(f"Processing doc id= {doc.id}")
+
+    for item in doc.items.all():
+        sales_days = get_sales_days(prod_id=item.product.id, warehouse_id=doc.warehouse,
+                                    # expected output (y1, y2, y3...)
+                                    start_amount=item.amount, start_date=doc.datetime)
+
+        if sales_days is not None:  # skip items that have not been given out yet
+
+            neural_variables = [item.amount] + \
+                               list(get_historical_sales(prod_id=item.product.id,
+                                                         warehouse_id=doc.warehouse,
+                                                         target_date=doc.datetime).values()) + \
+                               [int(doc.datetime.strftime('%m')), doc.warehouse.id] + \
+                               [1 if fea in item.product.features.all() else 0 for fea in
+                                Feature.objects.all()]  # variables of neural network (x1, x2, x3...)
+
+            with lock:
+                append_to_ai_array(append_x=neural_variables, append_y=sales_days)  # save partial result to DB
+
+            print(neural_variables, sales_days)  # and print it
+
+    connection.close()
+    return True
+
+
 def prepare_prediction_data():
 
     # HEADERS:
@@ -93,33 +125,18 @@ def prepare_prediction_data():
 
     reset_ai_array()
 
-    docs_to_process = Document.objects.filter(type__in=[36, 14, 10, 12])    # doc types: 36+, 14+, 10+, 12+, 11-, 13-, 35-
+    docs_to_process = Document.objects.filter(type__in=[36, 14, 10, 12]).order_by('id')    # doc types: 36+, 14+, 10+, 12+, 11-, 13-, 35-
 
     num_of_docs = docs_to_process.count()
     print(f"Num of docs to process: {num_of_docs}")
 
-    i = 0
-    for doc in docs_to_process:   # use .order_by('?')[:num_of samples] if execution time is too long
+    pool = mp.Pool(mp.cpu_count())  # use mp.Pool(1) for sequential processing
+    pool.map(process_single_doc, docs_to_process)
+    pool.close()
+    pool.join()
 
-        print(f"Processing doc {i} out of {num_of_docs}")
-
-        for item in doc.items.all():
-            sales_days = get_sales_days(prod_id=item.product.id, warehouse_id=doc.warehouse,    # expected output (y1, y2, y3...)
-                                        start_amount=item.amount, start_date=doc.datetime)
-
-            if sales_days is not None:  # skip items that have not been given out yet
-
-                neural_variables = [item.amount] + \
-                list(get_historical_sales(prod_id=item.product.id,
-                                          warehouse_id=doc.warehouse,
-                                          target_date=doc.datetime).values()) + \
-                [int(doc.datetime.strftime('%m')), doc.warehouse.id] + \
-                [1 if fea in item.product.features.all() else 0 for fea in Feature.objects.all()] # variables of neural network (x1, x2, x3...)
-
-                append_to_ai_array(append_x=neural_variables, append_y=sales_days)      # save partial result to DB
-                print(neural_variables, sales_days)                                     # and print it
-
-        i += 1
+    print("Processing documents done!")
+    connection.connect()  # renew DB connection
 
     return True
 
@@ -251,7 +268,7 @@ def make_predictions(request):
             prediction = int(np.ravel(model.predict(scaled_arr))[0])
             print(f"{p.name}, warehouse {w.name}, neural network result: {prediction} days")
 
-            if not 0 < prediction < 1200:
+            if not 0 < prediction < 5000:
                 print("Unexpected output, changing prediction's value to None!")
                 prediction = None
 
