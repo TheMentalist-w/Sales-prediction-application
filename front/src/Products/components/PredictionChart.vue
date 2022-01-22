@@ -65,10 +65,9 @@ export default {
 
     getPredictionHistory () {
       const params = {
-        shopId: this.selectedShop,
-        productId: this.$route.params.id
+        shopId: this.selectedShop
       };
-      axios.get('/stock_management/product/prediction_history/', { params: params })
+      axios.get('/stock_management/product/' + this.$route.params.id.toString() + '/prediction_history/', { params: params })
         .then(response => {
         // assign data to chart
           this.chartData = response.data.history;
