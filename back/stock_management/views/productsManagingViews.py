@@ -73,9 +73,9 @@ def get_available_warehouses(request):
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
-def get_product_details(request, id):
+def get_product_details(request, prod_id):
 
-    prod = get_object_or_404(Product, id=id)
+    prod = get_object_or_404(Product, id=prod_id)
 
     return JsonResponse({'symbol': prod.symbol,
                          'name': prod.name,
@@ -86,8 +86,7 @@ def get_product_details(request, id):
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
-def get_product_prediction_history(request):
-    prod_id = request.GET.get('productId', -1)
+def get_product_prediction_history(request, prod_id):
     warehouse_id = request.GET.get('shopId', -1)
 
     product = get_object_or_404(Product, id=prod_id)
