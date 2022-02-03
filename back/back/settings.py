@@ -111,7 +111,6 @@ LOGGING = {
     }
 }
 
-
 ROOT_URLCONF = 'back.urls'
 
 TEMPLATES = [
@@ -171,7 +170,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 CRONJOBS = [
-     # ('* 2 * * *', 'stock_management.views.predictionMakingViews.make_predictions')
+     ('* 2 * * *', 'stock_management.views.predictionMakingViews.make_predictions')
 ]
 
 # Internationalization
