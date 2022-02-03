@@ -14,7 +14,6 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import load_model
 from tensorflow.keras.optimizers import Adam
 import multiprocessing as mp
-from ..models import *
 from django.db import connection
 
 lock = mp.Lock()  # mutex used while saving partial NN_input_array preparing result to DB
@@ -240,7 +239,7 @@ def train_model():
     return True
 
 
-def make_predictions(request):
+def make_predictions():
     # load model
     model = load_model('pitbull_ai_model.h5', compile=False)
     scaler = joblib.load("scaler.save")
@@ -274,13 +273,13 @@ def make_predictions(request):
 
             Prediction.objects.create(product=p, value=prediction, warehouse=w, date=datetime.now(timezone.utc))
 
-    return HttpResponse("All predictions done!")
+    return True
 
 
 def init_neural_network(request):
 
     prepare_prediction_data()
     train_model()
-    make_predictions(request)
+    make_predictions()
 
     return HttpResponse("Neural network initialized!")
