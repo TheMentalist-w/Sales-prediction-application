@@ -14,6 +14,7 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import load_model
 from tensorflow.keras.optimizers import Adam
 import multiprocessing as mp
+from ..models import *
 from django.db import connection
 
 lock = mp.Lock()  # mutex used while saving partial NN_input_array preparing result to DB
