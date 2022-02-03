@@ -240,7 +240,7 @@ def train_model():
     return True
 
 
-def make_predictions(request):
+def make_predictions():
     # load model
     model = load_model('pitbull_ai_model.h5', compile=False)
     scaler = joblib.load("scaler.save")
@@ -274,13 +274,13 @@ def make_predictions(request):
 
             Prediction.objects.create(product=p, value=prediction, warehouse=w, date=datetime.now(timezone.utc))
 
-    return HttpResponse("All predictions done!")
+    return True
 
 
 def init_neural_network(request):
 
     prepare_prediction_data()
     train_model()
-    make_predictions(request)
+    make_predictions()
 
     return HttpResponse("Neural network initialized!")
