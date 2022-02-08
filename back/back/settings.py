@@ -172,7 +172,7 @@ AUTH_PASSWORD_VALIDATORS = [
 CRONJOBS = [
      ('0 0 1 * *', 'stock_management.views.predictionMakingViews.init_neural_network'),
      ('0 0 * * *', 'stock_management.views.dataFetchingViews.fetch_all_data'),
-     ('5 0 * * *', 'stock_management.views.predictionMakingViews.make_predictions')
+     ('0 5 * * *', 'stock_management.views.predictionMakingViews.make_predictions')
 ]
 
 CRONTAB_COMMAND_PREFIX = 'cd /app &&'

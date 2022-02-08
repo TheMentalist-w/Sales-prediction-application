@@ -281,9 +281,9 @@ def make_predictions():
 
 
 def init_neural_network():
-
+    print("Init neural network triggered")
     prepare_prediction_data()
     train_model()
     make_predictions()
-
-    return HttpResponse("Neural network initialized!")
+    print("Neural network initialized!")
+    return True
