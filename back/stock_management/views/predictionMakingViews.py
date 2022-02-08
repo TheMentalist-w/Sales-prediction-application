@@ -241,43 +241,46 @@ def train_model():
 
 
 def make_predictions():
-    # load model
-    model = load_model('pitbull_ai_model.h5', compile=False)
-    scaler = joblib.load("scaler.save")
+    try:
+        # load model
+        model = load_model('pitbull_ai_model.h5', compile=False)
+        scaler = joblib.load("scaler.save")
 
-    # calculate 'inventory' normalization rate
-    inventory_norm_rate = max([el[0] for el in NeuralNetworkInputArray.objects.filter(id=1).first().x]) \
-                / Product.objects.aggregate(Max('inventory'))['inventory__max']
+        # calculate 'inventory' normalization rate
+        inventory_norm_rate = max([el[0] for el in NeuralNetworkInputArray.objects.filter(id=1).first().x]) \
+                    / Product.objects.aggregate(Max('inventory'))['inventory__max']
 
-    for p in Product.objects.all():
-        for w in Warehouse.objects.all():
+        for p in Product.objects.all():
+            for w in Warehouse.objects.all():
 
-            arr = [
-                [p.inventory*inventory_norm_rate] + \
-                list(get_historical_sales(prod_id=p.id,
-                                          warehouse_id=w.id,
-                                          target_date=datetime.now(timezone.utc)).values()) + \
-                  [int(datetime.now().strftime('%m')), w.id] + \
-                  [1 if f in p.features.all() else 0 for f in Feature.objects.all()]
-                ]
+                arr = [
+                    [p.inventory*inventory_norm_rate] + \
+                    list(get_historical_sales(prod_id=p.id,
+                                              warehouse_id=w.id,
+                                              target_date=datetime.now(timezone.utc)).values()) + \
+                      [int(datetime.now().strftime('%m')), w.id] + \
+                      [1 if f in p.features.all() else 0 for f in Feature.objects.all()]
+                    ]
 
-            # normalize input data
-            scaled_arr = scaler.transform(arr)
+                # normalize input data
+                scaled_arr = scaler.transform(arr)
 
-            # make prediction, print and save it
-            prediction = int(np.ravel(model.predict(scaled_arr))[0])
-            print(f"{p.name}, warehouse {w.name}, neural network result: {prediction} days")
+                # make prediction, print and save it
+                prediction = int(np.ravel(model.predict(scaled_arr))[0])
+                print(f"{p.name}, warehouse {w.name}, neural network result: {prediction} days")
 
-            if not 0 < prediction < 5000:
-                print("Unexpected output, changing prediction's value to None!")
-                prediction = None
+                if not 0 < prediction < 5000:
+                    print("Unexpected output, changing prediction's value to None!")
+                    prediction = None
 
-            Prediction.objects.create(product=p, value=prediction, warehouse=w, date=datetime.now(timezone.utc))
-
+                Prediction.objects.create(product=p, value=prediction, warehouse=w, date=datetime.now(timezone.utc))
+    except OSError as err:
+        print(err)
+        return False
     return True
 
 
-def init_neural_network(request):
+def init_neural_network():
 
     prepare_prediction_data()
     train_model()

@@ -114,7 +114,7 @@ def fetch_warehouses():
     return True
 
 
-def fetch_all_data(request):
+def fetch_all_data():
 
     fetch_groups()
     fetch_features_dict()
@@ -124,4 +124,4 @@ def fetch_all_data(request):
     fetch_documents()
     fetch_documents_items()
 
-    return HttpResponse("All data fetched!")
+    return true

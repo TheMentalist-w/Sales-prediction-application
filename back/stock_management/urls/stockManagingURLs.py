@@ -9,6 +9,6 @@ stock_managing_urlpatterns = [
     path('shops/', views.get_available_warehouses, name='getAvailableWarehouses'),
     path('product/<int:prod_id>/', views.get_product_details, name='getProductDetails'),
     path('product/<int:prod_id>/prediction_history/', views.get_product_prediction_history, name='getProductPredictionHistory'),
-    path('AI/init/', views.init_neural_network, name='trainModel'),
+    # path('AI/init/', views.init_neural_network, name='trainModel'),
     # path('AI/predict/', views.make_predictions, name='makePredictions'),
 ]
