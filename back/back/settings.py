@@ -170,8 +170,14 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 CRONJOBS = [
-     ('* 2 * * *', 'stock_management.views.predictionMakingViews.make_predictions')
+     ('0 0 1 * *', 'stock_management.views.predictionMakingViews.init_neural_network'),
+     ('0 0 * * *', 'stock_management.views.dataFetchingViews.fetch_all_data'),
+     ('0 5 * * *', 'stock_management.views.predictionMakingViews.make_predictions')
 ]
+
+CRONTAB_COMMAND_PREFIX = 'cd /app &&'
+
+CRONTAB_COMMAND_SUFFIX = '>> /proc/1/fd/1 2>&1'
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
