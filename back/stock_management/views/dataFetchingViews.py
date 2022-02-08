@@ -124,4 +124,4 @@ def fetch_all_data():
     fetch_documents()
     fetch_documents_items()
 
-    return true
+    return True
